@@ -111,20 +111,26 @@ if (windows) {
   else anotar('ojo', 'Polkadot Desktop', 'revísalo a mano', 'Abre el AppImage y confirma que ya está emparejado con tu teléfono.');
 }
 
-// Product SDK: es una dependencia del proyecto, no algo instalado en la computadora.
+// Product SDK: es una dependencia del juego (game/), no algo instalado en la computadora.
+// Con pnpm la dependencia queda en el paquete (game/node_modules), no en la raíz.
 {
-  const sdk = join(process.cwd(), 'node_modules', '@parity', 'product-sdk', 'package.json');
+  const SDK_ESPERADO = '0.27.0';
+  const sdk = [join(process.cwd(), 'game', 'node_modules'), join(process.cwd(), 'node_modules')]
+    .map((carpeta) => join(carpeta, '@parity', 'product-sdk', 'package.json'))
+    .find((ruta) => existsSync(ruta));
   if (!existsSync(join(process.cwd(), 'package.json'))) {
-    anotar('ojo', 'Product SDK', 'todavía no hay proyecto', 'Se instala con pnpm install cuando tengas la plantilla del juego (capítulo 4).');
-  } else if (existsSync(sdk)) {
-    try {
-      const { version } = JSON.parse(readFileSync(sdk, 'utf8'));
-      anotar('ok', 'Product SDK', version);
-    } catch {
-      anotar('ok', 'Product SDK', 'instalado');
-    }
+    anotar('ojo', 'Product SDK', 'todavía no hay proyecto', 'Entra a la carpeta del tutorial (cd polkadot-devnet-workshop) y corre pnpm install. La plantilla del juego es del capítulo 5.');
+  } else if (!sdk) {
+    anotar('mal', 'Product SDK', 'sin instalar', 'Corre pnpm install en la raíz del repo.');
   } else {
-    anotar('mal', 'Product SDK', 'sin instalar', 'Corre pnpm install dentro de la carpeta del proyecto.');
+    let instalada = null;
+    try {
+      instalada = JSON.parse(readFileSync(sdk, 'utf8')).version ?? null;
+    } catch {
+      instalada = null;
+    }
+    if (instalada === SDK_ESPERADO) anotar('ok', 'Product SDK', instalada);
+    else anotar('mal', 'Product SDK', instalada ?? 'versión desconocida', `Se esperaba ${SDK_ESPERADO}: no actualices el SDK (capítulo 4, sección 15).`);
   }
 }
 

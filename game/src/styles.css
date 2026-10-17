@@ -1,0 +1,161 @@
+/* Polka-Man: paleta, safe areas, layout, D-pad y overlays. Nada se carga de internet. */
+:root {
+  --bg: #050505;
+  --ink: #f2f2ef;
+  --muted: #8b8b86;
+  --line: #2a2a2a;
+  --accent: #ff2867;
+  --mono: 'JetBrains Mono', Consolas, monospace;
+  --display: 'Space Mono', 'JetBrains Mono', monospace;
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Reglas exactas de design §4.6: solo el área de juego y el D-pad bloquean gestos. */
+html, body { height: 100%; margin: 0; overflow: hidden; overscroll-behavior: none; }
+#app { position: fixed; inset: 0;
+       padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+.stage, .dpad { touch-action: none; }
+.dpad button, .hud button { touch-action: manipulation; }
+.overlay { overflow-y: auto; touch-action: pan-y; overscroll-behavior: contain; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Rejilla: HUD, escenario, controles. */
+#app {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  background: var(--bg);
+}
+
+.hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 48px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.stage canvas {
+  display: block;
+}
+
+/* D-pad: solo en pantallas táctiles. */
+.dpad {
+  display: none;
+  grid-template-columns: repeat(3, 64px);
+  grid-template-rows: repeat(3, 64px);
+  grid-template-areas:
+    '. arriba .'
+    'izquierda . derecha'
+    '. abajo .';
+  gap: 4px;
+  justify-content: center;
+  padding: 8px 0 12px;
+}
+
+@media (pointer: coarse) {
+  .dpad {
+    display: grid;
+  }
+}
+
+.dpad button {
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #0d0d0d;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.dpad button:active {
+  background: #1a1a1a;
+  border-color: var(--muted);
+}
+
+.dpad button svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+.dpad [data-dir='arriba'] { grid-area: arriba; }
+.dpad [data-dir='izquierda'] { grid-area: izquierda; }
+.dpad [data-dir='abajo'] { grid-area: abajo; }
+.dpad [data-dir='derecha'] { grid-area: derecha; }
+
+/* Overlays sobre el escenario. */
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+  text-align: center;
+  background: rgba(5, 5, 5, 0.78);
+}
+
+.overlay[hidden] {
+  display: none;
+}
+
+.overlay h1 {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(32px, 9vw, 64px);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.overlay p {
+  margin: 0;
+  max-width: 28ch;
+  font-size: 18px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+button {
+  font: inherit;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}

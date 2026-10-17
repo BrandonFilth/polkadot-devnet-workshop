@@ -1,0 +1,11 @@
+packages:
+  - game
+
+allowBuilds:
+  esbuild: false
+
+# Polkadot Desktop 0.1.3, las apps móviles del devnet y dev-dot.li hablan el formato plano (codec 1).
+# @parity/truapi 0.13.1 es la última versión que lo habla; 0.16.0 y posteriores no pueden negociar
+# con esos Hosts. Se fija para que nunca se elija en silencio una 0.13.x futura.
+overrides:
+  '@parity/truapi': 0.13.1

@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "test": "node --test test/*.test.mjs",
-    "size": "node test/size.mjs"
+    "size": "node test/size.mjs",
+    "abi": "node test/abi.mjs"
   },
   "devDependencies": {
     "@ethereumjs/block": "10.1.3",
