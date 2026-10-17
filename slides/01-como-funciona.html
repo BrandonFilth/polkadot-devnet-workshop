@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>01 · Cómo funciona una app de Polkadot — Polkadot App Hackatón</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/deck.css">
+<style>
+/* Fondo propio de "Todo junto": negro liso, sin textura. */
+.slide.black { background: #050505; }
+.slide.black::before { display: none; }
+/* Dispositivos planos copiados del capítulo 04 (prefijo v-, sin glow). */
+.v-win { border: 2px solid #3a3a37; background: #0b0b0b; }
+.v-win .v-bar { height: 34px; border-bottom: 2px solid #3a3a37; display: flex; align-items: center; gap: 8px; padding: 0 14px; }
+.v-win .v-bar i { width: 10px; height: 10px; border-radius: 50%; background: #3a3a37; }
+.v-win .v-bar span { margin-left: 10px; font: 14px var(--mono); color: var(--muted); letter-spacing: .06em; }
+.v-win .v-body { padding: 22px 26px; }
+.v-screen { border: 2px solid #d6d3d1; background: #000; padding: 12px; }
+.v-laptop .v-screen { border-radius: 12px 12px 0 0; margin: 0 30px; }
+.v-laptop .v-base { height: 18px; border: 2px solid #d6d3d1; border-radius: 0 0 14px 14px; background: #0b0b0b; position: relative; }
+.v-laptop .v-base::after { content: ''; position: absolute; left: 50%; top: 0; width: 120px; height: 6px; margin-left: -60px; border: 2px solid #d6d3d1; border-top: 0; border-radius: 0 0 6px 6px; }
+.v-cap { font: 18px var(--mono); color: var(--muted); text-align: center; margin-top: 12px; letter-spacing: .04em; }
+.v-phone { border: 2px solid #d6d3d1; border-radius: 40px; padding: 44px 16px 28px; background: #050505; position: relative; }
+.v-phone::before { content: ''; position: absolute; top: 20px; left: 50%; width: 80px; height: 8px; margin-left: -40px; border-radius: 4px; background: #2a2a2a; }
+.v-ui-card { border: 1px solid #3a3a37; background: #050505; padding: 14px; }
+.v-ui-card b { display: block; font: 700 22px var(--display); }
+.v-ui-card span { display: block; font: 16px var(--mono); color: var(--muted); margin-top: 4px; }
+.v-ui-btn { border: 1px solid #3a3a37; background: #1a1a1a; color: #6b6b66; font: 700 17px var(--display); text-transform: uppercase; display: grid; place-items: center; }
+.v-tag { font: 14px var(--mono); color: var(--accent); border: 1px solid var(--accent); background: #000; padding: 1px 8px; }
+</style>
+<style>
+/* Cajas y bloques planos copiados del capítulo 03 (prefijo c-). */
+.c-box { border: 2px solid #d6d3d1; background: #000; padding: 14px 18px; }
+.c-box.pink { border-color: var(--accent); }
+.c-box.dim { border-color: #3a3a37; }
+.c-box.dash { border-style: dashed; }
+.c-box b { display: block; font: 700 22px/1.2 var(--display); text-transform: uppercase; }
+.c-box.pink b { color: var(--accent); }
+.c-box.dim b { color: #d6d3d1; }
+.c-box > span, .c-box > div > span { display: block; font: 17px/1.45 var(--mono); color: var(--muted); margin-top: 6px; }
+.c-k { font: 13px var(--mono); color: var(--muted); letter-spacing: .2em; text-transform: uppercase; }
+.c-block { position: relative; flex: none; border: 2px solid #d6d3d1; background: #050505; padding: 14px 16px; }
+.c-block.pink { border-color: var(--accent); }
+.c-block .n { font: 13px var(--mono); color: var(--muted); letter-spacing: .2em; }
+.c-block b { display: block; font: 700 20px/1.2 var(--display); text-transform: uppercase; margin-top: 6px; }
+.c-block.pink b { color: var(--accent); }
+.c-block > span { display: block; font: 16px/1.4 var(--mono); color: var(--muted); margin-top: 6px; }
+.c-x, .c-box .c-x { color: var(--accent); font-weight: 700; }
+.slide *, .slide *::before, .slide *::after { font-variant-ligatures: none !important; }
+.c-ok, .c-box .c-ok { color: #9be7b0; font-weight: 700; }
+.c-head { font: 700 26px var(--display); text-transform: uppercase; margin-bottom: 16px; }
+.c-ord { display: flex; align-items: center; gap: 12px; font: 19px var(--display); color: #d6d3d1; margin-top: 10px; }
+.c-ord i { font: 700 15px var(--display); font-style: normal; width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--accent); color: var(--accent); display: grid; place-items: center; flex: none; }
+.v-phone.c-ph { width: 130px; height: 170px; border-radius: 24px; padding: 34px 10px 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.v-phone.c-ph::before { top: 14px; width: 40px; height: 6px; margin-left: -20px; }
+.v-phone.c-ph b { font: 700 20px var(--display); text-transform: uppercase; color: var(--accent); }
+.v-phone.c-ph span { font: 14px var(--mono); color: var(--muted); margin-top: 4px; }
+</style>
+<style>
+/* Piezas propias del capítulo 01 (prefijo d-). Texto de 18 px o más. */
+.d-big .v-bar span, .d-big .v-tag, .d-big .c-k, .d-big .c-block .n { font-size: 18px; }
+.d-big .c-box > span, .d-big .c-block > span, .d-big .v-ui-card span { font-size: 18px; }
+.d-chip { display: inline-block; font: 700 18px var(--display); padding: 8px 12px; border: 1px dashed #8b8b86; color: var(--ink); background: #000; }
+.d-lbl { font: 700 20px var(--display); text-transform: uppercase; letter-spacing: .06em; text-align: center; margin-top: 16px; }
+.d-k { font: 18px var(--mono); color: var(--muted); letter-spacing: .14em; text-transform: uppercase; }
+.d-k.pink { color: var(--accent); }
+/* Ventana del Host con el iframe aislado */
+.d-frame { position: relative; height: 100%; border: 2px dashed var(--accent); background: #000; padding: 18px 20px; }
+.d-frame .d-bar { height: 18px; border: 1px solid #3a3a37; background: #1a1a1a; margin-top: 16px; }
+.d-door { position: absolute; left: 50%; bottom: -22px; transform: translateX(-50%); white-space: nowrap; border: 2px solid var(--accent); background: #000; color: var(--accent); font: 700 20px var(--display); padding: 6px 16px; }
+/* Tubería vertical de estaciones */
+.d-pipe { display: grid; row-gap: 22px; }
+.d-st { position: relative; display: grid; grid-template-columns: 50px 250px 1fr; align-items: center; border: 2px solid #3a3a37; background: #050505; padding: 12px 20px; }
+.d-st + .d-st::before { content: ''; position: absolute; left: 28px; top: -24px; height: 22px; border-left: 2px solid #6b6b66; }
+.d-st .n { font: 18px var(--mono); color: var(--muted); }
+.d-st b { font: 700 22px/1.2 var(--display); text-transform: uppercase; }
+.d-st span { font: 19px/1.45 var(--mono); color: #d6d3d1; }
+.d-st.ok { border-color: #9be7b0; }
+.d-st.ok b { color: #9be7b0; }
+.d-st.pink { border-color: var(--accent); border-width: 3px; }
+.d-st.pink b { color: var(--accent); }
+/* Caja del sandbox con una sola puerta */
+.d-sbx { border: 4px solid #d6d3d1; background: #000; padding: 22px 26px; }
+.d-sbx > b { display: block; font: 700 30px var(--display); text-transform: uppercase; margin: 6px 0 14px; }
+.d-sbx > div { font: 20px/1.4 var(--display); color: #d6d3d1; padding: 9px 0; border-top: 1px solid var(--line); }
+.d-sbx > div .c-x { margin-right: 12px; }
+.d-gate { display: flex; align-items: center; }
+.d-gate > b { position: relative; margin-left: -40px; border: 3px solid var(--accent); background: #000; color: var(--accent); font: 700 20px var(--display); padding: 10px 14px; }
+.d-gate > i { flex: 1; border-top: 2px solid var(--accent); position: relative; }
+.d-gate > i::after { content: ''; position: absolute; right: 0; top: -7px; border: 6px solid transparent; border-left: 10px solid var(--accent); border-right: 0; }
+/* Ramas de una cuenta raíz */
+.d-pair { display: flex; flex-direction: column; align-items: stretch; }
+.d-pair .d-down { font: 700 26px var(--display); color: var(--muted); text-align: center; padding: 6px 0; }
+.d-wall { border: 2px dashed var(--accent); background: #000; padding: 10px 14px; text-align: center; font: 700 18px/1.3 var(--display); text-transform: uppercase; color: var(--accent); }
+/* Etiquetas sobre las líneas */
+.d-on { font: 18px var(--mono); color: var(--muted); background: #050505; padding: 2px 8px; letter-spacing: .06em; }
+.d-on.pink { color: var(--accent); }
+</style>
+</head>
+<body>
+<main class="deck" id="deck" data-chapter="01" data-prev="00-introduccion.html" data-next="02-entorno.html">
+
+  <!-- 1 · Portada: el capítulo, sus preguntas y el Triángulo de Hosts -->
+  <section class="slide d-big" data-title="Cómo funciona" style="--bgpos: 30% 60%;">
+    <div class="panel" style="left:110px; top:80px; width:640px; padding:44px 52px 48px;">
+      <div class="kicker">Capítulo 01</div>
+      <div class="title" style="font-size:60px;">Cómo funciona<br>una app de<br>Polkadot</div>
+    </div>
+
+    <div class="panel" style="left:110px; top:430px; width:640px; padding:30px 44px 30px;">
+      <div class="kicker">Al final vas a poder responder</div>
+      <div class="rows" style="margin-top:18px; --row:10px;">
+        <div class="row" style="font-size:24px; grid-template-columns:50px 1fr;"><span class="n">?</span><span class="t">¿Dónde vive una app sin servidor?</span></div>
+        <div class="row" style="font-size:24px; grid-template-columns:50px 1fr;"><span class="n">?</span><span class="t">¿Cómo firma sin ver tu llave?</span></div>
+        <div class="row" style="font-size:24px; grid-template-columns:50px 1fr;"><span class="n">?</span><span class="t">¿Por qué cada app te ve distinto?</span></div>
+        <div class="row hi" style="font-size:24px; grid-template-columns:50px 1fr;"><span class="n">?</span><span class="t">¿Quién paga si no tienes tokens?</span></div>
+      </div>
+    </div>
+
+    <svg class="wires" viewBox="0 0 1600 900" aria-hidden="true">
+      <path class="pink" d="M1060 330 L 960 470" stroke-dasharray="6 8"/>
+      <path class="pink" d="M1220 330 L 1335 470" stroke-dasharray="6 8"/>
+      <path class="pink" d="M1120 560 H 1180" stroke-dasharray="6 8"/>
+    </svg>
+
+    <div class="item" style="left:1040px; top:70px; width:200px;">
+      <div class="v-phone" style="height:290px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px;">
+        <img src="../img/polkadot-icon.svg" alt="" style="width:64px; height:64px;">
+        <span class="d-chip">tu-app.dot</span>
+      </div>
+      <div class="d-lbl">Polkadot App</div>
+    </div>
+    <div class="item v-laptop" style="left:800px; top:470px; width:320px;">
+      <div class="v-screen" style="height:150px; display:grid; place-items:center;"><span class="d-chip">tu-app.dot</span></div>
+      <div class="v-base"></div>
+      <div class="d-lbl">Polkadot Desktop</div>
+    </div>
+    <div class="item" style="left:1180px; top:470px; width:310px;">
+      <div class="v-win">
+        <div class="v-bar"><i></i><i></i><i></i><span>tu-app.dot.li</span></div>
+        <div style="height:134px; display:grid; place-items:center;"><span class="d-chip">tu-app.dot</span></div>
+      </div>
+      <div class="d-lbl">Polkadot Web</div>
+    </div>
+
+    <div class="tape" style="left:1300px; top:110px; transform:rotate(6deg);">SANDBOX</div>
+    <div class="tape pink" style="left:880px; top:735px; transform:rotate(-3deg);">CLIENTE LIGERO</div>
+  </section>
+
+  <!-- 2 · El Triángulo -->
+  <section class="slide plain" data-title="Una app, tres lugares">
+    <div class="item" style="left:110px; top:80px;">
+      <div class="h" style="font-size:64px;">Una app, tres lugares</div>
+    </div>
+
+    <svg class="wires" viewBox="0 0 1600 900" aria-hidden="true">
+      <path class="pink" d="M494 500 C 560 500, 600 470, 664 470" stroke-dasharray="6 8"/>
+      <path class="pink" d="M1106 500 C 1040 500, 1000 470, 936 470" stroke-dasharray="6 8"/>
+    </svg>
+
+    <div class="item" style="left:110px; top:390px;">
+      <div class="laptop"><div class="screen"><span class="app-chip">tu-app.dot</span></div><div class="base"></div></div>
+      <div class="label">Polkadot Desktop<small>abre tu app en la compu</small></div>
+    </div>
+    <div class="item" style="left:670px; top:260px;">
+      <div class="phone" style="width:260px; height:440px;"><img src="../img/polkadot-icon.svg" alt="Polkadot"></div>
+      <div class="label">Polkadot App<small>tu llave y tus firmas</small></div>
+    </div>
+    <div class="item" style="left:1110px; top:390px;">
+      <div class="browser"><div class="bar"><i></i><i></i><i></i><span>tu-app.dot.li</span></div><div class="body"><span class="app-chip">tu-app.dot</span></div></div>
+      <div class="label">Polkadot Web<small>en cualquier navegador</small></div>
+    </div>
+  </section>
+
+  <!-- 3 · Resolución DotNS: del nombre al iframe aislado -->
+  <section class="slide grid d-big" data-title="Resolución DotNS">
+    <div class="item" style="left:110px; top:70px;"><div class="h">Resolución DotNS</div></div>
+
+    <svg class="wires" viewBox="0 0 1600 900" aria-hidden="true">
+      <path d="M620 618 H 560" stroke-dasharray="6 8"/>
+      <path class="pink" d="M620 696 H 560"/>
+    </svg>
+
+    <div class="item" style="left:110px; top:200px; width:450px;">
+      <div class="v-win" style="height:524px; display:flex; flex-direction:column;">
+        <div class="v-bar"><i></i><i></i><i></i><span>tu-app.dot</span></div>
+        <div class="v-body" style="flex:1; padding:22px 26px 40px;">
+          <div class="d-frame">
+            <div class="d-k pink" style="text-transform:none; letter-spacing:.02em;">sandbox · tu-app.app.dot.li</div>
+            <div style="font:700 30px var(--display); text-transform:uppercase; margin-top:26px;">Tu app</div>
+            <div class="d-bar" style="width:86%;"></div>
+            <div class="d-bar" style="width:62%;"></div>
+            <div class="d-bar" style="width:74%;"></div>
+            <div class="v-ui-btn" style="width:190px; height:50px; margin-top:26px; font-size:18px;">Jugar</div>
+            <div class="d-door">TrUAPI ↕ Host</div>
+          </div>
+        </div>
+      </div>
+      <div class="v-cap">el Host: Desktop o dot.li</div>
+    </div>
+
+    <div class="item d-pipe" style="left:620px; top:200px; width:870px;">
+      <div class="d-st"><span class="n">01</span><b>Nombre</b><span>app.tu-app.dot · o tu-app.dot</span></div>
+      <div class="d-st"><span class="n">02</span><b>DotNS</b><span>contenthash · en la cadena</span></div>
+      <div class="d-st"><span class="n">03</span><b>CID</b><span>bafybei… · la huella</span></div>
+      <div class="d-st"><span class="n">04</span><b>Bulletin</b><span>bitswap_v1_get(cid) → CAR</span></div>
+      <div class="d-st ok"><span class="n">05</span><b>Verifica</b><span>hash(contenido) = CID</span></div>
+      <div class="d-st"><span class="n">06</span><b>iframe sandbox</b><span>con su propio origen</span></div>
+      <div class="d-st pink"><span class="n">07</span><b>TrUAPI</b><span>habla con el Host</span></div>
+    </div>
+  </section>
+
+  <!-- 4 · El sandbox: una sola puerta -->
+  <section class="slide d-big" data-title="El sandbox" style="--bgpos: 70% 30%;">
+    <div class="panel" style="left:110px; top:60px; width:760px; padding:34px 52px 38px;">
+      <div class="h">El sandbox</div>
+      <div class="lead" style="margin-top:16px;">Tu app corre aislada. Todo lo que necesita de fuera, se lo pide al Host.</div>
+    </div>
+
+    <div class="panel" style="left:920px; top:60px; width:570px; padding:30px 40px 32px;">
+      <div class="c-head">Permisos</div>
+      <div class="c-ord"><i>1</i>Se declaran en el manifest</div>
+      <div class="c-ord"><i>2</i>Desktop los pide al abrir la app</div>
+      <div class="c-ord"><i>3</i>Si los niega: <span style="font-family:var(--mono); color:var(--accent); margin-left:8px;">PermissionDenied</span></div>
+    </div>
+
+    <div class="panel" style="left:110px; top:330px; width:1380px; padding:36px 44px; display:grid; grid-template-columns:460px 150px 220px 90px 1fr; align-items:center;">
+      <div class="d-sbx">
+        <div class="d-k pink" style="border:0; padding:0;">sandbox</div>
+        <b>Tu app</b>
+        <div><span class="c-x">✘</span><span style="font-family:var(--mono);">fetch</span> / <span style="font-family:var(--mono);">WebSocket</span> directos</div>
+        <div><span class="c-x">✘</span>tu llave privada</div>
+        <div><span class="c-x">✘</span>datos de otra app</div>
+      </div>
+      <div class="d-gate"><b>TrUAPI</b><i></i></div>
+      <div class="c-box" style="padding:20px 22px;"><b style="font-size:28px;">Host</b><span>aplica los permisos</span></div>
+      <svg width="90" height="320" viewBox="0 0 90 320" aria-hidden="true" style="display:block;">
+        <path d="M0 160 C 45 160, 45 50, 90 50 M0 160 H 90 M0 160 C 45 160, 45 270, 90 270" stroke="#6b6b66" stroke-width="2" fill="none"/>
+      </svg>
+      <div style="display:flex; flex-direction:column; gap:18px;">
+        <div class="c-box"><b>Red</b><span>solo las URLs declaradas</span></div>
+        <div class="c-box"><b>Cadenas</b><span>lecturas y transacciones</span></div>
+        <div class="c-box pink"><b>Tu teléfono</b><span>firmas</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · Identidad derivada + personhood -->
+  <section class="slide plain d-big" data-title="Un tú distinto en cada app">
+    <div class="item" style="left:110px; top:70px;"><div class="h">Un tú distinto<br>en cada app</div></div>
+
+    <svg class="wires" viewBox="0 0 1600 900" aria-hidden="true">
+      <path d="M800 430 C 800 480, 425 470, 425 520"/>
+      <path d="M800 430 C 800 480, 1175 470, 1175 520"/>
+      <path class="pink" d="M800 540 V 810" stroke-dasharray="6 8"/>
+    </svg>
+
+    <div class="item" style="left:690px; top:80px; width:220px;">
+      <div class="v-phone" style="height:350px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+        <img src="../img/polkadot-icon.svg" alt="" style="width:60px; height:60px;">
+        <b style="font:700 20px var(--display); text-transform:uppercase; margin-top:18px;">Polkadot App</b>
+        <span style="font:18px var(--mono); color:var(--muted); margin-top:6px;">tu cuenta raíz</span>
+        <span class="v-tag" style="margin-top:18px;">personhood</span>
+      </div>
+    </div>
+
+    <div class="item" style="left:970px; top:150px; width:520px;">
+      <div class="lead" style="color:var(--ink);">Una persona, sin revelar quién.</div>
+      <div class="lead muted" style="font-size:22px; margin-top:16px;">Ligarlas requiere un permiso que tú apruebas.</div>
+    </div>
+
+    <div class="item d-pair" style="left:210px; top:520px; width:430px;">
+      <div class="c-box"><b style="font-family:var(--mono); text-transform:none;">app-a.dot</b><span>te ve como</span></div>
+      <div class="d-down">↓</div>
+      <div class="c-box"><b>Cuenta A</b><span>5Gx3…9kQ</span></div>
+    </div>
+    <div class="item d-wall" style="left:720px; top:620px; width:160px;"><span class="c-x">✘</span> no pueden<br>ligarlas</div>
+    <div class="item d-pair" style="left:960px; top:520px; width:430px;">
+      <div class="c-box"><b style="font-family:var(--mono); text-transform:none;">app-b.dot</b><span>te ve como</span></div>
+      <div class="d-down">↓</div>
+      <div class="c-box"><b>Cuenta B</b><span>5Fh8…2mA</span></div>
+    </div>
+  </section>
+
+  <!-- 6 · Firmas + quién paga -->
+  <section class="slide grid d-big" data-title="Así viaja una firma">
+    <div class="item" style="left:110px; top:70px;"><div class="h">Así viaja una firma</div></div>
+    <div class="item lead muted" style="left:110px; top:165px; width:1380px; font-size:22px;">Cada transacción se aprueba en tu teléfono, aunque la app tenga <span style="font-family:var(--mono);">ChainSubmit</span>.</div>
+
+    <svg class="wires" viewBox="0 0 1600 900" aria-hidden="true">
+      <path d="M432 380 H 498 M488 374 L 498 380 L 488 386"/>
+      <path d="M762 380 H 838 M828 374 L 838 380 L 828 386"/>
+      <path class="pink" d="M1122 380 H 1198 M1188 374 L 1198 380 L 1188 386"/>
+    </svg>
+
+    <div class="item" style="left:110px; top:280px; width:320px;">
+      <div class="v-win">
+        <div class="v-bar"><i></i><i></i><i></i><span>tu app · sandbox</span></div>
+        <div class="v-body" style="padding:28px 24px;">
+          <div class="d-k">pide</div>
+          <div class="code" style="font-size:22px; margin-top:8px;"><span class="fn">signPayload</span>(tx)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="item c-box" style="left:500px; top:305px; width:260px; padding:20px 22px;"><b style="font-size:26px;">Host</b><span>la pasa, sin tu llave</span></div>
+
+    <div class="item" style="left:840px; top:230px; width:280px;">
+      <div class="v-phone" style="height:360px; border-color:var(--accent);">
+        <div class="d-k" style="text-align:center;">Polkadot App</div>
+        <div class="v-ui-card" style="margin-top:16px;">
+          <b style="font-size:20px;">Firmar transacción</b>
+          <span>tu-app.dot</span>
+          <span>signPayload(tx)</span>
+        </div>
+        <div style="display:flex; gap:12px; margin-top:22px;">
+          <div class="v-ui-btn" style="flex:1; height:52px; font-size:18px;">Rechazar</div>
+          <div class="v-ui-btn" style="flex:1; height:52px; font-size:18px; background:var(--accent); border-color:var(--accent); color:#000;">Aprobar</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="item c-block" style="left:1200px; top:310px; width:290px;"><span class="n">la cadena</span><b>tx firmada</b><span>la recibe y la incluye</span></div>
+
+    <div class="item" style="left:110px; top:675px; width:1380px; display:grid; grid-template-columns:230px 1fr 1fr 1fr; column-gap:24px; align-items:center;">
+      <div class="d-k pink">Quién paga</div>
+      <div class="c-box"><b>Gas / PGAS</b><span>lo cubre el Host</span></div>
+      <div class="c-box"><b>Depósitos</b><span>PAS</span></div>
+      <div class="c-box"><b>Archivos</b><span>cupo de Bulletin</span></div>
+    </div>
+  </section>
+
+  <!-- 7 · El mapa -->
+  <section class="slide black d-big" data-title="Todo junto">
+    <div class="item" style="left:110px; top:70px;"><div class="h">Todo junto</div></div>
+
+    <svg class="wires" viewBox="0 0 1600 900" aria-hidden="true">
+      <path d="M452 430 H 618 M462 424 L 452 430 L 462 436 M608 424 L 618 430 L 608 436"/>
+      <path d="M902 430 H 1148 M912 424 L 902 430 L 912 436 M1138 424 L 1148 430 L 1138 436"/>
+      <path class="pink" d="M760 522 V 628 M754 532 L 760 522 L 766 532 M754 618 L 760 628 L 766 618"/>
+    </svg>
+
+    <div class="item" style="left:110px; top:320px; width:340px;">
+      <div class="v-win">
+        <div class="v-bar"><i></i><i></i><i></i><span>tu-app.dot</span></div>
+        <div class="v-body">
+          <b style="display:block; font:700 30px var(--display); text-transform:uppercase;">Tu app</b>
+          <div style="font:19px/1.7 var(--mono); color:#d6d3d1; margin-top:10px;">sandbox<br>tu-app.dot<br>Product SDK</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="item d-on" style="left:488px; top:392px;">TrUAPI</div>
+
+    <div class="item c-box" style="left:620px; top:340px; width:280px; padding:22px 26px;">
+      <b style="font-size:30px;">Host</b>
+      <span>Desktop · dot.li</span>
+      <span>TrUAPI</span>
+    </div>
+
+    <div class="item d-on" style="left:955px; top:392px;">lecturas / tx</div>
+
+    <div class="item" style="left:1150px; top:220px; width:340px;">
+      <div class="d-k">Cadenas</div>
+      <div style="display:flex; flex-direction:column; margin-top:12px;">
+        <div class="c-block"><b style="margin:0;">Asset Hub</b><span>los contratos</span></div>
+        <div style="height:18px; border-left:2px solid #6b6b66; margin-left:30px;"></div>
+        <div class="c-block"><b style="margin:0;">Bulletin</b><span>los archivos de tu app</span></div>
+        <div style="height:18px; border-left:2px solid #6b6b66; margin-left:30px;"></div>
+        <div class="c-block"><b style="margin:0;">DotNS</b><span>los nombres .dot</span></div>
+        <div style="height:18px; border-left:2px solid #6b6b66; margin-left:30px;"></div>
+        <div class="c-block pink"><b style="margin:0;">People</b><span>identidad</span></div>
+      </div>
+    </div>
+
+    <div class="item d-on pink" style="left:784px; top:560px;">firmas</div>
+
+    <div class="item" style="left:695px; top:630px; width:430px; display:flex; align-items:center; gap:26px;">
+      <div class="v-phone c-ph" style="border-color:var(--accent); flex:none;"><b>App</b></div>
+      <div>
+        <b style="display:block; font:700 28px var(--display); text-transform:uppercase; color:var(--accent);">Tu teléfono</b>
+        <span style="display:block; font:19px/1.5 var(--mono); color:var(--muted); margin-top:6px;">Polkadot App · tu llave<br>personhood</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="progress" id="progress"></div>
+  <footer class="foot">
+    <span id="where">01</span>
+    <a href="../contenido/01-como-funciona-polkadot.md">Guía: contenido/01-como-funciona-polkadot.md</a>
+    <span><span id="count">01 / 01</span></span>
+  </footer>
+</main>
+<script src="assets/deck.js"></script>
+</body>
+</html>

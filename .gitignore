@@ -1,0 +1,15 @@
+node_modules/
+dist/
+
+# Secretos: nunca subas frases, llaves ni archivos .env
+.env
+.env.*
+*.key
+*.pem
+.deploy/
+
+# Archivos de trabajo locales
+.agents/
+*.log
+.DS_Store
+Thumbs.db

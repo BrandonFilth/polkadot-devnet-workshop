@@ -1,0 +1,800 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>04 · Programar con IA (vibe coding) — Polkadot App Hackatón</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/deck.css">
+<style>
+/* Dispositivos y diagramas planos de este capítulo (prefijo v-, sin glow). */
+.v-win { border: 2px solid #3a3a37; background: #0b0b0b; }
+.v-win .v-bar { height: 34px; border-bottom: 2px solid #3a3a37; display: flex; align-items: center; gap: 8px; padding: 0 14px; }
+.v-win .v-bar i { width: 10px; height: 10px; border-radius: 50%; background: #3a3a37; }
+.v-win .v-bar span { margin-left: 10px; font: 14px var(--mono); color: var(--muted); letter-spacing: .06em; }
+.v-win .v-body { padding: 22px 26px; }
+
+.v-screen { border: 2px solid #d6d3d1; background: #000; padding: 12px; }
+.v-laptop .v-screen { border-radius: 12px 12px 0 0; margin: 0 30px; }
+.v-laptop .v-base { height: 18px; border: 2px solid #d6d3d1; border-radius: 0 0 14px 14px; background: #0b0b0b; position: relative; }
+.v-laptop .v-base::after { content: ''; position: absolute; left: 50%; top: 0; width: 120px; height: 6px; margin-left: -60px; border: 2px solid #d6d3d1; border-top: 0; border-radius: 0 0 6px 6px; }
+.v-monitor .v-screen { border-radius: 10px; }
+.v-monitor .v-neck { width: 60px; height: 40px; margin: 0 auto; border-left: 2px solid #d6d3d1; border-right: 2px solid #d6d3d1; }
+.v-monitor .v-foot { width: 260px; height: 14px; margin: 0 auto; border: 2px solid #d6d3d1; border-radius: 6px; }
+.v-cap { font: 18px var(--mono); color: var(--muted); text-align: center; margin-top: 12px; letter-spacing: .04em; }
+.v-tablet { border: 2px solid #d6d3d1; border-radius: 28px; padding: 36px 18px 18px; background: #050505; position: relative; }
+.v-tablet::before { content: ''; position: absolute; top: 14px; left: 50%; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%; background: #3a3a37; }
+.v-phone { border: 2px solid #d6d3d1; border-radius: 40px; padding: 44px 16px 28px; background: #050505; position: relative; }
+.v-phone::before { content: ''; position: absolute; top: 20px; left: 50%; width: 80px; height: 8px; margin-left: -40px; border-radius: 4px; background: #2a2a2a; }
+
+/* Chat */
+.v-chat { display: flex; flex-direction: column; gap: 12px; }
+.v-who { font: 13px var(--mono); letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+.v-who.r { align-self: flex-end; }
+.v-msg { border: 1px solid #3a3a37; background: #050505; padding: 12px 16px; font: 20px/1.45 var(--display); color: #d6d3d1; }
+.v-msg.me { align-self: flex-end; border-color: var(--accent); }
+.v-msg.ai { align-self: flex-start; font: 18px/1.7 var(--mono); }
+.v-msg .code { font-size: 19px; white-space: normal; }
+.v-att { border: 1px dashed #6b6b66; padding: 7px 12px; font: 15px var(--mono); color: #d6d3d1; }
+.v-att::before { content: '+ '; color: var(--muted); }
+
+/* Ciclo */
+.v-ring { position: absolute; border: 2px dashed #3a3a37; border-radius: 50%; }
+.v-node { position: absolute; width: 170px; height: 84px; border: 2px solid #d6d3d1; background: #050505; padding: 10px 14px; }
+.v-node.pink { border-color: var(--accent); }
+.v-node .n { font: 13px var(--mono); color: var(--muted); letter-spacing: .2em; }
+.v-node b { display: block; font: 700 21px var(--display); text-transform: uppercase; margin-top: 2px; }
+.v-node.pink b { color: var(--accent); }
+.v-node span { display: block; font: 15px var(--mono); color: var(--muted); }
+
+/* Línea de tiempo */
+.v-time { display: grid; grid-template-columns: repeat(4, 1fr); position: relative; }
+.v-time::before { content: ''; position: absolute; left: 0; right: 0; top: 13px; border-top: 2px solid #3a3a37; }
+.v-step { position: relative; padding-right: 24px; }
+.v-dot { width: 28px; height: 28px; border-radius: 50%; background: #9be7b0; border: 2px solid #9be7b0; }
+.v-dot.bad { background: var(--accent); border-color: var(--accent); }
+.v-dot.back { background: #050505; border: 2px dashed #d6d3d1; }
+.v-step b { display: block; font: 700 24px var(--display); text-transform: uppercase; margin-top: 20px; }
+.v-step span { display: block; font: 18px var(--mono); color: var(--muted); margin-top: 8px; }
+
+/* Etiqueta pequeña */
+.v-axis { font: 15px var(--mono); color: var(--muted); letter-spacing: .14em; text-transform: uppercase; }
+
+/* Interruptor */
+.v-set { border: 1px solid #2a2a2a; background: #000; padding: 24px 28px; }
+.v-set.on { border-color: var(--accent); }
+.v-set .v-row { display: flex; align-items: center; gap: 18px; }
+.v-set .v-row b { font: 700 24px var(--display); text-transform: uppercase; }
+.v-set.on .v-row b { color: var(--accent); }
+.v-set p { font: 18px/1.5 var(--mono); color: var(--muted); margin-top: 14px; }
+.v-toggle { width: 64px; height: 32px; border: 2px solid #6b6b66; border-radius: 16px; position: relative; flex: none; }
+.v-toggle::after { content: ''; position: absolute; top: 4px; left: 4px; width: 20px; height: 20px; border-radius: 50%; background: #6b6b66; }
+.v-toggle.on { border-color: var(--accent); }
+.v-toggle.on::after { left: 36px; background: var(--accent); }
+.v-set.mini { padding: 12px 20px; }
+.v-set.mini .v-row b { font-size: 20px; }
+.v-set.mini p { margin: 4px 0 0 82px; }
+
+/* Ciclo en fila del agente */
+.v-cyc { display: grid; grid-template-columns: 1fr 36px 1fr 36px 1fr 36px 1fr 36px 1fr; align-items: center; }
+.v-cyc .v-arrow { font: 700 22px var(--display); color: var(--muted); text-align: center; }
+.v-cyc .box { border: 2px solid #d6d3d1; background: #050505; padding: 10px 12px; text-align: center; }
+.v-cyc .box.pink { border-color: var(--accent); }
+.v-cyc .box .n { font: 18px var(--mono); color: var(--muted); }
+.v-cyc .box b { display: block; font: 700 20px var(--display); text-transform: uppercase; margin-top: 2px; }
+.v-cyc .box.pink b { color: var(--accent); }
+
+/* Editor y terminal dentro de la pantalla */
+.v-split { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.v-split .v-body { padding: 16px 18px; font: 18px/1.7 var(--mono); color: #d6d3d1; }
+.v-file { padding: 0 8px; }
+.v-file.hi { border-left: 3px solid var(--accent); color: var(--accent); }
+
+/* git diff --stat con marcas */
+.v-stat > div { display: grid; grid-template-columns: 30px 1fr 120px 150px; column-gap: 12px; align-items: baseline; font: 18px/1.5 var(--mono); padding: 7px 0; border-bottom: 1px solid #1c1c1c; color: #d6d3d1; }
+.v-stat .k { font-weight: 700; }
+.v-stat .ok { color: #9be7b0; }
+.v-stat .bad { color: var(--accent); }
+.v-stat .why { grid-column: 2 / -1; font-size: 18px; color: var(--muted); }
+
+/* Portapapeles */
+.v-clip { border: 2px solid #d6d3d1; border-radius: 14px; background: #0b0b0b; padding: 64px 56px 36px; position: relative; }
+.v-clip-top { position: absolute; top: 0; left: 50%; width: 220px; height: 34px; margin-left: -110px; border: 2px solid #d6d3d1; border-top: 0; border-radius: 0 0 10px 10px; background: #000; }
+.v-checks { display: grid; grid-template-columns: 1fr 1fr; column-gap: 60px; }
+.v-checks div { display: grid; grid-template-columns: 44px 1fr; align-items: center; font: 24px var(--display); padding: 14px 0; border-bottom: 1px solid #2a2a2a; }
+.v-box { width: 22px; height: 22px; border: 2px solid var(--accent); }
+
+/* Diff */
+.v-diff { font: 19px/1.7 var(--mono); white-space: pre; color: #d6d3d1; }
+.v-diff .add { color: #9be7b0; }
+.v-diff .del { color: var(--accent); }
+.v-diff .ctx { color: var(--muted); }
+
+/* Tarjetas */
+.v-cards { display: grid; gap: 20px; }
+.v-card { border: 1px solid #2a2a2a; background: #000; padding: 14px 20px; }
+.v-card .n { font: 14px var(--mono); color: var(--muted); letter-spacing: .2em; }
+.v-card b { display: block; font: 700 20px var(--display); text-transform: uppercase; margin-top: 6px; }
+.v-card span { display: block; font: 15px/1.35 var(--mono); color: var(--muted); margin-top: 4px; }
+.v-card.pink { border-color: var(--accent); }
+.v-card.pink b { color: var(--accent); }
+.v-err { border: 1px solid #2a2a2a; border-left: 4px solid var(--accent); background: #000; padding: 26px 28px; }
+.v-err .x { font: 700 24px var(--display); }
+.v-err .x::before { content: '✘  '; color: var(--accent); }
+.v-err .fix { font: 18px/1.5 var(--mono); color: #d6d3d1; margin-top: 18px; padding-top: 16px; border-top: 1px dashed #3a3a37; }
+.v-err .fix::before { content: '→ '; color: var(--muted); }
+.v-err .code { font-size: 18px; white-space: normal; }
+
+/* Piezas de interfaz dentro de una pantalla */
+.v-ui { position: relative; }
+.v-ui > * { position: absolute; }
+.v-ui-card { border: 1px solid #3a3a37; background: #050505; padding: 14px; }
+.v-ui-card .in { border: 1px dashed #6b6b66; padding: 8px 12px; }
+.v-ui-card b { display: block; font: 700 22px var(--display); }
+.v-ui-card span { display: block; font: 16px var(--mono); color: var(--muted); margin-top: 4px; }
+.v-ui-btn { border: 1px solid #3a3a37; background: #1a1a1a; color: #6b6b66; font: 700 17px var(--display); text-transform: uppercase; display: grid; place-items: center; }
+.v-ui-toast { border: 1px solid #9be7b0; background: #050505; color: #9be7b0; font: 17px var(--mono); display: grid; place-items: center; }
+.v-tag { font: 14px var(--mono); color: var(--accent); border: 1px solid var(--accent); background: #000; padding: 1px 8px; }
+.v-gap { border-top: 2px dashed var(--accent); }
+
+/* Pasos verticales */
+.v-steps { position: relative; }
+.v-steps::before { content: ''; position: absolute; left: 25px; top: 40px; bottom: 40px; border-left: 2px solid #3a3a37; }
+.v-st { display: grid; grid-template-columns: 52px 1fr; column-gap: 26px; align-items: center; padding: 18px 0; position: relative; }
+.v-st .c { width: 52px; height: 52px; border-radius: 50%; border: 2px solid #d6d3d1; background: #050505; display: grid; place-items: center; font: 700 18px var(--display); }
+.v-st.pink .c { border-color: var(--accent); color: var(--accent); }
+.v-st b { display: block; font: 700 25px var(--display); text-transform: uppercase; }
+.v-st.pink b { color: var(--accent); }
+.v-st span { display: block; font: 19px var(--mono); color: var(--muted); margin-top: 6px; }
+
+/* Casos Dado / Cuando / Entonces */
+.v-gwt { display: grid; grid-template-columns: 290px 40px 250px 40px 1fr; row-gap: 14px; align-items: center; }
+.v-gwt .c { border: 1px solid #3a3a37; background: #000; padding: 14px 18px; font: 22px var(--display); }
+.v-gwt .a { font: 700 24px var(--display); color: var(--muted); text-align: center; }
+.v-gwt .code { font-size: 20px; color: var(--accent); white-space: normal; }
+
+/* Pasos verticales compactos (repaso en dos columnas) */
+.v-steps.mini { position: absolute; }
+.v-steps.mini::before { left: 21px; top: 30px; bottom: 30px; }
+.v-steps.mini .v-st { padding: 8px 0; column-gap: 20px; grid-template-columns: 44px 1fr; }
+.v-steps.mini .v-st .c { width: 44px; height: 44px; font-size: 16px; }
+.v-steps.mini .v-st b { font-size: 21px; }
+.v-steps.mini .v-st span { font-size: 18px; margin-top: 2px; }
+
+/* Carga progresiva: etapas en fila */
+.v-flow { display: grid; grid-template-columns: 1fr 30px 1fr 30px 1fr 30px 1.25fr; }
+.v-flow .v-arrow { font: 700 24px var(--display); color: var(--muted); display: grid; place-items: center; }
+.v-stage { border: 2px solid #d6d3d1; background: #050505; padding: 16px 20px; min-height: 190px; }
+.v-stage.pink { border-color: var(--accent); }
+.v-stage .n { font: 18px var(--mono); color: var(--muted); letter-spacing: .2em; }
+.v-stage b { display: block; font: 700 21px/1.2 var(--display); text-transform: uppercase; margin-top: 6px; }
+.v-stage.pink b { color: var(--accent); }
+.v-stage span { display: block; font: 19px/1.45 var(--mono); color: #d6d3d1; margin-top: 10px; }
+
+/* Dónde vive: cajas en línea */
+.v-where { display: flex; align-items: center; gap: 14px; }
+.v-where .v-arrow { font: 700 24px var(--display); color: var(--muted); }
+.v-loc { flex: none; border: 2px solid #3a3a37; background: #050505; padding: 10px 16px; }
+.v-loc.pink { border-color: var(--accent); }
+.v-loc b { display: block; font: 500 18px var(--mono); color: var(--ink); }
+.v-loc.pink b { color: var(--accent); }
+.v-loc span { display: block; font: 16px var(--mono); color: var(--muted); margin-top: 4px; }
+
+/* Bloques numerados de un panel */
+.v-blk { padding: 16px 0; border-top: 1px solid #2a2a2a; }
+.v-blk b { display: block; font: 700 23px var(--display); text-transform: uppercase; }
+.v-blk b i { font-style: normal; color: var(--accent); margin-right: 12px; }
+.v-blk p { font: 18px/1.45 var(--display); color: #d6d3d1; margin-top: 8px; }
+
+.slide *, .slide *::before, .slide *::after { font-variant-ligatures: none !important; }
+</style>
+</head>
+<body>
+<main class="deck" id="deck" data-chapter="04" data-prev="03-smart-contracts.html">
+
+  <!-- 1 · Portada -->
+  <section class="slide" data-title="Programar con IA (vibe coding)" style="--bgpos: 70% 30%;">
+    <div class="panel" style="left:110px; top:90px; width:900px; padding:44px 60px 44px;">
+      <div class="kicker">Capítulo 04</div>
+      <div class="title" style="font-size:72px;">Programar con IA</div>
+      <div class="title" style="font-size:40px; margin-top:8px; color:var(--accent); text-shadow:none;">(vibe coding)</div>
+      <div class="sub">Cómo pedir, qué contexto dar y qué revisar.</div>
+    </div>
+    <div class="panel" style="left:640px; top:540px; width:850px; padding:30px 48px;">
+      <div class="code"><span class="kw">Objetivo:</span> una tabla con los 10 mejores puntajes.
+<span class="kw">Contexto:</span> la ABI en src/contract/leaderboard.abi.json.
+<span class="kw">Restricciones:</span> no cambies el contrato.
+<span class="kw">Comprobación:</span> <span class="ty">900, 300, 40, 15</span></div>
+    </div>
+    <div class="tape" style="right:70px; top:140px; transform:rotate(6deg);">AGENTS.MD</div>
+    <div class="tape" style="right:60px; top:420px; transform:rotate(-4deg);">SKILLS</div>
+    <div class="tape pink" style="left:120px; top:620px; transform:rotate(-5deg);">SPECS</div>
+  </section>
+
+  <!-- 2 · Qué es vibe coding -->
+  <section class="slide plain" data-title="Qué es vibe coding">
+    <div class="item" style="left:110px; top:80px;"><div class="h">Qué es vibe coding</div></div>
+    <div class="item" style="left:110px; top:200px; width:680px;">
+      <div class="lead">Describes lo que quieres en lenguaje natural. El agente escribe, edita y corre el código. Tú revisas, pruebas y decides qué se queda.</div>
+      <div style="display:flex; gap:22px; margin-top:34px;">
+        <div class="chip" style="box-shadow:none; border-color:#3a3a37;"><b>A mano</b><span>escribes tú</span></div>
+        <div class="chip" style="box-shadow:none; border-color:var(--accent);"><b class="pink">Con IA</b><span>describes y revisas</span></div>
+      </div>
+    </div>
+    <div class="item lead" style="left:110px; top:610px; width:680px;">Tú eres <span class="pink">responsable</span> de lo que se publica. En la cadena no hay vuelta atrás.</div>
+    <div class="item" style="left:860px; top:190px; width:560px; height:520px;">
+      <div class="v-ring" style="left:90px; top:90px; width:380px; height:380px;"></div>
+      <div class="v-node" style="left:195px; top:48px;"><div class="n">01</div><b>Describes</b><span>tú</span></div>
+      <div class="v-node pink" style="left:376px; top:179px;"><div class="n">02</div><b>Genera</b><span>el agente</span></div>
+      <div class="v-node" style="left:307px; top:392px;"><div class="n">03</div><b>Revisas</b><span>el diff</span></div>
+      <div class="v-node" style="left:83px; top:392px;"><div class="n">04</div><b>Pruebas</b><span>en Desktop</span></div>
+      <div class="v-node" style="left:14px; top:179px;"><div class="n">05</div><b>Commit</b><span>si funciona</span></div>
+      <div class="v-axis" style="position:absolute; left:0; right:0; top:270px; text-align:center;">↻ otra vuelta</div>
+    </div>
+  </section>
+
+  <!-- 3 · Un ejemplo -->
+  <section class="slide grid" data-title="Un ejemplo">
+    <div class="item" style="left:110px; top:80px;"><div class="h">Un ejemplo</div></div>
+    <div class="item v-laptop" style="left:110px; top:190px; width:880px;">
+      <div class="v-screen">
+        <div class="v-win">
+          <div class="v-bar"><i></i><i></i><i></i><span>Agente</span></div>
+          <div class="v-body v-chat">
+            <div class="v-who r">Tú</div>
+            <div class="v-msg me" style="max-width:640px;">Agrega un botón «Guardar récord» que llame submitScore del contrato Leaderboard. Simula con .query() antes de pedir la firma.</div>
+            <div class="v-who">Agente</div>
+            <div class="v-msg ai"><span class="muted">Leo</span>    src/contract/leaderboard.abi.json<br><span class="muted">Edito</span>  src/components/FinDePartida.ts<br><span class="muted">Corro</span>  pnpm build · <span style="color:#9be7b0;">✔</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="v-base"></div>
+    </div>
+    <div class="panel" style="left:1030px; top:190px; width:460px; padding:32px 36px; border-color:var(--accent);">
+      <div class="kicker pink">Tú revisas</div>
+      <div class="marks" style="margin-top:14px;">
+        <div class="si" style="font-size:22px;"><span>git diff: solo los archivos que modificó</span></div>
+        <div class="si" style="font-size:22px;"><span>Pruebas manuales<span class="muted" style="display:block; font:19px/1.4 var(--mono); margin-top:6px;">abre la app y prueba el flujo a mano</span></span></div>
+        <div class="si" style="font-size:22px;"><span>Pruebas automatizadas<span class="muted" style="display:block; font:19px/1.4 var(--mono); margin-top:6px;">los tests pasan (pnpm test)</span></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · Anatomía de un prompt -->
+  <section class="slide" data-title="Anatomía de un prompt" style="--bgpos: 20% 40%;">
+    <div class="panel" style="left:110px; top:50px; width:900px; padding:34px 52px 38px;"><div class="h">Anatomía de un prompt</div></div>
+    <div class="panel" style="left:110px; top:220px; width:1380px; padding:34px 52px;">
+      <div class="annot" style="grid-template-columns:210px 1fr; row-gap:20px;">
+        <span class="tag">Objetivo</span>
+        <div class="code" style="font-size:20px;">Muestra una tabla con los 10 mejores puntajes del contrato Leaderboard.</div>
+        <span class="tag">Contexto</span>
+        <div class="code" style="font-size:20px;">La ABI está en src/contract/leaderboard.abi.json.
+Usa <span class="fn">getScores</span>(offset, limit) para leer a los jugadores.</div>
+        <span class="tag">Restricciones</span>
+        <div class="code" style="font-size:20px;">No cambies el contrato ni package.json. Usa solo funciones de esa ABI.</div>
+        <span class="tag">Formato</span>
+        <div class="code" style="font-size:20px;">Crea src/components/Ranking.ts y dime qué otros archivos tocaste.</div>
+        <span class="tag">Comprobación</span>
+        <div class="code" style="font-size:20px;">Con puntajes 40, 900, 15 y 300, la tabla muestra <span class="ty">900, 300, 40, 15</span>.</div>
+      </div>
+    </div>
+    <div class="panel" style="left:890px; top:660px; width:600px; padding:24px 36px;">
+      <div class="lead muted" style="font-size:22px;">Si falta una parte, la IA la rellena adivinando.</div>
+    </div>
+  </section>
+
+  <!-- 5 · Prompt malo vs bueno -->
+  <section class="slide plain" data-title="Prompt malo vs bueno">
+    <div class="item" style="left:110px; top:80px;"><div class="h">Prompt malo vs bueno</div></div>
+    <div class="item" style="left:110px; top:200px; width:1380px; display:grid; grid-template-columns:420px 80px 1fr; row-gap:26px; align-items:center;">
+      <div class="kicker">Malo</div><div></div><div class="kicker pink">Bueno</div>
+      <div class="v-msg"><span class="pink">✘</span>  Haz un leaderboard.</div>
+      <div class="v-axis" style="text-align:center; font-size:26px;">→</div>
+      <div class="v-msg me" style="font-size:22px;">Lee con <span class="code">getScores</span> de la ABI y simula con <span class="code">.query()</span> antes de <span class="code">.tx()</span>.</div>
+      <div class="v-msg"><span class="pink">✘</span>  Arregla el error.</div>
+      <div class="v-axis" style="text-align:center; font-size:26px;">→</div>
+      <div class="v-msg me" style="font-size:22px;">Pega el error completo, di cuándo pasa y pide la causa antes del código.</div>
+      <div class="v-msg"><span class="pink">✘</span>  Hazlo bonito.</div>
+      <div class="v-axis" style="text-align:center; font-size:26px;">→</div>
+      <div class="v-msg me" style="font-size:22px;"><span class="code">gap</span> de 16 px entre las cards y botón <span class="code">disabled</span> al firmar.</div>
+    </div>
+    <div class="item lead muted" style="left:110px; top:690px; width:1380px; font-size:22px;">Qué cambió: contexto concreto, el error textual y el nombre de lo que se ve.</div>
+  </section>
+
+  <!-- 6 · Pide con nombres -->
+  <section class="slide grid" data-title="Pide con nombres">
+    <div class="item" style="left:110px; top:70px;"><div class="h">Pide con nombres</div></div>
+    <div class="item lead" style="left:110px; top:160px; width:1380px;">Las partes de una interfaz tienen nombre, casi siempre en inglés.</div>
+    <div class="item v-monitor" style="left:110px; top:240px; width:760px;">
+      <div class="v-screen">
+        <div class="v-win">
+          <div class="v-bar"><i></i><i></i><i></i><span>tu-app.dot</span></div>
+          <div class="v-ui" style="height:340px;">
+            <span class="v-tag" style="left:24px; top:14px;">card</span>
+            <div class="v-ui-card" style="left:24px; top:46px; width:300px;"><div class="in"><b>ana</b><span>900</span></div></div>
+            <span class="v-tag" style="left:200px; top:36px;">padding</span>
+            <div class="v-gap" style="left:324px; top:100px; width:56px;"></div>
+            <span class="v-tag" style="left:331px; top:112px;">gap</span>
+            <div class="v-ui-card" style="left:380px; top:46px; width:300px;"><div class="in" style="border-color:transparent;"><b>0x3f…a1</b><span>300</span></div></div>
+            <div class="v-ui-btn" style="left:24px; top:196px; width:300px; height:54px;">Guardar récord</div>
+            <span class="v-tag" style="left:340px; top:210px;">disabled</span>
+            <div class="v-ui-toast" style="left:424px; top:268px; width:280px; height:50px;">✔ Récord guardado</div>
+            <span class="v-tag" style="left:350px; top:282px;">toast</span>
+          </div>
+        </div>
+      </div>
+      <div class="v-neck"></div>
+      <div class="v-foot"></div>
+    </div>
+    <div class="item" style="left:920px; top:250px; width:570px;">
+      <div class="rows" style="margin-top:0; --row:14px;">
+        <div class="row" style="grid-template-columns:160px 1fr; font-size:21px;"><span class="code" style="font-size:20px; color:var(--accent);">padding</span><span class="t">Dale 12 px de padding al botón.</span></div>
+        <div class="row" style="grid-template-columns:160px 1fr; font-size:21px;"><span class="code" style="font-size:20px; color:var(--accent);">gap</span><span class="t">gap de 16 px entre las cards.</span></div>
+        <div class="row" style="grid-template-columns:160px 1fr; font-size:21px;"><span class="code" style="font-size:20px; color:var(--accent);">card</span><span class="t">Muestra cada jugador en una card.</span></div>
+        <div class="row" style="grid-template-columns:160px 1fr; font-size:21px;"><span class="code" style="font-size:20px; color:var(--accent);">toast</span><span class="t">Un toast al guardar el puntaje.</span></div>
+        <div class="row" style="grid-template-columns:160px 1fr; font-size:21px;"><span class="code" style="font-size:20px; color:var(--accent);">disabled</span><span class="t">Botón disabled mientras se firma.</span></div>
+      </div>
+    </div>
+    <div class="item lead muted" style="left:110px; top:765px; width:1380px; font-size:21px;">La lista completa: <a href="../recursos/vocabulario-de-interfaz.md" style="color:inherit;">recursos/vocabulario-de-interfaz.md</a></div>
+  </section>
+
+  <!-- 7 · Specs -->
+  <section class="slide" data-title="Specs" style="--bgpos: 75% 25%;">
+    <div class="panel" style="left:110px; top:50px; width:700px; padding:34px 52px 38px;"><div class="h">Specs</div></div>
+    <div class="item v-tablet" style="left:110px; top:220px; width:620px;">
+      <div class="v-win">
+        <div class="v-bar"><i></i><i></i><i></i><span>SPEC.md</span></div>
+        <div class="v-body code" style="font-size:19px;"><span class="kw"># Spec:</span> guardar el récord al terminar
+<span class="kw">## Objetivo</span>
+<span class="kw">## Qué hace</span>
+<span class="kw">## Qué no hace</span>
+<span class="kw">## Datos y contrato</span>
+<span class="kw">## Pantallas y estados</span>
+<span class="kw">## Casos de prueba</span>
+<span class="kw">## Fuera de alcance</span></div>
+      </div>
+    </div>
+    <div class="item" style="left:790px; top:220px; width:700px;">
+      <div class="chip" style="margin-bottom:20px; background:#000;"><b>Antes de pedir código</b><span>decides qué hace y qué no</span></div>
+      <div class="chip" style="margin-bottom:20px; background:#000;"><b>Una sola fuente de verdad</b><span>pégala o guárdala como SPEC.md</span></div>
+      <div class="chip" style="border-color:var(--accent); background:#000;"><b class="pink">Kiro · modo Spec</b><span>requirements.md · design.md · tasks.md</span></div>
+    </div>
+    <div class="panel" style="left:790px; top:620px; width:700px; padding:26px 36px;">
+      <div class="lead" style="font-size:21px;">Pídeselo así: <span class="muted">«Lee SPEC.md y propón las tareas en orden. No escribas código todavía.»</span></div>
+    </div>
+  </section>
+
+  <!-- 8 · Casos de prueba -->
+  <section class="slide plain" data-title="Casos de prueba">
+    <div class="item" style="left:110px; top:80px;"><div class="h">Casos de prueba</div></div>
+    <div class="item v-gwt" style="left:110px; top:210px; width:1000px;">
+      <span class="kicker">Dado</span><span></span><span class="kicker">Cuando</span><span></span><span class="kicker">Entonces</span>
+      <div class="c">Sin puntaje</div><div class="a">→</div><div class="c">Envía 120</div><div class="a">→</div><div class="c">Récord 120</div>
+      <div class="c">Récord 300</div><div class="a">→</div><div class="c">Envía 300</div><div class="a">→</div><div class="c"><span class="code">ScoreNotHigher</span></div>
+      <div class="c">Cualquiera</div><div class="a">→</div><div class="c">Pide «Ana»</div><div class="a">→</div><div class="c"><span class="code">InvalidUsername</span></div>
+      <div class="c">Navegador normal</div><div class="a">→</div><div class="c">Carga</div><div class="a">→</div><div class="c">Aviso · <span class="code" style="color:#d6d3d1; font-size:18px;">isInsideContainer()</span></div>
+    </div>
+    <div class="item term" style="left:1160px; top:210px; width:330px;">
+      <div class="bar"><i></i><i></i><i></i><span>Terminal</span></div>
+      <div class="body code" style="font-size:21px;"><span class="kw">cd</span> contrato
+<span class="kw">pnpm</span> test</div>
+    </div>
+    <div class="item lead" style="left:110px; top:690px; width:1380px; font-size:24px;">Pon los casos en el prompt. Si uno deja de cumplirse, lo ves enseguida.</div>
+  </section>
+
+  <!-- 9 · Pasos chicos y commits -->
+  <section class="slide grid" data-title="Pasos chicos y commits">
+    <div class="item" style="left:110px; top:70px;"><div class="h">Pasos chicos y commits</div></div>
+    <div class="item lead" style="left:110px; top:160px; width:1380px;">Un cambio por prompt. Funciona → commit.</div>
+    <div class="item v-time" style="left:110px; top:260px; width:1380px;">
+      <div class="v-step"><div class="v-dot"></div><b>Prompt 1</b><span>commit · ranking</span></div>
+      <div class="v-step"><div class="v-dot"></div><b>Prompt 2</b><span>commit · toast</span></div>
+      <div class="v-step"><div class="v-dot bad"></div><b class="pink">Prompt 3</b><span>algo se rompió</span></div>
+      <div class="v-step"><div class="v-dot back"></div><b>↩ Vuelves</b><span>al último commit bueno</span></div>
+    </div>
+    <div class="item term" style="left:110px; top:440px; width:1380px;">
+      <div class="bar"><i></i><i></i><i></i><span>Terminal</span></div>
+      <div class="body code" style="font-size:20px;"><span class="kw">git</span> status                  <span class="cm"># qué archivos cambiaron</span>
+<span class="kw">git</span> diff                    <span class="cm"># línea por línea</span>
+<span class="kw">git</span> add src/components/Ranking.ts
+<span class="kw">git</span> diff --staged           <span class="cm"># lo que entra al commit</span>
+<span class="kw">git</span> commit -m <span class="ty">"Agrega ranking"</span></div>
+    </div>
+  </section>
+
+  <!-- 10 · Contexto -->
+  <section class="slide" data-title="Contexto" style="--bgpos: 30% 80%;">
+    <div class="panel" style="left:110px; top:50px; width:1020px; padding:34px 52px 36px;">
+      <div class="h">Contexto</div>
+      <div class="lead" style="margin-top:12px;">La IA solo sabe lo que le das. Lo que falta, lo inventa.</div>
+    </div>
+    <div class="item v-phone" style="left:110px; top:270px; width:400px;">
+      <div class="v-chat">
+        <div class="v-msg me" style="font-size:18px;">Agrega el ranking.</div>
+        <div class="v-att">leaderboard.abi.json · 0x…</div>
+        <div class="v-att">devnet_asset_hub · 420420417</div>
+        <div class="v-att">llms.txt · docs.polkadot.com</div>
+        <div class="v-att">error-completo.txt</div>
+        <div class="v-att">captura.png</div>
+        <div class="v-att">src/components/Ranking.ts</div>
+      </div>
+    </div>
+    <div class="panel" style="left:600px; top:300px; width:890px; padding:32px 48px; border-color:var(--accent);">
+      <div class="kicker pink">Nunca</div>
+      <div class="marks" style="margin-top:14px;">
+        <div class="no" style="font-size:28px;">Tu frase de recuperación</div>
+        <div class="no" style="font-size:28px;">Llaves privadas</div>
+        <div class="no" style="font-size:28px;">.env con secretos</div>
+      </div>
+    </div>
+    <div class="panel" style="left:600px; top:650px; width:890px; padding:24px 48px;">
+      <div class="lead muted" style="font-size:21px;">Tu frase es tu cuenta. La llave privada firma por ti.</div>
+    </div>
+  </section>
+
+  <!-- 11 · Agentes -->
+  <section class="slide plain" data-title="Agentes">
+    <div class="item" style="left:110px; top:60px;"><div class="h">Agentes</div></div>
+    <div class="item lead" style="left:110px; top:152px; width:1380px;">Un chat te responde. Un agente <span class="pink">trabaja en tu proyecto</span>.</div>
+    <div class="item" style="left:110px; top:232px; width:490px;">
+      <div class="v-win">
+        <div class="v-bar"><i></i><i></i><i></i><span>Chat</span></div>
+        <div class="v-body v-chat" style="padding:18px 22px;">
+          <div class="v-msg me" style="font-size:19px;">¿Cómo agrego un botón «Guardar récord»?</div>
+          <div class="v-msg ai" style="font-size:18px; line-height:1.55;">Pega esto en FinDePartida.ts:<br><span style="color:var(--accent);">boton.onclick = guardar;</span></div>
+        </div>
+      </div>
+      <div class="v-cap" style="text-align:left;">tú copias, pegas y corres</div>
+    </div>
+    <div class="item" style="left:110px; top:556px; width:520px;">
+      <div class="v-set mini on"><div class="v-row"><div class="v-toggle on"></div><b>Supervisado</b></div><p>apruebas cada cambio</p></div>
+      <div class="v-set mini" style="margin-top:14px;"><div class="v-row"><div class="v-toggle"></div><b>Autónomo</b></div><p>trabaja solo, revisas el resultado</p></div>
+    </div>
+    <div class="item v-laptop" style="left:660px; top:232px; width:830px;">
+      <div class="v-screen">
+        <div class="v-split">
+          <div class="v-win">
+            <div class="v-bar"><i></i><i></i><i></i><span>Editor · src/</span></div>
+            <div class="v-body">
+              <div class="v-file">contract/leaderboard.abi.json</div>
+              <div class="v-file hi">components/FinDePartida.ts</div>
+              <div class="v-file">game/guardar.ts</div>
+            </div>
+          </div>
+          <div class="v-win">
+            <div class="v-bar"><i></i><i></i><i></i><span>Terminal</span></div>
+            <div class="v-body">
+              <div><span class="muted">&gt;</span> pnpm build <span style="color:#9be7b0;">✔</span></div>
+              <div><span class="muted">&gt;</span> pnpm test <span style="color:#9be7b0;">✔</span></div>
+              <div><span class="muted">&gt;</span> git diff <span class="muted">· 1 archivo</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="v-base"></div>
+    </div>
+    <div class="item" style="left:660px; top:548px; width:830px;">
+      <div class="v-cyc">
+        <div class="box"><div class="n">01</div><b>Leer</b></div>
+        <div class="v-arrow">→</div>
+        <div class="box"><div class="n">02</div><b>Planear</b></div>
+        <div class="v-arrow">→</div>
+        <div class="box pink"><div class="n">03</div><b>Editar</b></div>
+        <div class="v-arrow">→</div>
+        <div class="box"><div class="n">04</div><b>Ejecutar</b></div>
+        <div class="v-arrow">→</div>
+        <div class="box"><div class="n">05</div><b>Revisar</b></div>
+      </div>
+      <svg width="830" height="44" viewBox="0 0 830 44" style="display:block;" aria-hidden="true">
+        <path d="M761 0 V30 H69 V6" fill="none" stroke="#6b6b66" stroke-width="2"/>
+        <path d="M62 14 L69 4 L76 14" fill="none" stroke="#6b6b66" stroke-width="2"/>
+      </svg>
+      <div class="v-axis" style="text-align:center; font-size:18px; margin-top:4px;">↺ repite hasta terminar</div>
+    </div>
+    <div class="item lead muted" style="left:110px; top:784px; width:1380px; font-size:20px;">Kiro · Claude Code · Cursor · GitHub Copilot · Codex · Gemini CLI</div>
+  </section>
+
+  <!-- 12 · AGENTS.md -->
+  <section class="slide grid" data-title="AGENTS.md">
+    <div class="item" style="left:110px; top:80px;"><div class="h">AGENTS.md</div></div>
+    <div class="item" style="left:110px; top:210px; width:640px;">
+      <div style="display:grid; grid-template-columns:250px 60px 1fr; align-items:center;">
+        <div style="border:2px solid var(--accent); background:#000; padding:22px 22px;">
+          <b style="display:block; font:700 24px var(--display);">AGENTS.md</b>
+          <span style="display:block; font:16px/1.4 var(--mono); color:var(--muted); margin-top:8px;">raíz del repo · cambia con git</span>
+        </div>
+        <div class="v-axis" style="text-align:center; font-size:30px;">→</div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div class="v-att" style="background:#000;">Kiro</div>
+          <div class="v-att" style="background:#000;">Claude Code</div>
+          <div class="v-att" style="background:#000;">Cursor</div>
+          <div class="v-att" style="background:#000;">GitHub Copilot</div>
+          <div class="v-att" style="background:#000;">Codex</div>
+          <div class="v-att" style="background:#000;">Gemini CLI</div>
+        </div>
+      </div>
+      <div class="lead muted" style="font-size:19px; margin-top:28px;">Mismas reglas en cualquier herramienta. El steering de Kiro sirve solo en Kiro.</div>
+    </div>
+    <div class="item term" style="left:800px; top:210px; width:690px;">
+      <div class="bar"><i></i><i></i><i></i><span>AGENTS.md</span></div>
+      <div class="body code" style="font-size:17px; padding:22px 30px 24px;"><span class="kw">## Red</span>
+- Solo Products Devnet: Asset Hub 1000, chainId 420420417.
+- Descriptor: devnet_asset_hub, desde …
+
+<span class="kw">## Versiones</span>
+- Exactas, sin ^ ni ~. No actualizar ninguna sin que yo lo pida.
+- @parity/product-sdk 0.27.0
+
+<span class="kw">## Gestor de paquetes</span>
+- Nunca npm ni yarn.
+
+<span class="kw">## Secretos</span>
+- Nunca pedir, leer, escribir ni mostrar frases de recuperación,
+  llaves privadas o archivos .env.</div>
+    </div>
+    <div class="item lead muted" style="left:110px; top:760px; width:1380px; font-size:21px;">Pídeselo así: «Lee AGENTS.md y dime qué reglas vas a seguir antes de empezar.»</div>
+  </section>
+
+  <!-- 13 · MCP vs skills -->
+  <section class="slide" data-title="MCP vs skills" style="--bgpos: 60% 60%;">
+    <div class="panel" style="left:110px; top:50px; width:1000px; padding:34px 52px 36px;">
+      <div class="h">MCP vs skills</div>
+      <div class="lead" style="margin-top:12px;">MCP conecta al agente con herramientas y datos externos.</div>
+    </div>
+    <div class="panel" style="left:110px; top:290px; width:460px; padding:30px 38px;">
+      <div class="kicker">Skill</div>
+      <div class="marks" style="margin-top:12px;">
+        <div class="si" style="font-size:21px;"><span>Archivos de instrucciones</span></div>
+        <div class="si" style="font-size:21px;"><span>Lo lee si tu pedido coincide</span></div>
+        <div class="si" style="font-size:21px;"><span>Agrega conocimiento y reglas</span></div>
+      </div>
+    </div>
+    <div class="item" style="left:610px; top:330px; width:380px;">
+      <div style="display:flex; justify-content:space-between; font:700 22px var(--display); color:var(--ink);"><span>← lee</span><span>llama →</span></div>
+      <div style="margin-top:18px; border:2px solid #d6d3d1; background:#000; height:150px; display:grid; place-items:center;">
+        <b style="font:700 40px var(--display); letter-spacing:.06em;">AGENTE</b>
+      </div>
+      <div class="v-axis" style="text-align:center; margin-top:14px;">Kiro, Claude Code, Cursor…</div>
+    </div>
+    <div class="panel" style="left:1030px; top:290px; width:460px; padding:30px 38px;">
+      <div class="kicker">Servidor MCP</div>
+      <div class="marks" style="margin-top:12px;">
+        <div class="si" style="font-size:21px;"><span>Un programa con herramientas</span></div>
+        <div class="si" style="font-size:21px;"><span>Llama sus herramientas</span></div>
+        <div class="si" style="font-size:21px;"><span>Agrega acciones y datos externos</span></div>
+      </div>
+    </div>
+    <div class="panel" style="left:110px; top:680px; width:1380px; padding:26px 52px; border-color:var(--accent);">
+      <div class="lead">Para este hackatón no necesitas <span class="pink">ningún servidor MCP</span>.</div>
+    </div>
+  </section>
+
+  <!-- 14 · Qué es una skill -->
+  <section class="slide plain" data-title="Qué es una skill">
+    <div class="item" style="left:110px; top:80px;"><div class="h">Qué es una skill</div></div>
+    <div class="item v-win" style="left:110px; top:190px; width:760px;">
+      <div class="v-bar"><i></i><i></i><i></i><span>polkadot-products-devnet/</span></div>
+      <div class="v-body code" style="font-size:19px;">polkadot-products-devnet/
+├── <span class="fn">SKILL.md</span>                <span class="kw">obligatorio</span>
+├── references/             <span class="cm">opcional · documentos</span>
+│   ├── red-devnet.md
+│   ├── versiones.md
+│   ├── contratos.md
+│   ├── app-sdk.md
+│   ├── publicar.md
+│   ├── errores-comunes.md
+│   └── fuentes.md
+└── scripts/                <span class="cm">opcional · programas</span>
+    └── verificar-entorno.mjs</div>
+    </div>
+    <div class="item v-win" style="left:920px; top:190px; width:570px;">
+      <div class="v-bar"><i></i><i></i><i></i><span>SKILL.md</span></div>
+      <div class="v-body code" style="font-size:18px; white-space:normal;">
+        <div class="cm">---</div>
+        <div style="border-left:2px solid var(--accent); padding-left:14px; margin:4px 0;">
+          <div><span class="kw">name:</span> polkadot-products-devnet</div>
+          <div><span class="kw">description:</span> Guía para crear, conectar y publicar Polkadot Products en Products Devnet… Usar cuando el usuario pregunte por…</div>
+          <span class="v-tag" style="display:inline-block; margin:8px 0 4px;">lo único que lee al iniciar</span>
+        </div>
+        <div class="cm">---</div>
+        <div><span class="fn"># Polkadot Products en Products Devnet</span></div>
+        <div class="cm">## Cuándo usarla</div>
+        <div class="cm">## Cómo responder</div>
+        <div class="cm">## Reglas obligatorias</div>
+        <div class="cm">## Índice de referencias</div>
+        <div class="cm">…instrucciones…</div>
+      </div>
+    </div>
+    <div class="item lead muted" style="left:110px; top:720px; width:1380px; font-size:21px;">Formato abierto: Agent Skills · agentskills.io/specification</div>
+  </section>
+
+  <!-- 15 · Cómo la usa el agente -->
+  <section class="slide" data-title="Cómo la usa el agente" style="--bgpos: 40% 70%;">
+    <div class="panel" style="left:110px; top:50px; width:1000px; padding:30px 52px 32px;">
+      <div class="h">Cómo la usa el agente</div>
+      <div class="lead" style="margin-top:12px;">Carga solo lo que necesita, en este orden.</div>
+    </div>
+    <div class="panel" style="left:110px; top:256px; width:1380px; padding:24px 30px;">
+      <div class="v-flow">
+        <div class="v-stage"><div class="n">01</div><b>Al iniciar</b><span>lee name + description de cada skill instalada (~100 tokens)</span></div>
+        <div class="v-arrow">→</div>
+        <div class="v-stage"><div class="n">02</div><b>Tu pedido coincide</b><span>con la description: carga el SKILL.md completo</span></div>
+        <div class="v-arrow">→</div>
+        <div class="v-stage"><div class="n">03</div><b>Le hace falta un dato</b><span>abre solo ese archivo de references/ (p. ej. versiones.md)</span></div>
+        <div class="v-arrow">→</div>
+        <div class="v-stage pink"><div class="n">04</div><b>Corre un script</b><span>scripts/verificar-entorno.mjs con los permisos del agente: <span style="display:inline; margin:0; color:var(--accent);">por eso los lees</span></span></div>
+      </div>
+    </div>
+    <div class="panel" style="left:110px; top:566px; width:1380px; padding:30px 30px;">
+      <div class="kicker">Dónde vive</div>
+      <div class="v-where" style="margin-top:12px;">
+        <div class="v-loc pink"><b>.agents/skills/polkadot-products-devnet/</b><span>copia canónica</span></div>
+        <div class="v-arrow">→</div>
+        <div class="v-loc"><b>.kiro/skills/</b><span>enlace</span></div>
+        <div class="v-loc"><b>.claude/skills/</b><span>enlace</span></div>
+        <div class="v-axis" style="font-size:14px; width:90px;">uno por agente</div>
+        <div class="v-arrow">+</div>
+        <div class="v-loc"><b>skills-lock.json</b><span>en la raíz: qué se instaló</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 16 · skills.sh -->
+  <section class="slide grid" data-title="skills.sh">
+    <div class="item" style="left:110px; top:70px;"><div class="h">skills.sh</div></div>
+    <div class="item v-monitor" style="left:110px; top:160px; width:880px;">
+      <div class="v-screen">
+        <div class="v-win">
+          <div class="v-bar"><i></i><i></i><i></i><span>www.skills.sh</span></div>
+          <img src="../img/skills.png" alt="Página de inicio de skills.sh: el directorio de skills con el comando de instalación y el ranking" style="display:block; width:100%; aspect-ratio:1824/998; object-fit:contain; background:#000;">
+        </div>
+      </div>
+      <div class="v-neck"></div>
+      <div class="v-foot"></div>
+      <div class="v-cap">https://www.skills.sh</div>
+    </div>
+    <div class="panel" style="left:1030px; top:170px; width:460px; padding:28px 32px 16px;">
+      <div class="kicker">El sitio de las skills</div>
+      <div class="v-blk" style="margin-top:16px;"><b><i>01</i>Buscar</b><p>Busca y encuentra skills; el ranking cuenta instalaciones.</p></div>
+      <div class="v-blk"><b><i>02</i>Verificar</b><p>Cada skill muestra su SKILL.md, sus archivos, sus instalaciones y 3 auditorías automáticas: Gen Agent Trust Hub, Socket y Snyk.</p><p style="margin-top:6px; color:var(--accent);">No es una revisión humana.</p></div>
+      <div class="v-blk"><b><i>03</i>Instalar</b><p>Copia el comando que muestra. Aquí usa los de este capítulo: fijan <span style="font-family:var(--mono);">skills@1.7.2</span>.</p></div>
+    </div>
+  </section>
+
+  <!-- 17 · Léela antes de instalarla -->
+  <section class="slide" data-title="Léela antes de instalarla" style="--bgpos: 45% 15%;">
+    <div class="panel" style="left:110px; top:50px; width:1380px; padding:34px 52px 36px;">
+      <div class="h">Léela antes de instalarla</div>
+      <div class="lead" style="margin-top:12px;">Una skill le da instrucciones a tu agente. Ábrela en GitHub y revisa:</div>
+    </div>
+    <div class="item v-clip" style="left:300px; top:300px; width:1000px;">
+      <div class="v-clip-top"></div>
+      <div class="v-checks">
+        <div><span class="v-box"></span><span>Quién la publica</span></div>
+        <div><span class="v-box"></span><span>Secretos</span></div>
+        <div><span class="v-box"></span><span>Qué archivos trae</span></div>
+        <div><span class="v-box"></span><span>Lo que fuerza</span></div>
+        <div><span class="v-box"></span><span>El SKILL.md completo</span></div>
+        <div><span class="v-box"></span><span>Texto que manda al agente</span></div>
+        <div><span class="v-box"></span><span>curl, npx, rm -rf, -g</span></div>
+        <div><span class="v-box"></span><span>Fecha del último cambio</span></div>
+        <div><span class="v-box"></span><span>Reglas remotas</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 18 · Instala las skills -->
+  <section class="slide plain" data-title="Instala las skills">
+    <div class="item" style="left:110px; top:60px;"><div class="h">Instala las skills</div></div>
+    <div class="item lead" style="left:110px; top:152px; width:1380px;">Desde la raíz de tu proyecto.</div>
+    <div class="item term" style="left:110px; top:220px; width:1380px;">
+      <div class="bar"><i></i><i></i><i></i><span>Raíz de tu proyecto</span></div>
+      <div class="body code" style="font-size:18px; line-height:1.7;"><span class="kw">npx</span> skills@1.7.2 add https://github.com/BrandonFilth/polkadot-products-devnet --skill polkadot-products-devnet
+<span class="kw">npx</span> skills@1.7.2 add https://github.com/anthropics/skills --skill frontend-design
+<span class="kw">npx</span> skills@1.7.2 add https://github.com/addyosmani/web-quality-skills --skill accessibility
+<span class="kw">npx</span> skills@1.7.2 add https://github.com/OpenZeppelin/openzeppelin-skills --skill develop-secure-contracts
+<span class="kw">npx</span> skills@1.7.2 add https://github.com/addyosmani/agent-skills --skill security-and-hardening
+<span class="cm"># Opcional: revisión de contratos</span>
+<span class="kw">npx</span> skills@1.7.2 add https://github.com/wshobson/agents --skill solidity-security</div>
+    </div>
+    <div class="item term" style="left:110px; top:570px; width:1380px;">
+      <div class="bar"><i></i><i></i><i></i><span>Menú de la CLI</span></div>
+      <div class="body code" style="font-size:20px; line-height:1.7; padding:18px 30px 20px;"><span class="cm">◇</span> Which agents do you want to install to?  <span class="kw">›</span> tus agentes
+<span class="cm">◇</span> Installation scope                       <span class="kw">›</span> Project
+<span class="cm">◇</span> Installation method                      <span class="kw">›</span> Symlink (Recommended)
+<span class="cm">◇</span> Proceed with installation?               <span class="kw">›</span> revisa y confirma</div>
+    </div>
+  </section>
+
+  <!-- 19 · Cómo supervisar a la IA -->
+  <section class="slide grid" data-title="Cómo supervisar a la IA">
+    <div class="item" style="left:110px; top:60px;"><div class="h">Cómo supervisar a la IA</div></div>
+    <div class="item" style="left:110px; top:160px; width:690px;">
+      <div class="v-win">
+        <div class="v-bar"><i></i><i></i><i></i><span>git diff --stat</span></div>
+        <div class="v-body v-stat" style="padding:12px 26px 14px;">
+          <div><span class="k ok">✔</span><span>src/boton-guardar.ts</span><span>+12 −3</span><span class="ok">pedido</span></div>
+          <div><span class="k ok">✔</span><span>src/estado.ts</span><span>+8</span><span class="ok">pedido</span></div>
+          <div><span class="k bad">✘</span><span>package.json</span><span>+1 −1</span><span class="bad">no lo pediste</span><span class="why">cambió una versión</span></div>
+          <div><span class="k bad">✘</span><span>src/estilos.css</span><span>+240 −238</span><span class="bad">no lo pediste</span><span class="why">reformateó todo el archivo</span></div>
+          <div style="border-bottom:0;"><span class="k bad">✘</span><span>test/guardar.test.ts</span><span>−30</span><span class="bad">no lo pediste</span><span class="why">borró tests</span></div>
+        </div>
+      </div>
+      <div class="v-win" style="margin-top:24px;">
+        <div class="v-bar"><i></i><i></i><i></i><span>pnpm test</span></div>
+        <div class="v-body" style="padding:12px 26px 14px; font:18px/1.6 var(--mono); color:#d6d3d1;">
+          <div><span style="color:#9be7b0;">✔</span> test/boton-guardar.test.ts (5)</div>
+          <div><span style="color:#9be7b0;">✔</span> test/estado.test.ts (4)</div>
+          <div><span style="color:#9be7b0;">✔</span> test/guardar.test.ts (3)</div>
+          <div style="color:#9be7b0;">Tests 12 passed</div>
+        </div>
+      </div>
+      <div class="v-cap" style="text-align:left;">en verde no basta si borró tests: míralo en el diff</div>
+    </div>
+    <div class="panel" style="left:840px; top:160px; width:650px; padding:6px 32px 12px;">
+      <div class="v-blk" style="border-top:0;"><b><i>01</i>Antes</b><p>Tarea clara y acotada. Pide un plan antes de que toque archivos.</p></div>
+      <div class="v-blk"><b><i>02</i>Durante</b><p>Pasos chicos. Si se desvía, detenlo y corrige el rumbo.</p></div>
+      <div class="v-blk" style="padding-bottom:0;"><b><i>03</i>Después</b>
+        <div class="marks" style="margin-top:6px;">
+          <div class="si" style="font-size:19px; padding:7px 0;"><span>Corriste los tests: en verde, ninguno borrado</span></div>
+          <div class="si" style="font-size:19px; padding:7px 0;"><span>git diff solo con lo pedido</span></div>
+          <div class="si" style="font-size:19px; padding:7px 0;"><span>Sin dependencias ni versiones nuevas</span></div>
+          <div class="si" style="font-size:19px; padding:7px 0;"><span>Ningún secreto en el diff</span></div>
+          <div class="si" style="font-size:19px; padding:7px 0;"><span>El build pasa</span></div>
+          <div class="si" style="font-size:19px; padding:7px 0;"><span>Entiendes cada cambio</span></div>
+          <div class="si" style="font-size:19px; padding:7px 0; border-bottom:0;"><span>Commit por paso: puedes volver atrás</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 20 · Errores comunes en este stack -->
+  <section class="slide" data-title="Errores comunes en este stack" style="--bgpos: 85% 50%;">
+    <div class="panel" style="left:110px; top:50px; width:1250px; padding:34px 52px 38px;"><div class="h">Errores comunes en este stack</div></div>
+    <div class="item v-cards" style="left:110px; top:230px; width:1380px; grid-template-columns:repeat(3, 1fr); gap:24px;">
+      <div class="v-err"><div class="x">Inventa funciones</div><div class="fix">Solo la ABI y la skill; si no, «no verificado»</div></div>
+      <div class="v-err"><div class="x">Usa otra red</div><div class="fix"><span class="code">chainId 420420417 · devnet_asset_hub</span></div></div>
+      <div class="v-err"><div class="x">Actualiza las versiones</div><div class="fix">No cambies package.json</div></div>
+      <div class="v-err"><div class="x">Usa npm o yarn</div><div class="fix">Solo pnpm</div></div>
+      <div class="v-err"><div class="x">Conecta con getChainAPI()</div><div class="fix"><span class="code">createChainClient + devnet_asset_hub</span></div></div>
+      <div class="v-err"><div class="x pink">.tx() sin .query()</div><div class="fix">Simula primero y muestra el error</div></div>
+    </div>
+  </section>
+
+  <!-- 21 · Repaso -->
+  <section class="slide plain" data-title="Repaso">
+    <div class="item" style="left:110px; top:70px;"><div class="h">Repaso</div></div>
+    <div class="item v-steps mini" style="left:110px; top:170px; width:640px;">
+      <div class="v-st"><div class="c">01</div><div><b>Prompt</b><span>objetivo, contexto, restricciones, formato, comprobación</span></div></div>
+      <div class="v-st"><div class="c">02</div><div><b>Pide con nombres</b><span>padding, gap, card, toast, disabled</span></div></div>
+      <div class="v-st"><div class="c">03</div><div><b>Spec primero</b><span>qué hace y qué no</span></div></div>
+      <div class="v-st"><div class="c">04</div><div><b>Casos de prueba</b><span>Dado / Cuando / Entonces</span></div></div>
+      <div class="v-st"><div class="c">05</div><div><b>Pasos chicos</b><span>un cambio por prompt; funciona → commit</span></div></div>
+      <div class="v-st"><div class="c">06</div><div><b>Contexto</b><span>ABI, red y error completo; nunca secretos</span></div></div>
+    </div>
+    <div class="item v-steps mini" style="left:830px; top:170px; width:660px;">
+      <div class="v-st"><div class="c">07</div><div><b>Agentes</b><span>leen, editan, corren y repiten; supervisado o autónomo</span></div></div>
+      <div class="v-st"><div class="c">08</div><div><b>AGENTS.md</b><span>las reglas del proyecto para cualquier agente</span></div></div>
+      <div class="v-st"><div class="c">09</div><div><b>MCP vs skills</b><span>aquí no necesitas MCP</span></div></div>
+      <div class="v-st"><div class="c">10</div><div><b>Léela antes</b><span>SKILL.md y scripts completos</span></div></div>
+      <div class="v-st"><div class="c">11</div><div><b>Instala</b><span>skills@1.7.2 · scope Project · Symlink</span></div></div>
+      <div class="v-st pink"><div class="c">12</div><div><b>Supervisa</b><span>tests en verde y git diff solo con lo pedido</span></div></div>
+    </div>
+    <div class="panel" style="left:1090px; top:650px; width:400px; padding:26px 44px;">
+      <div class="kicker">Capítulo 05</div>
+      <div class="h" style="font-size:44px; margin-top:12px;">El juego</div>
+    </div>
+  </section>
+
+  <div class="progress" id="progress"></div>
+  <footer class="foot">
+    <span id="where">04</span>
+    <a href="../contenido/04-vibe-coding.md">Guía: contenido/04-vibe-coding.md</a>
+    <span><span id="count">01 / 20</span></span>
+  </footer>
+</main>
+<script src="assets/deck.js"></script>
+</body>
+</html>

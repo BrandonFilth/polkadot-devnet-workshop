@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>02 · Prepara tu entorno — Polkadot App Hackatón</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/deck.css">
+</head>
+<body>
+<main class="deck" id="deck" data-chapter="02" data-prev="01-como-funciona.html" data-next="03-smart-contracts.html">
+
+  <!-- 1 · Qué instalar, y dónde -->
+  <section class="slide plain" data-title="Prepara tu entorno">
+    <div class="item" style="left:110px; top:80px;">
+      <div class="kicker">Capítulo 02</div>
+      <div class="title" style="font-size:64px;">Prepara tu entorno</div>
+    </div>
+
+    <div class="item" style="left:140px; top:260px;">
+      <div class="phone" style="width:240px; height:410px;"><img src="../img/polkadot-icon.svg" alt="Polkadot"></div>
+      <div class="label">Tu teléfono<small>Polkadot App · devnet</small></div>
+    </div>
+
+    <div class="item" style="left:540px; top:270px; width:950px;">
+      <div class="kicker">Tu computadora</div>
+      <div class="rows" style="margin-top:18px; --row:13px;">
+        <div class="row" style="font-size:28px;"><span class="n">01</span><span class="t">Polkadot Desktop 0.1.3</span><span class="d">probar tu app</span></div>
+        <div class="row" style="font-size:28px;"><span class="n">02</span><span class="t">Node 24 · pnpm 12 · Git</span><span class="d">correr tu código</span></div>
+        <div class="row" style="font-size:28px;"><span class="n">03</span><span class="t">Kiro</span><span class="d">programar con IA</span></div>
+        <div class="row" style="font-size:28px;"><span class="n">04</span><span class="t">MetaMask</span><span class="d">tu contrato</span></div>
+        <div class="row" style="font-size:28px;"><span class="n">05</span><span class="t">GitHub CLI</span><span class="d">tu repo</span></div>
+        <div class="row hi" style="font-size:28px;"><span class="n">06</span><span class="t">pad · dotns</span><span class="d">publicar</span></div>
+      </div>
+    </div>
+
+    <div class="tape pink" style="right:70px; top:120px; transform:rotate(4deg);">DEVNET</div>
+  </section>
+
+  <!-- 2 · Verificar y clonar -->
+  <section class="slide grid" data-title="Verifica todo">
+    <div class="item" style="left:110px; top:80px;">
+      <div class="title" style="font-size:64px;">Verifica todo</div>
+    </div>
+
+    <div class="item term" style="left:110px; top:220px; width:900px;">
+      <div class="bar"><i></i><i></i><i></i><span>Terminal</span></div>
+      <div class="body">
+        <div class="cmd" style="white-space:nowrap; font-size:20px;">gh repo fork BrandonFilth/polkadot-devnet-workshop --clone</div>
+        <div class="cmd">pnpm install</div>
+        <div><span class="ok">✔</span> Product SDK <span class="dim">0.27.0</span></div>
+        <div class="cmd" style="margin-top:16px;">node scripts/verificar-entorno.mjs</div>
+        <div><span class="ok">✔</span> Node.js <span class="dim">v24.11.0</span> · pnpm <span class="dim">12.6.0</span></div>
+        <div><span class="ok">✔</span> GitHub: tu sesión <span class="dim">tu-usuario</span></div>
+        <div><span class="ok">✔</span> Polkadot Desktop <span class="dim">instalado</span></div>
+        <div><span class="ok">✔</span> pad <span class="dim">0.16.7</span> · dotns <span class="dim">0.9.5</span></div>
+        <div><span class="warn">!</span> A mano <span class="dim">Polkadot App, Kiro y MetaMask</span></div>
+      </div>
+    </div>
+
+    <div class="panel" style="left:1090px; top:220px; width:400px; padding:30px 50px 32px;">
+      <div class="kicker">Haz fork y síguelo</div>
+      <img class="qr" src="assets/qr-repo.svg" alt="Código QR del repositorio del tutorial" style="margin-top:20px; width:270px; height:270px;">
+      <div class="small" style="font-size:18px; margin-top:18px; color:var(--muted);">github.com/BrandonFilth/<br>polkadot-devnet-workshop</div>
+    </div>
+  </section>
+
+  <div class="progress" id="progress"></div>
+  <footer class="foot">
+    <span id="where">02</span>
+    <a href="../contenido/02-entorno.md">Guía: contenido/02-entorno.md</a>
+    <span><span id="count">01 / 02</span></span>
+  </footer>
+</main>
+<script src="assets/deck.js"></script>
+</body>
+</html>

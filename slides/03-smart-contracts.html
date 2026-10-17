@@ -1,0 +1,756 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>03 · Smart contracts — Polkadot App Hackatón</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/deck.css">
+<style>
+/* Dispositivos planos copiados del capítulo 04 (prefijo v-, sin glow). */
+.v-win { border: 2px solid #3a3a37; background: #0b0b0b; }
+.v-win .v-bar { height: 34px; border-bottom: 2px solid #3a3a37; display: flex; align-items: center; gap: 8px; padding: 0 14px; }
+.v-win .v-bar i { width: 10px; height: 10px; border-radius: 50%; background: #3a3a37; }
+.v-win .v-bar span { margin-left: 10px; font: 14px var(--mono); color: var(--muted); letter-spacing: .06em; }
+.v-win .v-body { padding: 22px 26px; }
+.v-screen { border: 2px solid #d6d3d1; background: #000; padding: 12px; }
+.v-laptop .v-screen { border-radius: 12px 12px 0 0; margin: 0 30px; }
+.v-laptop .v-base { height: 18px; border: 2px solid #d6d3d1; border-radius: 0 0 14px 14px; background: #0b0b0b; position: relative; }
+.v-laptop .v-base::after { content: ''; position: absolute; left: 50%; top: 0; width: 120px; height: 6px; margin-left: -60px; border: 2px solid #d6d3d1; border-top: 0; border-radius: 0 0 6px 6px; }
+.v-cap { font: 18px var(--mono); color: var(--muted); text-align: center; margin-top: 12px; letter-spacing: .04em; }
+.v-tablet { border: 2px solid #d6d3d1; border-radius: 28px; padding: 36px 18px 18px; background: #050505; position: relative; }
+.v-tablet::before { content: ''; position: absolute; top: 14px; left: 50%; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%; background: #3a3a37; }
+.v-phone { border: 2px solid #d6d3d1; border-radius: 40px; padding: 44px 16px 28px; background: #050505; position: relative; }
+.v-phone::before { content: ''; position: absolute; top: 20px; left: 50%; width: 80px; height: 8px; margin-left: -40px; border-radius: 4px; background: #2a2a2a; }
+.v-axis { font: 15px var(--mono); color: var(--muted); letter-spacing: .14em; text-transform: uppercase; }
+.v-ui { position: relative; }
+.v-ui > * { position: absolute; }
+.v-ui-card { border: 1px solid #3a3a37; background: #050505; padding: 14px; }
+.v-ui-card b { display: block; font: 700 22px var(--display); }
+.v-ui-card span { display: block; font: 16px var(--mono); color: var(--muted); margin-top: 4px; }
+.v-ui-btn { border: 1px solid #3a3a37; background: #1a1a1a; color: #6b6b66; font: 700 17px var(--display); text-transform: uppercase; display: grid; place-items: center; }
+.v-ui-toast { border: 1px solid #9be7b0; background: #050505; color: #9be7b0; font: 17px var(--mono); display: grid; place-items: center; }
+.v-tag { font: 14px var(--mono); color: var(--accent); border: 1px solid var(--accent); background: #000; padding: 1px 8px; }
+</style>
+<style>
+/* Diagramas propios del capítulo 03 (prefijo c-): cajas, celdas, bloques y rombos planos. */
+.c-box { border: 2px solid #d6d3d1; background: #000; padding: 14px 18px; }
+.c-box.pink { border-color: var(--accent); }
+.c-box.dim { border-color: #3a3a37; }
+.c-box.dash { border-style: dashed; }
+.c-box b { display: block; font: 700 22px/1.2 var(--display); text-transform: uppercase; }
+.c-box.pink b { color: var(--accent); }
+.c-box.dim b { color: #d6d3d1; }
+.c-box > span, .c-box > div > span { display: block; font: 17px/1.45 var(--mono); color: var(--muted); margin-top: 6px; }
+.c-box .code { font-size: 18px; white-space: pre; }
+.c-box .code span { display: inline; margin: 0; font: inherit; }
+.c-k { font: 13px var(--mono); color: var(--muted); letter-spacing: .2em; text-transform: uppercase; }
+.c-cell { border: 2px solid #3a3a37; background: #050505; padding: 12px 16px; font: 20px var(--mono); color: var(--ink); text-align: center; }
+.c-cell .idx { display: block; font: 14px var(--mono); color: var(--muted); letter-spacing: .1em; margin-bottom: 6px; }
+.c-cell.new { border: 2px dashed var(--accent); color: var(--accent); }
+.c-chain { display: flex; align-items: center; }
+.c-block { position: relative; flex: none; border: 2px solid #d6d3d1; background: #050505; padding: 14px 16px; }
+.c-block + .c-link { flex: none; width: 46px; border-top: 2px solid #6b6b66; }
+.c-block.pink { border-color: var(--accent); }
+.c-block.dim { border-color: #3a3a37; }
+.c-block .n { font: 13px var(--mono); color: var(--muted); letter-spacing: .2em; }
+.c-block b { display: block; font: 700 20px/1.2 var(--display); text-transform: uppercase; margin-top: 6px; }
+.c-block.pink b { color: var(--accent); }
+.c-block > span { display: block; font: 16px/1.4 var(--mono); color: var(--muted); margin-top: 6px; }
+.c-diamond { position: relative; display: grid; place-items: center; }
+.c-diamond::before { content: ''; position: absolute; width: 70.7%; height: 70.7%; border: 2px solid #d6d3d1; background: #000; transform: rotate(45deg); }
+.c-diamond.pink::before { border-color: var(--accent); }
+.c-diamond > * { position: relative; text-align: center; }
+.c-diamond b { display: block; font: 700 19px/1.25 var(--display); text-transform: uppercase; }
+.c-lane { border-top: 2px dashed #3a3a37; padding-top: 18px; }
+.c-ar { font: 700 24px var(--display); color: var(--muted); text-align: center; }
+.c-x, .c-box .c-x { color: var(--accent); font-weight: 700; }
+.slide *, .slide *::before, .slide *::after { font-variant-ligatures: none !important; }
+.c-ok, .c-box .c-ok { color: #9be7b0; font-weight: 700; }
+.c-hl { border-left: 4px solid var(--accent); padding-left: 18px; }
+/* Pares llave / valor compactos */
+.c-kv { display: grid; grid-template-columns: 230px 1fr; border-top: 1px solid var(--line); }
+.c-kv > * { padding: 13px 0; border-bottom: 1px solid var(--line); }
+.c-kv .k { font: 15px var(--mono); color: var(--muted); letter-spacing: .16em; text-transform: uppercase; align-self: stretch; display: flex; align-items: center; }
+.c-kv .v { font: 22px var(--display); color: #d6d3d1; }
+/* Laptop / terminal mini */
+.c-mini.v-laptop .v-screen { margin: 0 14px; padding: 10px; height: 84px; display: grid; place-items: center; font: 700 17px var(--display); text-transform: uppercase; }
+.c-mini.v-laptop .v-base { height: 12px; }
+.c-mini.v-laptop .v-base::after { width: 50px; margin-left: -25px; height: 4px; }
+/* Lista con marca y destino */
+.c-list > div { display: grid; grid-template-columns: 40px 1fr; padding: 12px 0; border-bottom: 1px solid var(--line); font: 23px/1.3 var(--display); color: #d6d3d1; }
+.c-list > div:first-child { border-top: 1px solid var(--line); }
+.c-list small { display: block; font: 17px var(--mono); color: var(--muted); margin-top: 4px; }
+.c-head { font: 700 26px var(--display); text-transform: uppercase; margin-bottom: 16px; }
+/* Ranuras de estado */
+.c-slots { display: grid; grid-template-columns: repeat(4, 1fr); column-gap: 30px; margin-top: 24px; }
+.c-slots > div { display: flex; flex-direction: column; align-items: flex-start; }
+.c-slots .c-cell { align-self: stretch; margin-top: 10px; padding: 26px 16px; font-size: 26px; }
+.c-slots b { font: 700 22px var(--mono); color: var(--ink); margin-top: 12px; }
+.c-slots .code { font-size: 18px; color: var(--muted); margin-top: 18px; padding-top: 14px; border-top: 1px dashed #3a3a37; align-self: stretch; }
+.c-slots i { font: 21px var(--display); font-style: normal; color: #d6d3d1; margin-top: 8px; }
+/* Array con índices y corchete */
+.c-arr { display: grid; grid-template-columns: 250px 250px 170px 290px 1fr; column-gap: 16px; row-gap: 10px; }
+.c-arr .c-cell { padding: 12px 10px; font-size: 19px; }
+.c-brk { height: 30px; border: 2px solid #6b6b66; border-bottom: 0; position: relative; margin: 0 20px; }
+.c-brk span { position: absolute; left: 50%; top: -12px; transform: translateX(-50%); background: #000; padding: 0 10px; font: 16px var(--mono); color: var(--ink); white-space: nowrap; }
+.c-brk + * { grid-column: 1; }
+/* Búsqueda llave → mapping → valor */
+.c-look { display: grid; grid-template-columns: 250px 60px 520px 60px 250px 1fr; row-gap: 16px; align-items: center; }
+.c-look .c-cell { font-size: 20px; padding: 16px 10px; }
+.c-look .c-box { padding: 10px 18px; }
+.c-look .c-box span { margin-top: 2px; }
+.c-pair { grid-row: span 2; align-self: stretch; margin: 24px 0 24px 18px; border: 2px solid #6b6b66; border-left: 0; display: flex; align-items: center; padding-left: 22px; }
+.c-pair span { font: 16px/1.4 var(--mono); color: var(--ink); }
+/* Carriles leer / escribir */
+.c-lhd { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
+.c-lhd b { font: 700 34px var(--display); text-transform: uppercase; margin-right: 14px; }
+.c-row { display: flex; align-items: center; gap: 16px; }
+.c-row .c-ar { width: 30px; }
+.v-phone.c-ph { width: 130px; height: 170px; border-radius: 24px; padding: 34px 10px 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.v-phone.c-ph::before { top: 14px; width: 40px; height: 6px; margin-left: -20px; }
+.v-phone.c-ph b { font: 700 20px var(--display); text-transform: uppercase; color: var(--accent); }
+.v-phone.c-ph span { font: 14px var(--mono); color: var(--muted); margin-top: 4px; }
+/* Orígenes de una llamada */
+.c-org { display: flex; align-items: center; gap: 26px; }
+.c-org > :first-child { flex: none; }
+.c-org b { display: block; font: 700 26px var(--display); text-transform: uppercase; }
+.c-org > div > span { display: block; font: 19px var(--mono); color: var(--muted); margin-top: 6px; }
+/* Leyendas con barra superior y barras de gas */
+.c-leg { border-top: 3px solid #d6d3d1; padding-top: 18px; }
+.c-leg.pink { border-top-color: var(--accent); }
+.c-leg b { display: block; font: 700 28px var(--display); text-transform: uppercase; }
+.c-leg.pink b { color: var(--accent); }
+.c-leg p { font: 21px/1.45 var(--display); color: #d6d3d1; margin-top: 12px; }
+.c-gas { display: grid; grid-template-columns: 90px 1fr; row-gap: 10px; align-items: center; margin-top: 18px; }
+.c-gas span { font: 15px var(--mono); color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
+.c-gas i { display: block; height: 20px; border: 2px solid #d6d3d1; background: #0b0b0b; }
+/* Iconos planos (solo bordes) */
+.c-ico { position: relative; width: 84px; height: 64px; flex: none; }
+.c-ico i { position: absolute; display: block; border: 2px solid #d6d3d1; background: #000; }
+.c-ico i.p { border-color: var(--accent); }
+.c-ico i.f { background: #d6d3d1; }
+.c-ico i.fp { background: var(--accent); border-color: var(--accent); }
+/* Tarjetas de track */
+.c-tracks { display: grid; grid-template-columns: repeat(5, 1fr); column-gap: 20px; }
+.c-track { border: 2px solid #3a3a37; background: #000; padding: 30px 22px 26px; height: 360px; display: flex; flex-direction: column; }
+.c-track.pink { border-color: var(--accent); }
+.c-track .c-ico { transform: scale(1.35); transform-origin: left top; margin-bottom: 22px; }
+.c-track b { display: block; font: 700 24px/1.2 var(--display); text-transform: uppercase; margin-top: 28px; }
+.c-track.pink b { color: var(--accent); }
+.c-track .code { font-size: 18px; white-space: normal; margin-top: auto; padding-top: 16px; border-top: 1px dashed #3a3a37; }
+/* Orden de retiro y pagos */
+.c-ord { display: flex; align-items: center; gap: 12px; font: 19px var(--display); color: #d6d3d1; margin-top: 10px; }
+.c-ord i { font: 700 15px var(--display); font-style: normal; width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--accent); color: var(--accent); display: grid; place-items: center; flex: none; }
+.c-pay { display: grid; grid-template-columns: auto 1fr; column-gap: 20px; row-gap: 8px; margin: 16px 0 6px; align-items: center; }
+.c-box .c-pay > span { display: block; margin: 0; font: 18px var(--mono); color: var(--ink); border: 1px solid #3a3a37; padding: 6px 12px; }
+.c-box .c-pay em { font: 18px var(--mono); font-style: normal; color: #9be7b0; }
+.c-box .c-pay em.pink { color: var(--accent); }
+.annot .tag .c-note { display: block; font: 15px/1.4 var(--mono); letter-spacing: 0; text-transform: none; color: var(--muted); margin-top: 8px; }
+/* Menú que traduce la ABI */
+.c-menu { border: 2px solid #d6d3d1; background: #000; padding: 18px 24px 20px; }
+.c-mrow { display: grid; grid-template-columns: 170px 1fr; align-items: center; height: 70px; border-top: 1px solid var(--line); }
+.c-menu .c-k + .c-mrow { margin-top: 14px; }
+.c-mrow span { font: 16px var(--mono); color: var(--muted); }
+.c-mrow b { font: 700 24px var(--display); }
+.c-mrow.pink b, .c-mrow.pink span { color: var(--accent); }
+/* Mockup de Remix */
+.c-side { border-right: 2px solid #3a3a37; padding: 18px 0; }
+.c-side div { font: 16px var(--mono); color: var(--muted); padding: 14px 22px; letter-spacing: .06em; }
+.c-side div.on { color: var(--accent); border-left: 3px solid var(--accent); }
+.c-pin { display: grid; grid-template-columns: 44px 1fr; column-gap: 16px; align-items: start; font: 18px/1.5 var(--display); color: #d6d3d1; }
+.c-pin > i { font: 700 15px var(--display); font-style: normal; width: 40px; height: 40px; border-radius: 50%; border: 2px solid #d6d3d1; display: grid; place-items: center; }
+.c-pin.pink > i { border-color: var(--accent); color: var(--accent); }
+.c-pin b { display: block; font: 700 21px var(--display); text-transform: uppercase; }
+.c-pin.pink b { color: var(--accent); }
+.c-pin .code { font-size: 17px; color: var(--ink); border: 1px solid #3a3a37; padding: 2px 8px; white-space: nowrap; }
+.c-pin em { font: 700 15px var(--display); font-style: normal; text-transform: uppercase; background: var(--accent); color: #000; padding: 4px 14px; margin-left: 12px; }
+/* Pipeline de estaciones */
+.c-pipe { display: grid; grid-template-columns: 1fr 40px 1fr 40px 1fr 40px 1fr 40px 1fr; align-items: center; }
+.c-pipe > i { border-top: 2px solid #6b6b66; }
+.c-st { border: 2px solid #d6d3d1; background: #050505; padding: 18px 18px; height: 160px; }
+.c-st.pink { border-color: var(--accent); border-width: 3px; }
+.c-st .n { font: 13px var(--mono); color: var(--muted); letter-spacing: .2em; }
+.c-st b { display: block; font: 700 21px/1.2 var(--display); margin-top: 8px; }
+.c-st.pink b { color: var(--accent); }
+.c-st span:last-child { display: block; font: 17px var(--mono); color: var(--muted); margin-top: 8px; }
+</style>
+</head>
+<body>
+<main class="deck" id="deck" data-chapter="03" data-prev="02-entorno.html" data-next="04-vibe-coding.html">
+
+  <!-- 1 · Portada -->
+  <section class="slide" data-title="Smart contracts" style="--bgpos: 75% 35%;">
+    <div class="panel" style="left:110px; top:90px; width:900px; padding:44px 60px 44px;">
+      <div class="kicker">Capítulo 03</div>
+      <div class="title">Smart contracts</div>
+      <div class="sub">Lo que la IA te va a escribir, parte por parte.</div>
+    </div>
+    <div class="panel" style="left:640px; top:540px; width:850px; padding:30px 48px;">
+      <div class="code"><span class="kw">contract</span> <span class="fn">Leaderboard</span> {
+  <span class="ty">mapping</span>(address => uint256) bestScore;
+  <span class="kw">function</span> <span class="fn">submitScore</span>(uint256 score) …
+}</div>
+    </div>
+    <div class="tape" style="right:70px; top:140px; transform:rotate(6deg);">SOLIDITY</div>
+    <div class="tape" style="right:60px; top:380px; transform:rotate(-4deg);">OPENZEPPELIN</div>
+    <div class="tape pink" style="left:120px; top:620px; transform:rotate(-5deg);">POLKADOT HUB</div>
+  </section>
+
+  <!-- 2 · App normal vs contrato -->
+  <section class="slide plain" data-title="Una app normal vs. un contrato">
+    <div class="item" style="left:110px; top:80px;"><div class="h">Una app normal vs. un contrato</div></div>
+    <div class="item" style="left:110px; top:210px; width:640px;">
+      <div class="kicker">App normal</div>
+      <div style="display:flex; align-items:center; gap:14px; margin-top:22px; height:150px;">
+        <div class="v-laptop c-mini" style="width:140px; flex:none;"><div class="v-screen">App</div><div class="v-base"></div></div>
+        <div class="c-ar">→</div>
+        <div class="c-box" style="flex:1;"><b>Servidor</b><span>de la empresa</span></div>
+        <div class="c-box" style="flex:1;"><b>Base de datos</b><span>suya</span></div>
+      </div>
+      <div style="margin:14px 0 24px; text-align:right;"><span class="v-tag" style="color:#d6d3d1; border-color:#6b6b66;">la empresa cambia reglas y datos</span></div>
+      <div class="c-kv">
+        <span class="k">Código</span><span class="v">en un servidor</span>
+        <span class="k">Datos</span><span class="v">en su base de datos</span>
+        <span class="k">Cambia las reglas</span><span class="v">la empresa, cuando quiera</span>
+        <span class="k">Cambia tus datos</span><span class="v">la empresa</span>
+      </div>
+    </div>
+    <div class="item" style="left:799px; top:210px; width:2px; height:560px; background:#2a2a2a;"></div>
+    <div class="item" style="left:850px; top:210px; width:640px;">
+      <div class="kicker pink">Smart contract</div>
+      <div style="display:flex; align-items:center; gap:14px; margin-top:22px; height:150px;">
+        <div class="v-laptop c-mini" style="width:140px; flex:none;"><div class="v-screen">App</div><div class="v-base"></div></div>
+        <div class="c-ar">→</div>
+        <div class="c-chain" style="flex:1;">
+          <div class="c-block dim" style="width:96px; height:120px;"><span class="n">bloque</span></div><div class="c-link" style="width:18px;"></div>
+          <div class="c-block pink" style="flex:1; height:120px;"><span class="n">bloque</span><b>Contrato</b><span>código + datos</span></div><div class="c-link" style="width:18px;"></div>
+          <div class="c-block dim" style="width:96px; height:120px;"><span class="n">bloque</span></div>
+        </div>
+      </div>
+      <div style="margin:14px 0 24px; text-align:right;"><span class="v-tag">nadie lo altera por fuera</span></div>
+      <div class="c-kv">
+        <span class="k">Código</span><span class="v">en la cadena</span>
+        <span class="k">Datos</span><span class="v">en la cadena, públicos</span>
+        <span class="k">Cambia las reglas</span><span class="v pink">nadie</span>
+        <span class="k">Cambia tus datos</span><span class="v">solo sus funciones</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · Cuándo sí y cuándo no -->
+  <section class="slide grid" data-title="Cuándo sí y cuándo no">
+    <div class="item" style="left:110px; top:80px;"><div class="h">Cuándo sí y cuándo no</div></div>
+    <svg class="wires" viewBox="0 0 1600 900" aria-hidden="true">
+      <path class="pink" d="M400 245 H 240 V 420"/>
+      <path d="M1200 245 H 1360 V 420"/>
+    </svg>
+    <div class="item c-box pink" style="left:400px; top:185px; width:800px; padding:20px 30px; border-width:3px; display:flex; align-items:center; gap:24px;">
+      <span style="flex:none; margin:0; font:700 54px/1 var(--display); color:var(--accent);">?</span>
+      <div style="font:700 25px/1.35 var(--display); color:var(--ink);">¿Varias personas tienen que confiar en este dato sin confiar en quien hizo la app?</div>
+    </div>
+    <div class="item v-axis" style="left:262px; top:318px; font-size:18px;"><span class="pink">sí</span></div>
+    <div class="item v-axis" style="left:1300px; top:318px; font-size:18px;">no</div>
+    <div class="item" style="left:110px; top:440px; width:620px;">
+      <div class="c-head pink">Sí · va en el contrato</div>
+      <div class="c-list">
+        <div><span class="c-ok">✔</span><span>Un marcador que nadie truca</span></div>
+        <div><span class="c-ok">✔</span><span>Una persona, un voto</span></div>
+        <div><span class="c-ok">✔</span><span>Constancias que no se falsifican</span></div>
+        <div><span class="c-ok">✔</span><span>El fondo de un club</span></div>
+      </div>
+    </div>
+    <div class="item" style="left:870px; top:440px; width:620px;">
+      <div class="c-head">No · fuera del contrato</div>
+      <div class="c-list">
+        <div><span class="c-x">✘</span><span>Preferencias, tema, borradores<small>→ guárdalos en la app</small></span></div>
+        <div><span class="c-x">✘</span><span>Datos privados<small>→ todo lo que guarda es público</small></span></div>
+        <div><span class="c-x">✘</span><span>Archivos grandes<small>→ Bulletin</small></span></div>
+        <div><span class="c-x">✘</span><span>Algo que cambia a cada instante<small>→ cada escritura firma y paga gas</small></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · Guardar datos | Tipos de datos -->
+  <section class="slide plain" data-title="Guardar datos | Tipos de datos">
+    <div class="item" style="left:110px; top:80px;"><div class="h">Guardar datos | Tipos de datos</div></div>
+    <div class="item lead" style="left:110px; top:180px; width:1380px;">Lo que el contrato recuerda entre una llamada y otra. Cada dato tiene un tipo.</div>
+    <div class="item c-box" style="left:110px; top:280px; width:1380px; padding:26px 40px 30px;">
+      <div class="c-k">Estado · lo que el contrato recuerda</div>
+      <div class="c-slots">
+        <div><span class="v-tag">uint256</span><div class="c-cell">0</div><b>score</b><span class="code">let score = 0</span><i>un número entero</i></div>
+        <div><span class="v-tag">string</span><div class="c-cell">"ana"</div><b>name</b><span class="code">let name = "ana"</span><i>texto</i></div>
+        <div><span class="v-tag">bool</span><div class="c-cell">false</div><b>voted</b><span class="code">let voted = false</span><i>sí o no</i></div>
+        <div><span class="v-tag">address</span><div class="c-cell" style="border-color:var(--accent);">0x2198…6c23</div><b>player</b><span class="code">—</span><i class="pink">una cuenta</i></div>
+      </div>
+    </div>
+    <div class="item lead muted" style="left:110px; top:700px; width:1380px; font-size:22px;">Sin decimales: 1.5 PAS se guarda como un entero, <span class="code" style="font-size:20px;">1500000000000000000</span>.</div>
+  </section>
+
+  <!-- 5 · Listas -->
+  <section class="slide" data-title="Listas" style="--bgpos: 15% 70%;">
+    <div class="panel" style="left:110px; top:60px; width:900px; padding:34px 52px 38px;">
+      <div class="h">Listas</div>
+      <div class="lead" style="margin-top:14px;">Para recorrer a todos: todos los jugadores, todos los votos.</div>
+    </div>
+    <div class="panel" style="left:110px; top:320px; width:1380px; padding:30px 48px 30px;">
+      <div class="c-arr">
+        <div class="c-brk" style="grid-column:1 / span 2;"><span>getScores(offset, limit) · una página</span></div>
+        <div class="c-cell"><span class="idx">[0]</span>0x2198…6c23</div>
+        <div class="c-cell"><span class="idx">[1]</span>0x42fb…53e1</div>
+        <div class="c-cell"><span class="idx">[2]</span>…</div>
+        <div class="c-cell new"><span class="idx">nuevo</span>push(msg.sender)</div>
+        <div class="v-axis" style="align-self:center;">solo crece →</div>
+      </div>
+      <div class="v-win" style="margin-top:26px; display:grid; grid-template-columns:1fr 1fr;">
+        <div style="padding:16px 26px; border-right:2px solid #3a3a37;"><div class="c-k">JavaScript</div><div class="code" style="margin-top:8px; font-size:20px;">const players = [];
+players.push(cuenta);</div></div>
+        <div style="padding:16px 26px;"><div class="c-k">Solidity</div><div class="code" style="margin-top:8px; font-size:20px;"><span class="ty">address</span>[] players;
+players.<span class="fn">push</span>(<span class="ty">msg.sender</span>);</div></div>
+      </div>
+    </div>
+    <div class="panel" style="left:110px; top:695px; width:1380px; padding:22px 48px; border-color:var(--accent);">
+      <div class="lead" style="font-size:23px;">Solo crece y cada elemento cuesta gas. Léela por páginas, nunca la recorras al escribir.</div>
+    </div>
+  </section>
+
+  <!-- 6 · Mappings -->
+  <section class="slide plain" data-title="Mappings">
+    <div class="item" style="left:110px; top:80px;"><div class="h">Mappings</div></div>
+    <div class="item lead" style="left:110px; top:180px; width:1380px;">Para relacionar una cosa con otra. Le das una llave, te devuelve un valor.</div>
+    <div class="item c-look" style="left:110px; top:260px; width:1380px;">
+      <span class="c-k">Llave</span><span></span><span class="c-k">Mapping</span><span></span><span class="c-k">Valor</span><span></span>
+      <div class="c-cell">0x2198…6c23</div><span class="c-ar">→</span><div class="c-box"><b>bestScore</b><span>address =&gt; uint256 · su mejor puntaje</span></div><span class="c-ar">→</span><div class="c-cell">1240</div><span></span>
+      <div class="c-cell">0x2198…6c23</div><span class="c-ar">→</span><div class="c-box"><b>usernameOf</b><span>address =&gt; string · su username</span></div><span class="c-ar">→</span><div class="c-cell">"ana_92"</div><div class="c-pair"><span>ida y vuelta:<br>username único</span></div>
+      <div class="c-cell">"ana_92"</div><span class="c-ar">→</span><div class="c-box"><b>holderOf</b><span>bytes32 =&gt; address · quién lo tiene</span></div><span class="c-ar">→</span><div class="c-cell">0x2198…6c23</div>
+      <div class="c-cell">0x42fb…53e1</div><span class="c-ar">→</span><div class="c-box pink"><b>hasVoted</b><span>address =&gt; bool · ¿ya votó?</span></div><span class="c-ar">→</span><div class="c-cell" style="border-color:var(--accent); color:var(--accent);">true</div><span></span>
+    </div>
+    <div class="item c-box dim" style="left:110px; top:690px; width:1380px; display:flex; align-items:center; gap:30px; padding:18px 28px;">
+      <span class="code" style="font-size:22px; color:var(--muted); text-decoration:line-through; text-decoration-color:var(--accent); margin:0;">for (…)</span><span class="c-x" style="font-size:26px;">✘</span>
+      <span style="margin:0; font:23px var(--display); color:#d6d3d1;">No se puede recorrer ni contar. Por eso se combina con una lista.</span>
+    </div>
+  </section>
+
+  <!-- 7 · Leer y escribir -->
+  <section class="slide grid" data-title="Leer y escribir">
+    <div class="item" style="left:110px; top:80px;"><div class="h">Leer y escribir</div></div>
+    <div class="item c-lane" style="left:110px; top:200px; width:1380px;">
+      <div class="c-lhd"><b>Leer</b><span class="v-tag" style="color:#9be7b0; border-color:#9be7b0;">firma: no</span><span class="v-tag" style="color:#9be7b0; border-color:#9be7b0;">gas: no</span></div>
+      <div class="c-row">
+        <div class="c-box" style="width:200px;"><b>Tu app</b><span>pregunta</span></div><span class="c-ar">→</span>
+        <div class="c-box dim" style="width:420px;"><span class="code" style="margin:0;"><span class="kw">function</span> <span class="fn">bestScore</span>(…) <span class="kw">view</span></span></div><span class="c-ar">→</span>
+        <div class="c-box" style="width:200px;"><b>Contrato</b><span>responde</span></div><span class="c-ar">→</span>
+        <div class="c-box" style="width:250px; border-color:#9be7b0;"><b style="color:#9be7b0;">✔ Al instante</b><span>no espera un bloque</span></div>
+      </div>
+    </div>
+    <div class="item c-lane" style="left:110px; top:470px; width:1380px; border-top-color:var(--accent);">
+      <div class="c-lhd"><b class="pink">Escribir</b><span class="v-tag">firma: sí</span><span class="v-tag">gas: sí</span></div>
+      <div class="c-row">
+        <div class="c-box" style="width:200px;"><b>Tu app</b><span>envía</span></div><span class="c-ar">→</span>
+        <div class="v-phone c-ph"><b>Firma</b><span>el usuario</span></div><span class="c-ar">→</span>
+        <div class="c-box" style="width:150px;"><b>Gas</b><span>lo paga</span></div><span class="c-ar">→</span>
+        <div class="c-block" style="width:170px;"><span class="n">tarda</span><b>Un bloque</b></div><span class="c-ar">→</span>
+        <div class="c-box pink" style="width:300px;"><b>Contrato</b><span class="code" style="margin-top:4px; font-size:17px;"><span class="kw">function</span> <span class="fn">submitScore</span>(…)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 · Quién llama -->
+  <section class="slide plain" data-title="Quién llama">
+    <div class="item" style="left:110px; top:80px;"><div class="h">Quién llama</div></div>
+
+    <svg class="wires" viewBox="0 0 1600 900" aria-hidden="true">
+      <path d="M520 330 C 740 330, 760 470, 960 470"/>
+      <path d="M520 500 C 740 500, 760 470, 960 470"/>
+      <path d="M520 695 C 740 695, 760 470, 960 470"/>
+    </svg>
+    <div class="item c-org" style="left:110px; top:260px; width:410px;">
+      <div class="v-phone c-ph" style="height:140px; width:100px;"><b style="font-size:15px; color:var(--ink);">App</b></div>
+      <div><b>Tu app</b><span>en la Polkadot App</span></div>
+    </div>
+    <div class="item c-org" style="left:110px; top:445px; width:410px;">
+      <div class="v-laptop c-mini" style="width:130px;"><div class="v-screen" style="height:72px; font-size:14px;">Remix</div><div class="v-base"></div></div>
+      <div><b>Remix</b><span>cualquiera, a mano</span></div>
+    </div>
+    <div class="item c-org" style="left:110px; top:625px; width:410px;">
+      <div class="v-win" style="width:130px;"><div class="v-bar" style="height:22px; padding:0 8px; gap:5px;"><i style="width:7px; height:7px;"></i><i style="width:7px; height:7px;"></i><i style="width:7px; height:7px;"></i></div><div class="code" style="font-size:15px; padding:14px 10px; line-height:1.4;"><span class="kw">&gt;</span> node<br>&nbsp; tx.js</div></div>
+      <div><b>Un script</b><span>cualquiera, en automático</span></div>
+    </div>
+    <div class="item" style="left:960px; top:250px; width:530px; text-align:center;">
+      <div style="font:24px/1.4 var(--display); color:var(--ink);"><span class="code" style="font-size:24px;">msg.sender</span> = la cuenta que firmó</div>
+      <div class="muted" style="font:20px/1.4 var(--display); margin-top:6px;">No hay sesión que robar.</div>
+    </div>
+    <div class="item c-box pink" style="left:960px; top:370px; width:530px; padding:30px 36px; border-width:3px;">
+      <b style="font-size:30px;">El contrato decide</b><span style="font-size:19px;">qué se permite y a quién</span>
+      <div class="code" style="margin-top:24px; padding-top:18px; border-top:1px dashed #3a3a37; font-size:21px;">bestScore[<span class="ty">msg.sender</span>] = score;</div>
+    </div>
+  </section>
+
+  <!-- 9 · Reglas y eventos -->
+  <section class="slide" data-title="Reglas y eventos" style="--bgpos: 60% 20%;">
+    <div class="panel" style="left:110px; top:60px; width:900px; padding:34px 52px 38px;"><div class="h">Reglas y eventos</div></div>
+    <div class="panel" style="left:110px; top:240px; width:660px; padding:30px 40px 34px;">
+      <div class="c-k">revert · la compuerta</div>
+      <div style="position:relative; margin-top:16px;">
+        <!-- Ramas del rombo: vértice inferior (x 485, y 190) hacia SÍ y NO (y 234) -->
+        <svg class="wires" width="580" height="234" aria-hidden="true">
+          <path class="pink" d="M485 190 V 212 H 140 V 234"/>
+          <path d="M485 212 H 440 V 234"/>
+        </svg>
+        <div style="display:flex; align-items:center; gap:14px;">
+          <div class="c-box" style="flex:1;"><span class="code" style="margin:0; font-size:19px;"><span class="fn">submitScore</span>(…)</span></div>
+          <span class="c-ar">→</span>
+          <div class="c-diamond" style="width:190px; height:190px; flex:none;"><span class="code" style="font-size:16px; line-height:1.4;">score &lt;=<br>current?</span></div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:44px;">
+          <div class="c-box pink"><b>✘ sí</b><span class="code" style="font-size:16px; white-space:normal;"><span class="kw">revert</span> <span class="fn">ScoreNotHigher</span>(…)</span><span>no se guarda nada</span></div>
+          <div class="c-box" style="border-color:#9be7b0;"><b style="color:#9be7b0;">✔ no</b><span>guarda</span></div>
+        </div>
+      </div>
+      <div class="lead" style="margin-top:20px; font-size:22px;">Como <span class="code" style="font-size:21px;">throw</span>. Si revierte, no se guarda nada.</div>
+    </div>
+    <div class="panel" style="left:830px; top:240px; width:660px; padding:30px 40px 34px;">
+      <div class="c-k">emit · el aviso</div>
+      <div class="code" style="margin-top:16px; font-size:20px;"><span class="kw">emit</span> <span class="fn">NewHighScore</span>(<span class="ty">msg.sender</span>, score);</div>
+      <div class="v-win" style="margin-top:18px;">
+        <div class="v-bar"><i></i><i></i><i></i><span>Historial de la cadena</span></div>
+        <div class="v-body code" style="font-size:18px; line-height:1.9; padding:14px 22px;"><span class="cm">evento</span> NewHighScore(0x2198…6c23, 1240)
+<span class="cm">evento</span> NewHighScore(0x42fb…53e1, 900)</div>
+      </div>
+      <div style="margin-top:14px; text-align:right;"><span class="v-tag">la app escucha</span></div>
+      <div class="lead" style="margin-top:16px; font-size:22px;">Un aviso que la app escucha. Más barato que guardar.</div>
+    </div>
+  </section>
+
+  <!-- 10 · Público y para siempre -->
+  <section class="slide grid" data-title="Público y para siempre">
+    <div class="item" style="left:110px; top:80px;"><div class="h">Público y para siempre</div></div>
+    <div class="item" style="left:110px; top:205px; width:1380px; height:270px;">
+      <div style="text-align:center;"><span class="v-tag" style="color:var(--ink); border-color:#6b6b66;">◉ cualquiera lee · hasta lo private</span></div>
+      <div class="c-chain" style="margin-top:18px;">
+        <div class="c-block dim" style="width:220px; height:150px;"><span class="n">bloque</span></div><div class="c-link"></div>
+        <div class="c-block" style="width:380px; height:150px;"><span class="n">bloque</span><b>Contrato · dirección A</b><span><span class="c-x">✘</span> tiene un error · se queda ahí</span></div><div class="c-link"></div>
+        <div class="c-block dim" style="width:220px; height:150px;"><span class="n">bloque</span></div><div class="c-link"></div>
+        <div class="c-block pink" style="width:380px; height:150px;"><span class="n">bloque</span><b>Contrato nuevo · dirección B</b><span>la versión corregida</span></div>
+      </div>
+      <div style="position:absolute; left:456px; top:192px; width:692px; height:30px; border:2px dashed var(--accent); border-top:0;"></div>
+      <div class="v-axis" style="position:absolute; left:456px; width:692px; top:212px; text-align:center;"><span style="background:#050505; padding:0 12px; color:var(--accent);">se corrige desplegando otro →</span></div>
+    </div>
+    <div class="item c-leg" style="left:110px; top:520px; width:430px;">
+      <b>Nada es secreto</b>
+      <p>Hasta lo <span class="code" style="font-size:19px;">private</span> se puede leer. Nunca guardes contraseñas ni datos personales.</p>
+    </div>
+    <div class="item c-leg pink" style="left:585px; top:520px; width:430px;">
+      <b>No se corrige</b>
+      <p>Un error se arregla desplegando otro contrato, con otra dirección. Prueba antes.</p>
+    </div>
+    <div class="item c-leg" style="left:1060px; top:520px; width:430px;">
+      <b>Guardar cuesta</b>
+      <p>Cada dato paga gas, y el texto más que los números. Guarda lo mínimo.</p>
+      <div class="c-gas"><span>número</span><i style="width:70px;"></i><span>texto</span><i style="width:260px; background:var(--accent); border-color:var(--accent);"></i></div>
+    </div>
+  </section>
+
+  <!-- 11 · Lo que un contrato no puede saber -->
+  <section class="slide plain" data-title="Lo que no puede saber">
+    <div class="item" style="left:110px; top:80px;"><div class="h">Lo que no puede saber</div></div>
+    <svg class="wires" viewBox="0 0 1600 900" aria-hidden="true">
+      <path d="M560 330 L 650 390" stroke-dasharray="8 8"/>
+      <path d="M1040 330 L 950 390" stroke-dasharray="8 8"/>
+      <path d="M560 590 L 650 520" stroke-dasharray="8 8"/>
+      <path d="M1040 590 L 950 520" stroke-dasharray="8 8"/>
+      <g fill="#ff2867" font-family="Space Mono, monospace" font-weight="700" font-size="26" text-anchor="middle">
+        <text x="605" y="370">✘</text><text x="995" y="370">✘</text><text x="605" y="565">✘</text><text x="995" y="565">✘</text>
+      </g>
+    </svg>
+    <div class="item c-box pink" style="left:110px; top:230px; width:450px;"><b>Si de verdad jugaste</b><span class="code" style="font-size:18px; color:#d6d3d1;">submitScore(999999)</span><span>desde Remix, sin jugar</span></div>
+    <div class="item c-box" style="left:1040px; top:230px; width:450px;"><b>Un número al azar</b><span>se puede predecir</span></div>
+    <div class="item c-box dash" style="left:650px; top:350px; width:300px; height:210px; display:grid; place-items:center; text-align:center; border-width:3px;"><div><b style="font-size:30px;">Contrato</b><span>solo ve un número<br>y una firma</span></div></div>
+    <div class="item c-box" style="left:110px; top:540px; width:450px;"><b>La hora exacta</b><span><span class="code" style="font-size:18px; color:#d6d3d1;">block.timestamp</span> varía unos segundos</span></div>
+    <div class="item c-box" style="left:1040px; top:540px; width:450px;"><b>El mundo exterior</b><span>no consulta páginas web ni precios</span></div>
+    <div class="item lead" style="left:110px; top:720px; width:1380px; text-align:center;">Si algo debe ser imposible de trucar, esa lógica vive dentro del contrato.</div>
+  </section>
+
+  <!-- 12 · Recetas por track -->
+  <section class="slide" data-title="Recetas por track" style="--bgpos: 30% 30%;">
+    <div class="panel" style="left:110px; top:60px; width:900px; padding:34px 52px 38px;"><div class="h">Recetas por track</div></div>
+    <div class="item c-tracks" style="left:110px; top:260px; width:1380px;">
+      <div class="c-track">
+        <div class="c-ico"><i style="left:0; top:10px; width:84px; height:46px; border-radius:23px;"></i><i class="f" style="left:16px; top:26px; width:14px; height:14px; border-radius:50%;"></i><i class="fp" style="left:54px; top:26px; width:14px; height:14px; border-radius:50%;"></i></div>
+        <b>Juegos</b><div class="code">Leaderboard: mapping + lista</div>
+      </div>
+      <div class="c-track">
+        <div class="c-ico"><i style="left:30px; top:0; width:24px; height:30px;"></i><i style="left:8px; top:22px; width:68px; height:42px;"></i><i class="fp" style="left:24px; top:20px; width:36px; height:4px;"></i></div>
+        <b>Votaciones</b><div class="code">mapping(address =&gt; bool) hasVoted</div>
+      </div>
+      <div class="c-track pink">
+        <div class="c-ico"><i style="left:0; top:4px; width:84px; height:56px;"></i><i style="left:12px; top:18px; width:38px; height:2px; border-width:1px;"></i><i style="left:12px; top:30px; width:26px; height:2px; border-width:1px;"></i><i class="p" style="left:54px; top:30px; width:22px; height:22px; border-radius:50%;"></i></div>
+        <b>Constancias</b><div class="code">ERC-721 no transferible</div>
+      </div>
+      <div class="c-track pink">
+        <div class="c-ico"><i style="left:4px; top:12px; width:50px; height:50px; border-radius:50%;"></i><i class="p" style="left:30px; top:2px; width:50px; height:50px; border-radius:50%;"></i><i class="fp" style="left:46px; top:18px; width:18px; height:18px; border-radius:50%;"></i></div>
+        <b>Puntos</b><div class="code">ERC-20</div>
+      </div>
+      <div class="c-track">
+        <div class="c-ico"><i style="left:4px; top:2px; width:76px; height:60px; border-radius:6px;"></i><i style="left:12px; top:14px; width:2px; height:36px; border-width:1px;"></i><i class="p" style="left:28px; top:16px; width:32px; height:32px; border-radius:50%;"></i><i class="fp" style="left:42px; top:18px; width:4px; height:12px;"></i></div>
+        <b>Fondos de un club</b><div class="code">payable + reglas para retirar</div>
+      </div>
+    </div>
+    <div class="panel" style="left:110px; top:680px; width:1380px; padding:22px 48px;">
+      <div class="lead" style="font-size:23px;">Casi todas las ideas del hackatón usan alguna de estas estructuras.</div>
+    </div>
+  </section>
+
+  <!-- 13 · OpenZeppelin -->
+  <section class="slide grid" data-title="OpenZeppelin">
+    <div class="item" style="left:110px; top:80px;"><div class="h">OpenZeppelin</div></div>
+    <div class="item lead" style="left:110px; top:180px; width:1380px;">Los estándares ya escritos y auditados. Tu contrato los importa y agrega lo propio.</div>
+    <div class="item v-win" style="left:110px; top:290px; width:860px;">
+      <div class="v-bar"><i></i><i></i><i></i><span>Puntos.sol</span></div>
+      <div class="v-body code" style="font-size:19px; padding:26px 30px;"><span class="kw">import</span> {ERC20} <span class="kw">from</span> <span class="ty">"@openzeppelin/contracts/…/ERC20.sol"</span>;
+
+<span class="kw">contract</span> <span class="fn">Puntos</span> <span class="kw">is</span> ERC20 {
+  <span class="kw">constructor</span>() ERC20(<span class="ty">"Puntos"</span>, <span class="ty">"PTS"</span>) {
+    <span class="fn">_mint</span>(<span class="ty">msg.sender</span>, 1000 * 10 ** decimals());
+  }
+}</div>
+    </div>
+    <div class="item" style="left:1020px; top:290px; width:470px;">
+      <div class="c-box pink" style="border-width:3px;"><b>Puntos</b><span>lo propio</span></div>
+      <div style="display:flex; align-items:center; gap:14px; height:62px; padding-left:40px;">
+        <div style="width:2px; height:100%; background:#6b6b66;"></div><span class="code" style="font-size:20px;"><span class="kw">is</span></span>
+      </div>
+      <div class="c-k" style="margin-bottom:10px;">OpenZeppelin · ya escrito y auditado</div>
+      <div style="border:2px solid #d6d3d1; padding:10px; display:grid; row-gap:10px;">
+        <div class="c-box dim" style="padding:10px 16px;"><b>ERC-20</b><span>tokens y puntos</span></div>
+        <div class="c-box dim" style="padding:10px 16px;"><b>ERC-721</b><span>constancias, coleccionables</span></div>
+        <div class="c-box dim" style="padding:10px 16px;"><b>Ownable</b><span>quién administra</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 14 · Contratos que mueven dinero -->
+  <section class="slide plain" data-title="Contratos que mueven dinero">
+    <div class="item" style="left:110px; top:80px;"><div class="h">Contratos que mueven dinero</div></div>
+    <div class="item c-row" style="left:110px; top:200px; width:1380px; align-items:stretch;">
+      <div class="c-box" style="width:170px; display:flex; flex-direction:column; justify-content:center;"><b>Tu wallet</b><span>manda PAS</span></div><span class="c-ar" style="align-self:center;">→</span>
+      <div class="c-box" style="width:330px;"><span class="c-k" style="margin:0;">01 · entra</span><b style="margin-top:8px;">payable</b><span>la función recibe PAS en <span class="code" style="font-size:16px;">msg.value</span></span></div><span class="c-ar" style="align-self:center;">→</span>
+      <div class="c-box pink" style="width:230px; display:flex; flex-direction:column; align-items:center; text-align:center; border-width:3px;">
+        <div class="c-ico" style="width:96px; height:80px;"><i style="left:0; top:0; width:96px; height:80px; border-radius:8px;"></i><i style="left:12px; top:16px; width:2px; height:48px; border-width:1px;"></i><i class="p" style="left:32px; top:18px; width:44px; height:44px; border-radius:50%;"></i><i class="fp" style="left:52px; top:20px; width:4px; height:16px;"></i></div>
+        <b style="margin-top:12px;">Contrato</b><span>guarda el PAS</span>
+      </div><span class="c-ar" style="align-self:center;">→</span>
+      <div class="c-box" style="flex:1;"><span class="c-k" style="margin:0;">02 · sale</span><b class="pink" style="margin-top:8px; color:var(--accent);">Estado primero</b>
+        <div class="c-ord"><i>1</i>actualiza el estado</div>
+        <div class="c-ord"><i>2</i>después manda el dinero</div>
+      </div>
+    </div>
+    <div class="item" style="left:110px; top:500px; width:1380px; display:grid; grid-template-columns:1fr 1fr; column-gap:40px;">
+      <div class="c-box" style="border-color:#9be7b0; padding:22px 28px;">
+        <span class="c-k" style="margin:0;">03</span><b style="color:#9be7b0; margin-top:6px;">✔ Cada quien retira</b>
+        <div class="c-pay"><span>0x2198…6c23</span><em>→ retira lo suyo</em><span>0x42fb…53e1</span><em>→ retira lo suyo</em></div>
+        <span>cada uno con su propia llamada</span>
+      </div>
+      <div class="c-box dim" style="padding:22px 28px;">
+        <span class="c-k" style="margin:0;">en vez de</span><b style="margin-top:6px;"><span class="c-x">✘</span> Repartir en un ciclo</b>
+        <div class="c-pay"><span class="code" style="font-size:18px; text-decoration:line-through; text-decoration-color:var(--accent);">for (…)</span><em class="pink">el contrato le manda a muchos</em></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 15 · El contrato del juego -->
+  <section class="slide" data-title="El contrato del juego" style="--bgpos: 20% 50%;">
+    <div class="panel" style="left:110px; top:50px; width:900px; padding:30px 52px 34px;"><div class="h">El contrato del juego</div></div>
+    <div class="item v-phone" style="left:110px; top:220px; width:264px; height:540px;">
+      <div class="v-ui" style="height:100%;">
+        <span class="c-k" style="left:10px; top:20px;">Fin de partida</span>
+        <div style="left:10px; top:70px; font:700 64px var(--display); color:var(--ink);">1240</div>
+        <span class="v-axis" style="left:10px; top:160px;">puntaje</span>
+        <div class="v-ui-btn" style="left:6px; right:6px; top:300px; height:58px; background:#000; color:var(--accent); border:2px solid var(--accent);">Guardar récord</div>
+        <span class="v-axis" style="left:10px; top:380px; letter-spacing:.06em; text-transform:none;">pide una firma</span>
+      </div>
+    </div>
+    <div class="item" style="left:398px; top:490px; width:100px; text-align:center;">
+      <div class="c-ar" style="font-size:30px; color:var(--accent);">→</div>
+      <div class="code" style="font-size:13px; line-height:1.4; color:var(--muted);">submitScore<br>(1240)</div>
+    </div>
+    <div class="item v-win" style="left:522px; top:220px; width:968px;">
+      <div class="v-bar"><i></i><i></i><i></i><span>Leaderboard.sol</span></div>
+      <div class="v-body annot" style="grid-template-columns:150px 1fr; column-gap:24px; row-gap:18px; padding:24px 28px;">
+        <span class="tag">Estado<small class="c-note">lo que recuerda</small></span>
+        <div class="code" style="font-size:18px;"><span class="ty">mapping</span>(address => uint256) <span class="kw">public</span> bestScore;</div>
+        <span class="tag">Evento<small class="c-note">el aviso para la app</small></span>
+        <div class="code" style="font-size:18px;"><span class="kw">event</span> <span class="fn">NewHighScore</span>(address <span class="kw">indexed</span> player, uint256 score);</div>
+        <span class="tag">Error<small class="c-note">por qué lo rechaza</small></span>
+        <div class="code" style="font-size:18px;"><span class="kw">error</span> <span class="fn">ScoreNotHigher</span>(uint256 current, uint256 submitted);</div>
+        <span class="tag">Escribe<small class="c-note">rechaza, agrega a la lista, guarda y avisa</small></span>
+        <div class="code" style="font-size:18px;"><span class="kw">function</span> <span class="fn">submitScore</span>(uint256 score) <span class="kw">external</span> {
+  <span class="kw">if</span> (score &lt;= current) <span class="kw">revert</span> ScoreNotHigher(…);
+  <span class="kw">if</span> (current == 0) players.push(<span class="ty">msg.sender</span>);
+  bestScore[<span class="ty">msg.sender</span>] = score;
+  <span class="kw">emit</span> NewHighScore(<span class="ty">msg.sender</span>, score);
+}</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 16 · La ABI -->
+  <section class="slide grid" data-title="La ABI">
+    <div class="item" style="left:110px; top:80px;"><div class="h">La ABI</div></div>
+    <div class="item lead" style="left:110px; top:180px; width:1380px;">El menú del contrato: qué funciones tiene, qué reciben y qué devuelven.</div>
+    <svg class="wires" viewBox="0 0 1600 900" aria-hidden="true">
+      <path d="M720 426 C 800 426, 820 392, 930 392"/>
+      <path d="M720 458 C 800 458, 820 462, 930 462"/>
+      <path class="pink" d="M720 490 C 800 490, 820 532, 930 532"/>
+    </svg>
+    <div class="item v-win" style="left:110px; top:290px; width:700px;">
+      <div class="v-bar"><i></i><i></i><i></i><span>leaderboard.abi.json</span></div>
+      <div class="v-body code" style="font-size:20px; line-height:32px; padding:20px 28px;">{
+  <span class="ty">"type"</span>: "function",
+  <span class="ty">"name"</span>: "submitScore",
+  <span class="ty">"inputs"</span>: [{ "type": "uint256" }],
+  <span class="ty">"stateMutability"</span>: "nonpayable"
+}</div>
+    </div>
+    <div class="item c-menu" style="left:930px; top:300px; width:560px;">
+      <div class="c-k">El menú · así lo lee la app</div>
+      <div class="c-mrow"><span>función</span><b>submitScore</b></div>
+      <div class="c-mrow"><span>recibe</span><b>uint256</b></div>
+      <div class="c-mrow pink"><span>nonpayable</span><b>pide firma</b></div>
+    </div>
+    <div class="item c-row" style="left:110px; top:640px; width:1380px;">
+      <div class="c-box" style="width:300px;"><b>Dirección</b><span>dónde está</span></div><span class="c-ar">+</span>
+      <div class="c-box" style="width:300px;"><b>ABI</b><span>cómo hablarle</span></div><span class="c-ar">→</span>
+      <div class="c-box pink" style="flex:1;"><b>Tu app y la IA</b><span>arman las llamadas correctas</span></div>
+    </div>
+  </section>
+
+  <!-- 17 · Simular antes de enviar -->
+  <section class="slide plain" data-title="Simular antes de enviar">
+    <div class="item" style="left:110px; top:80px;"><div class="h">Simular antes de enviar</div></div>
+    <svg class="wires" viewBox="0 0 1600 900" aria-hidden="true">
+      <path d="M410 420 C 520 420, 520 265, 630 265"/>
+      <path d="M780 310 V 340"/>
+      <path class="pink" d="M880 440 H 940"/>
+      <path d="M780 540 V 590"/>
+      <path class="pink" d="M1100 440 H 1140"/>
+      <path d="M880 625 H 1140"/>
+      <g fill="#8b8b86" font-family="JetBrains Mono, monospace" font-size="15" letter-spacing="2">
+        <text x="896" y="428" fill="#ff2867">SÍ</text><text x="792" y="572">NO</text>
+      </g>
+    </svg>
+    <div class="item v-tablet" style="left:110px; top:220px; width:300px;">
+      <div class="v-ui" style="height:390px; border:1px solid #3a3a37; background:#000;">
+        <span class="c-k" style="left:18px; top:20px;">Fin de partida</span>
+        <div style="left:18px; top:58px; font:700 54px var(--display); color:var(--ink);">1240</div>
+        <span class="v-axis" style="left:18px; top:132px;">puntaje</span>
+        <div class="v-ui-btn" style="left:16px; right:16px; top:182px; height:56px; background:#000; color:var(--accent); border:2px solid var(--accent);">Guardar récord</div>
+        <span class="v-axis" style="left:18px; top:262px; text-transform:none; letter-spacing:.04em;">antes de firmar:<br>la app prueba</span>
+      </div>
+    </div>
+    <div class="item" style="left:600px; top:220px; width:500px; height:440px;">
+      <div class="c-box" style="position:absolute; left:30px; top:0; width:300px; height:90px; text-align:center;"><b>.query()</b><span>sin firma, sin gas</span></div>
+      <div class="c-diamond" style="position:absolute; left:80px; top:120px; width:200px; height:200px;"><b style="font-size:22px;">¿Pasa?</b></div>
+      <div class="c-box pink" style="position:absolute; left:340px; top:168px; width:160px;"><b>.tx()</b><span>ahora sí, la firma</span></div>
+      <div class="c-box dim" style="position:absolute; left:80px; top:370px; width:200px; height:70px; text-align:center;"><b>No pasa</b></div>
+    </div>
+    <div class="item" style="left:1140px; top:395px; width:350px;">
+      <div class="v-ui-toast" style="height:90px; font-size:20px;">✔ Récord guardado</div>
+    </div>
+    <div class="item c-box pink" style="left:1140px; top:575px; width:350px; height:100px; display:flex; flex-direction:column; justify-content:center;">
+      <b style="font-size:19px; text-transform:none;"><span class="c-x">✘</span> Ese puntaje no supera tu récord</b><span>sin firma</span>
+    </div>
+    <div class="item lead" style="left:110px; top:730px; width:1380px; text-align:center;">Nadie firma algo que el contrato va a rechazar.</div>
+  </section>
+
+  <!-- 18 · Tus tres cuentas -->
+  <section class="slide grid" data-title="Tus tres cuentas">
+    <div class="item" style="left:110px; top:80px;"><div class="h">Tus tres cuentas</div></div>
+    <div class="item v-phone" style="left:110px; top:180px; width:440px; padding:40px 22px 24px;">
+      <div class="c-k" style="text-align:center;">Polkadot App · en tu teléfono</div>
+      <div class="c-box" style="margin-top:14px;"><b>Tu cuenta</b><span>5Gx3…9kQ</span><span style="color:#d6d3d1;">firma: tu identidad</span></div>
+      <div class="v-axis" style="text-align:center; padding:10px 0;">↓ deriva</div>
+      <div class="c-box pink"><b>Cuenta de la app</b><span>5Fh8…2mA · 0x2198…6c23</span><span style="color:#d6d3d1;">firma: tus jugadas</span></div>
+    </div>
+    <div class="item" style="left:600px; top:200px; width:200px; height:440px; display:flex; flex-direction:column; align-items:center;">
+      <div style="flex:1; border-left:2px dashed #3a3a37;"></div>
+      <div class="c-x" style="font-size:34px; padding:8px 0;">✘</div>
+      <div class="v-axis" style="text-align:center;">no comparten<br>saldo</div>
+      <div style="flex:1; border-left:2px dashed #3a3a37; margin-top:10px;"></div>
+    </div>
+    <div class="item v-laptop" style="left:850px; top:220px; width:640px;">
+      <div class="v-screen">
+        <div class="v-win">
+          <div class="v-bar"><i></i><i></i><i></i><span>remix.ethereum.org</span></div>
+          <div class="v-ui" style="height:270px;">
+            <div style="left:0; top:0; bottom:0; width:120px; border-right:1px solid #2a2a2a;"></div>
+            <div class="c-box" style="left:170px; top:36px; width:330px; border-color:#d6d3d1;"><span class="c-k" style="margin:0;">En el navegador</span><b style="margin-top:8px;">MetaMask</b><span>0x42fb…53e1</span><span style="color:#d6d3d1;">firma: el despliegue</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="v-base"></div>
+    </div>
+    <div class="item lead muted" style="left:110px; top:680px; width:1380px; font-size:24px;">No comparten saldo. Para el contrato, quien despliega y quien juega son dos msg.sender distintos.</div>
+  </section>
+
+  <!-- 19 · Despliégalo -->
+  <section class="slide" data-title="Despliégalo" style="--bgpos: 50% 80%;">
+    <div class="panel" style="left:110px; top:60px; width:900px; padding:34px 52px 38px;">
+      <div class="h">Despliégalo</div>
+      <div class="lead" style="margin-top:12px;">Unos 5 minutos.</div>
+    </div>
+    <div class="item v-win" style="left:110px; top:290px; width:380px; background:#000;">
+      <div class="v-bar"><i></i><i></i><i></i><span>faucet.polkadot.io</span></div>
+      <div style="padding:22px 24px; display:grid; row-gap:14px;">
+        <div class="c-pin"><i>01</i><div><b>Faucet</b>PAS para tu 0x</div></div>
+        <div class="c-cell" style="text-align:left; font-size:17px;">Paseo · Asset Hub (1000)</div>
+        <div class="c-cell" style="text-align:left; font-size:17px; color:var(--muted);">0x…</div>
+      </div>
+    </div>
+    <div class="item v-win" style="left:530px; top:290px; width:960px; background:#000;">
+      <div class="v-bar"><i></i><i></i><i></i><span>remix.ethereum.org</span></div>
+      <div style="display:grid; grid-template-columns:190px 1fr;">
+        <div class="c-side"><div>Archivo</div><div>Compiler</div><div class="on">Deploy</div></div>
+        <div style="padding:22px 28px; display:grid; row-gap:16px;">
+          <div class="c-pin"><i>02</i><div><b>Remix</b><span class="code">Leaderboard.sol</span> · pega el contrato</div></div>
+          <div class="c-pin"><i>03</i><div><b>Compila</b><span class="code">Compiler 0.8.28</span> · sin tocar la optimización</div></div>
+          <div class="c-pin pink"><i>04</i><div><b>Deploy</b><span class="code">Injected Provider - MetaMask</span><em>Deploy</em></div></div>
+          <div class="c-pin"><i>05</i><div><b>Guarda</b><span class="code">Deployed Contracts</span> · copia la dirección y la ABI</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 20 · De Solidity a Polkadot Hub -->
+  <section class="slide plain" data-title="De Solidity a Polkadot Hub">
+    <div class="item" style="left:110px; top:80px;"><div class="h">De Solidity a Polkadot Hub</div></div>
+    <svg class="wires" viewBox="0 0 1600 900" aria-hidden="true">
+      <path class="pink" d="M1368 470 V 530 H 1015 V 590"/>
+      <path d="M1368 530 H 1345 V 590" stroke-dasharray="6 6"/>
+    </svg>
+    <div class="item c-lane" style="left:110px; top:250px; width:1380px;">
+      <div class="v-axis" style="margin-bottom:18px;">El camino de tu contrato</div>
+      <div class="c-pipe">
+        <div class="c-st"><span class="n">01</span><b>Leaderboard.sol</b><span>Solidity</span></div><i></i>
+        <div class="c-st"><span class="n">02</span><b>solc 0.8.28</b><span>en Remix</span></div><i></i>
+        <div class="c-st"><span class="n">03</span><b>MetaMask</b><span>firma</span></div><i></i>
+        <div class="c-st"><span class="n">04</span><b>ETH-RPC</b><span>la traduce</span></div><i></i>
+        <div class="c-st pink"><span class="n">05</span><b>pallet-revive</b><span>la ejecuta</span></div>
+      </div>
+    </div>
+    <div class="item c-box pink" style="left:870px; top:590px; width:290px;"><b>REVM</b><span>este tutorial</span></div>
+    <div class="item c-box dim" style="left:1200px; top:590px; width:290px; border-style:dashed;"><b>PolkaVM</b><span>RISC-V · resolc</span></div>
+    <div class="item lead muted" style="left:110px; top:590px; width:700px; font-size:24px;">REVM usa las mismas herramientas que Ethereum. PolkaVM compila Solidity con resolc (o Rust): más rendimiento, herramientas aún limitadas.</div>
+  </section>
+
+  <div class="progress" id="progress"></div>
+  <footer class="foot">
+    <span id="where">03</span>
+    <a href="../contenido/03-smart-contracts.md">Guía: contenido/03-smart-contracts.md</a>
+    <span><span id="count">01 / 20</span></span>
+  </footer>
+</main>
+<script src="assets/deck.js"></script>
+</body>
+</html>
