@@ -39,7 +39,7 @@ Cada capítulo tiene una guía para leer y unas diapositivas para seguir la clas
 | 2 | Prepara tu entorno | [02-entorno.md](contenido/02-entorno.md) | [02-entorno.html](slides/02-entorno.html) |
 | 3 | Smart contracts | [03-smart-contracts.md](contenido/03-smart-contracts.md) | [03-smart-contracts.html](slides/03-smart-contracts.html) |
 | 4 | Programar con IA (vibe coding) | [04-vibe-coding.md](contenido/04-vibe-coding.md) | [04-vibe-coding.html](slides/04-vibe-coding.html) |
-| 5 | El juego | [05-el-juego.md](contenido/05-el-juego.md) | [05-el-juego.html](slides/05-el-juego.html) |
+| 5 | Tu primera app en Polkadot | [05-el-juego.md](contenido/05-el-juego.md) | [05-el-juego.html](slides/05-el-juego.html) |
 | 6 | Publica tu app | Próximamente | Próximamente |
 | 7 | Hackatón | Próximamente | Próximamente |
 

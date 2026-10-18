@@ -6,7 +6,7 @@ Al terminar tienes `SPEC.md`: las decisiones de tu juego, sin huecos, antes de e
 ## Antes de pedir
 
 - Juega 5 minutos el proyecto de muestra
-  ([capítulo 5, sección 2](../contenido/05-el-juego.md#2-el-proyecto-de-muestra)) y anota 3 cosas
+  ([capítulo 5, Juega la muestra](../contenido/05-el-juego.md#juega-la-muestra)) y anota 3 cosas
   que harías distinto. Por ejemplo: "3 vidas en vez de 5", "fantasmas más lentos", "otros colores".
 - Ten tu carpeta `mi-juego` con la skill instalada y el primer commit hecho
   ([capítulo 5, sección 4](../contenido/05-el-juego.md#4-crea-tu-repo)).

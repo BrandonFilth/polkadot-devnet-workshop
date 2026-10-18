@@ -1,8 +1,8 @@
 ![Polkadot App Hackatón](../img/banner.png "Polkadot App Hackatón")
 
-# Capítulo 5 · Tu juego
+# Capítulo 5 · Tu primera app en Polkadot
 
-En este capítulo construyes un juego de laberinto para celular que corre dentro de Polkadot Desktop
+En este capítulo construyes tu primera app en Polkadot: un juego de laberinto para celular que corre dentro de Polkadot Desktop
 o de la Polkadot App y guarda el mejor puntaje en un contrato. Es **tu** versión, en **tu** repo,
 con **tu** contrato `Leaderboard`. Este capítulo es la práctica del [capítulo 4](./04-vibe-coding.md):
 vas a pedirle cada parte a tu agente con prompts cortos, una fase a la vez.
@@ -13,23 +13,15 @@ vas a pedirle cada parte a tu agente con prompts cortos, una fase a la vez.
 
 ![Polka-Man en el celular](../img/cap5/polka-man-movil.png "Polka-Man en el celular: HUD arriba, laberinto y D-pad")
 
-Un juego tipo Pac-Man: un personaje recorre un laberinto comiendo bolitas mientras lo persiguen
-fantasmas. Al final lo publicas en tu nombre `.dot` y el jugador guarda su récord en tu contrato con
-una firma desde su teléfono.
+Tu primera app en Polkadot: un juego tipo Pac-Man para el celular, a tu manera.
 
-El curso trae un juego terminado, Polka-Man, como ejemplo. Estas son **sus** decisiones; tú vas a
-tomar las tuyas en la fase 0, [Define tu juego](#5-define-tu-juego):
+- **Tu juego** corre dentro de la Polkadot App.
+- **Tu repo:** lo construyes con IA, fase por fase.
+- **Tu contrato** guarda el mejor puntaje, y lo despliegas tú.
+- **Tu `.dot`:** lo publicas en tu propio nombre.
 
-| Regla | Así lo decidió la muestra |
-|---|---|
-| Vidas | 5. Pierdes una al chocar con un fantasma; con 0, fin de la partida |
-| Bolita | 10 puntos |
-| Bolita especial (las 4 rosas de las esquinas) | 50 puntos y los fantasmas se asustan: te los puedes comer |
-| Fantasmas comidos en un mismo susto | 200, 400, 800 y 1600 puntos |
-| Ronda | Termina al vaciar el laberinto; las bolitas vuelven y empieza la siguiente |
-| Velocidad de los fantasmas | +5 % cada ronda, con tope por debajo de la del jugador |
-| Número de fantasmas | Empieza en 2 y sale uno más cada 3 rondas, hasta 6 |
-| Marcador | El mejor puntaje se guarda en el contrato `Leaderboard` |
+Las reglas las decides tú en la [fase 0](#5-define-tu-juego); la muestra tiene las suyas
+([Las decisiones de la muestra](#las-decisiones-de-la-muestra)).
 
 Qué es una app en el Host y por qué corre en un `.dot`: [capítulo 1](./01-como-funciona-polkadot.md).
 
@@ -37,26 +29,16 @@ Qué es una app en el Host y por qué corre en un `.dot`: [capítulo 1](./01-com
 
 ## 2. El proyecto de muestra
 
-El juego terminado vive en la carpeta `game/` del curso. Sirve para ver cómo se ve un proyecto
-terminado: no lo editas, lo lees, lo juegas y lo comparas con el tuyo.
-
-Córrelo desde el clon del curso ([capítulo 2, paso 9](./02-entorno.md#paso-9--haz-fork-clónalo-y-verifica-todo)):
-
-```bash
-pnpm install
-pnpm test
-pnpm dev
-```
-
-`pnpm dev` abre el juego en `http://127.0.0.1:5173`. Ves la pantalla de título de POLKA-MAN, el
-ranking y los controles. Juega unos minutos.
+Es solo una muestra: sirve para ver cómo luce la estructura de un proyecto terminado. No la copias;
+construyes la tuya en tu repo. El juego terminado, Polka-Man, vive en la carpeta `game/` del curso:
+lo lees, lo juegas y lo comparas con el tuyo.
 
 ```text
 polkadot-devnet-workshop/
 ├── package.json            scripts dev, build, test y test:red (llaman a game/)
 ├── pnpm-workspace.yaml     packages: [game] y el override de @parity/truapi 0.13.1
 ├── contrato/               Leaderboard.sol y sus pruebas (capítulo 3)
-├── prompts/                00-define-tu-juego.md … 08-guarda-tu-record.md y revision.md
+├── prompts/                prompts de ejemplo, de 00-define-tu-juego.md a revision.md
 └── game/
     ├── AGENTS.md           reglas para el agente
     ├── index.html, vite.config.js
@@ -88,8 +70,50 @@ Por qué está así:
 ([capítulo 4, sección 10](./04-vibe-coding.md#10-agentsmd)). Tu `AGENTS.md` lo arma tu agente en la
 fase 1; el de la muestra es un ejemplo, no se copia.
 
-En el navegador la muestra se juega y lee el ranking. Conectar, el permiso de gas y guardar solo
-funcionan publicada en un `.dot` y abierta desde el Host ([sección 8](#8-publica-en-tu-dot)).
+### Las decisiones de la muestra
+
+Son las decisiones de la muestra; tú tomas las tuyas en la fase 0.
+
+| Regla | Así lo decidió la muestra |
+|---|---|
+| Vidas | 5. Pierdes una al chocar con un fantasma; con 0, fin de la partida |
+| Bolita | 10 puntos |
+| Bolita especial (las 4 rosas de las esquinas) | 50 puntos y los fantasmas se asustan: te los puedes comer |
+| Fantasmas comidos en un mismo susto | 200, 400, 800 y 1600 puntos |
+| Ronda | Termina al vaciar el laberinto; las bolitas vuelven y empieza la siguiente |
+| Velocidad de los fantasmas | +5 % cada ronda, con tope por debajo de la del jugador |
+| Número de fantasmas | Empieza en 2 y sale uno más cada 3 rondas, hasta 6 |
+| Marcador | El mejor puntaje se guarda en el contrato `Leaderboard` |
+
+### Juega la muestra
+
+**En un navegador normal, solo el juego.** Desde la raíz del clon del curso
+([capítulo 2, paso 9](./02-entorno.md#paso-9--haz-fork-clónalo-y-verifica-todo)):
+
+```bash
+pnpm install
+pnpm test    # opcional, sin red
+pnpm dev
+```
+
+Abre en tu PC la URL que muestra `pnpm dev` (`http://127.0.0.1:5173`). Para verlo en ancho de
+teléfono usa el modo dispositivo del navegador: F12 y luego Ctrl+Shift+M (en macOS, Cmd+Option+I y
+Cmd+Shift+M). Prueba:
+
+- Moverte con el teclado, o con swipe y D-pad en modo dispositivo.
+- Comer bolitas y bolitas especiales, y comerte a los fantasmas asustados.
+- Chocar con un fantasma y perder vidas hasta el fin de la partida.
+- Vaciar el laberinto y ver que cada ronda se pone más difícil.
+
+Aquí ves el ranking, pero guardar no funciona: conectar, el permiso de gas y guardar solo funcionan
+publicada en un `.dot` y abierta desde el Host ([sección 8](#8-publica-en-tu-dot)).
+
+**La versión terminada en el Host.** El organizador publica la muestra en `polka-man.dot`, conectada
+a su propio contrato. Ábrela desde la Polkadot App o Polkadot Desktop: ahí ves conectar, guardar un
+récord y el ranking. Así debe verse la tuya al final. **POR VERIFICAR**: disponible cuando el
+organizador lo publique.
+
+Juega 5 minutos y anota 3 cosas que harías distinto.
 
 ---
 
@@ -337,7 +361,7 @@ Ciclo: cambias → `pnpm build` → subes con `pad` → copias el CID → lo peg
    La primera línea define el atajo para esa terminal. Corre las tres líneas en cada subida: la
    segunda genera un nombre temporal nuevo.
 
-   Para publicar el proyecto de muestra, usa `.\game\dist` desde la raíz del curso.
+   Para publicar el proyecto de muestra, sigue la [sección 11](#11-publica-la-muestra-en-tu-dot).
 4. Terminó bien si ves `Storage signer: pool fallback (no session)`, `Using pool account N`,
    `Verified on-chain`, el aviso de despliegue completo y la última línea `CID: bafy…`. Ese es el CID
    raíz: cópialo. Las líneas `bafkrei…` son los trozos.
@@ -465,6 +489,34 @@ Sube por esta escalera, en orden:
   terminal que corre `pnpm dev`.
 
 </details>
+
+---
+
+## 11. Publica la muestra en tu .dot
+
+Una práctica guiada del ciclo completo de publicación, sin tocar tu juego: publicas el proyecto de
+muestra tal cual en **tu** nombre `.dot`.
+
+1. Desde la raíz del repo del curso, `pnpm build`. La muestra queda en `game\dist`.
+2. Publica con el ciclo de la [sección 8](#probar-dentro-del-host-publica-en-tu-dot) (la función
+   `pad` y un `$tmp` nuevo), usando `.\game\dist` en lugar de `.\dist` (en macOS o Linux,
+   `./game/dist`):
+
+   ```powershell
+   pad .\game\dist $tmp --env devnet --js-merkle --no-manifest
+   ```
+
+3. Copia el CID `bafy…` de la última línea.
+4. En `dotns.dot` → Profile → tu nombre → Edit, pégalo en el `contenthash` de **tu** `.dot` y firma
+   en el teléfono.
+5. Abre tu `.dot` en el Host y compáralo con `polka-man.dot`.
+
+La muestra lee la dirección del contrato en `game/src/contract/config.ts`. En tu `.dot` ves el ranking
+del contrato de la muestra, a menos que pongas ahí la dirección de tu `Leaderboard`
+([capítulo 3, sección 17](./03-smart-contracts.md#17-despliégalo)) y vuelvas a construir. Tu cuenta en
+tu `.dot` es otro jugador ([capítulo 3, sección 16](./03-smart-contracts.md#16-tus-tres-cuentas)).
+
+Si algo falla, usa la tabla de la [sección 8](#probar-dentro-del-host-publica-en-tu-dot).
 
 ---
 
