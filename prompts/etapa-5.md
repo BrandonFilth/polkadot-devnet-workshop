@@ -116,9 +116,9 @@ Cómo se comprueba:
 - Desde la raíz, pnpm test y pnpm build pasan.
 - pnpm dev, http://127.0.0.1:5173 en un navegador normal: el título muestra el top 10 leído del
   contrato y el aviso de fuera del Host; al terminar una partida aparece el aviso en lugar del botón.
-- Dentro de Polkadot Desktop (http://localhost:5173): Conectar pide la cuenta y el permiso de gas;
-  al terminar con un puntaje mayor a tu récord, "Guardar récord" pide UNA firma en el teléfono y el
-  ranking se recarga.
+- Publicado en un dominio .dot y abierto desde Polkadot Desktop o la Polkadot App (el Host no se
+  conecta a localhost): Conectar pide la cuenta y el permiso de gas; al terminar con un puntaje
+  mayor a tu récord, "Guardar récord" pide UNA firma en el teléfono y el ranking se recarga.
 ```
 
 ## Prueba manual
@@ -128,8 +128,11 @@ Cómo se comprueba:
    dentro de Polkadot Desktop…». Juega y pierde: el fin muestra el ranking y el aviso, sin botón de
    guardar.
 3. Celular en DevTools (390 x 667): el top 10 se puede desplazar dentro del overlay.
-4. Dentro de Polkadot Desktop, abre `http://localhost:5173` (capítulo 2). Toca «Conectar»: el
-   teléfono pide la cuenta y el permiso de gas.
+4. Ni Desktop ni la Polkadot App se conectan a `localhost`: lo que sigue se prueba en tu `.dot`.
+   Corre `pnpm build`, publica `game/dist` en tu `.dot` con el ciclo del taller
+   ([capítulo 5, «Probar dentro del Host»](../contenido/05-el-juego.md#probar-dentro-del-host-publica-en-tu-dot))
+   y abre tu nombre desde Polkadot Desktop o la Polkadot App. Toca «Conectar»: el teléfono pide la
+   cuenta y el permiso de gas.
 5. Juega y termina con más puntos que tu récord: «Guardar récord» pide una firma. Mientras firmas,
    «Jugar otra vez» y Enter no hacen nada. Al terminar, el ranking y el HUD muestran tu récord.
 6. Termina con menos puntos: «No supera tu récord», sin firma.

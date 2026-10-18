@@ -99,15 +99,77 @@ pnpm dev
 - `pnpm dev` levanta el juego en `http://127.0.0.1:5173`. Ábrelo en el navegador: ves el laberinto y
   el aviso «POLKA-MAN · La plantilla funciona. Sigue con la etapa 1.».
 
-**En Polkadot Desktop.** Con Desktop emparejado con tu teléfono
-([capítulo 2, paso 3](./02-entorno.md#paso-3--polkadot-desktop)) y `pnpm dev` corriendo, abre
-`http://localhost:5173` dentro de Desktop. Ahí la app tiene acceso al Host: cuenta, firmas y gas
-([skill, `SKILL.md`](https://github.com/BrandonFilth/polkadot-products-devnet/blob/main/skills/polkadot-products-devnet/SKILL.md)).
-Los pasos exactos de la interfaz de Desktop 0.1.3 para abrir una URL local están **POR VERIFICAR**.
+**Qué se prueba dónde.** `pnpm dev` sirve para un navegador normal: ves el juego, juegas y lees el
+ranking por el ETH-RPC; la app muestra que está fuera del Host. Ni Polkadot Desktop ni la Polkadot
+App se conectan a `localhost`. Todo lo que pasa por el Host (Conectar, firmas, permiso de gas en
+PGAS, guardar récord y username) se prueba con la app **publicada en un dominio `.dot`** y abierta
+desde el Host
+([skill, `app-sdk.md`](https://github.com/BrandonFilth/polkadot-products-devnet/blob/main/skills/polkadot-products-devnet/references/app-sdk.md)).
+Las etapas 1 a 4 se prueban solo en el navegador. Para la etapa 5 publicas en tu `.dot` con el ciclo
+de abajo.
 
-> Tu cuenta en `localhost:5173` es distinta de la que tendrás en tu `.dot`: el Host deriva una
-> cuenta por dominio ([skill, `app-sdk.md`](https://github.com/BrandonFilth/polkadot-products-devnet/blob/main/skills/polkadot-products-devnet/references/app-sdk.md)).
-> Un récord guardado desde `localhost` no aparece como tuyo en la app publicada.
+> El Host deriva una cuenta por dominio: tu cuenta en tu `.dot` es distinta de la que tienes en la
+> app de un compañero ([sección 12](#12-el-marcador-compartido)).
+
+### Probar dentro del Host: publica en tu .dot
+
+Este es el ciclo del taller para subir el bundle a Bulletin sin conectar tu cuenta a la PC: sin
+sesión, sin frase de recuperación y sin keystore de DotNS. La única firma es la del `contenthash`,
+en tu teléfono. El [capítulo 6](./06-publicar.md) lo explica a fondo. Fuente: la skill
+([`publicar.md`, sección 2](https://github.com/BrandonFilth/polkadot-products-devnet/blob/main/skills/polkadot-products-devnet/references/publicar.md)).
+Comprobado con `pad` 0.16.7.
+
+1. Una sola vez: compra tu nombre en la Polkadot App desde `dotns.dot` (9 caracteres o más). El
+   nombre es de la cuenta de tu teléfono.
+2. Desde la raíz del repo, `pnpm build`. El bundle queda en `game/dist`.
+3. Copia el bundle a una carpeta **fuera del proyecto**, para que `pad` no encuentre ningún
+   `polkadot-app-deploy.config.ts` al subir por las carpetas (además usarás `--no-manifest`):
+
+   ```powershell
+   $d = "$env:TEMP\polkaman"
+   Remove-Item -Recurse -Force $d -ErrorAction SilentlyContinue
+   Copy-Item -Recurse game\dist "$d\dist"
+   Set-Location $d
+   ```
+
+4. Define el atajo de `pad` y asegúrate de que no hay sesión ni frase de recuperación:
+
+   ```powershell
+   function pad { pnpm dlx --ignore-scripts @polkadot-community-foundation/polkadot-app-deploy@0.16.7 @args }
+   pad logout
+   Remove-Item Env:MNEMONIC -ErrorAction SilentlyContinue
+   ```
+
+5. Genera un nombre temporal sin dígitos (DotNS solo acepta 0 o 2 dígitos al final):
+
+   ```powershell
+   $ts = Get-Date -Format 'yyyyMMddHHmmss'
+   $tmp = 'tmp' + (-join ($ts.ToCharArray() | ForEach-Object { [char](97 + [int]"$_") })) + '.dot'
+   ```
+
+   En macOS o Linux: `tmp="tmp$(date +%Y%m%d%H%M%S | tr '0-9' 'a-j').dot"`.
+
+6. Sube el bundle (tarda de 3 a 4 minutos):
+
+   ```powershell
+   pad .\dist $tmp --env devnet --js-merkle --no-manifest
+   ```
+
+   Terminó bien si ves `Verified on-chain` y la última línea `CID: bafy…`: ese es el CID raíz. Las
+   líneas `bafkrei…` son los trozos. Si dice `pool account N … is not authorized (or its
+   authorization expired)`, corre el mismo comando otra vez: se elige otra cuenta del pool.
+7. Opcional, sin el Host: `https://<nombre-temporal>.dev-dot.li` muestra el bundle.
+8. En la Polkadot App (o en Desktop) abre `dotns.dot` → Profile → tu nombre → Edit, pega el CID en
+   `contenthash` y firma en el teléfono. Es la única firma.
+9. Abre tu nombre desde el Host y prueba la etapa 5: Conectar, permiso de gas, guardar récord y
+   username.
+
+Notas:
+
+- El nombre temporal queda a nombre del worker compartido de `pad` y no se vuelve a usar.
+- Nunca le pases tu propio nombre a `pad`: falla porque no es dueño del nombre.
+- Cada build nuevo da un CID nuevo; hay que pegarlo otra vez en `contenthash`.
+- Cuántas subidas seguidas aguanta el pool con unas 40 personas está **POR VERIFICAR**.
 
 ---
 
@@ -325,7 +387,8 @@ git commit -m "etapa 4: orbes especiales y dificultad"
 
 **Objetivo.** El título muestra el top 10 del `Leaderboard`. Dentro del Host conectas tu cuenta,
 guardas tu récord al terminar y eliges un username. En un navegador normal ves el ranking y un aviso
-para abrir el juego dentro del Host. 30 a 40 minutos, más la prueba en Desktop.
+para abrir el juego dentro del Host. 30 a 40 minutos, más publicar en tu `.dot` y probar desde el Host
+([sección 3](#probar-dentro-del-host-publica-en-tu-dot)).
 
 **Prompt:** [`prompts/etapa-5.md`](../prompts/etapa-5.md). Versión corta:
 
@@ -341,9 +404,10 @@ Cómo se comprueba: fuera del Host se ve el top 10 y el aviso; dentro, "Guardar 
 ```
 
 **Checks.** En el navegador: el top 10 se lee del contrato y en el fin aparece el aviso en lugar del
-botón de guardar. En Desktop: «Conectar» pide la cuenta y el permiso de gas; un puntaje mayor a tu
-récord pide una firma; uno menor dice «No supera tu récord» sin firma. La prueba completa dentro de
-Desktop y de la Polkadot App está **POR VERIFICAR**.
+botón de guardar. Con el juego publicado en tu `.dot` y abierto desde Desktop o la Polkadot App
+([sección 3](#probar-dentro-del-host-publica-en-tu-dot)): «Conectar» pide la cuenta y el permiso de
+gas; un puntaje mayor a tu récord pide una firma; uno menor dice «No supera tu récord» sin firma. La
+prueba completa dentro de Desktop y de la Polkadot App está **POR VERIFICAR**.
 
 **Tests que agrega.** `components/finDePartida.test.ts`: las 7 reglas de `saveOptions()`, su orden
 y el estado `disabled` mientras hay una firma en curso.
@@ -447,8 +511,8 @@ pon su dirección ahí.
 
 Consecuencias que vas a ver:
 
-- **Cada app te ve como otra cuenta.** En `localhost:5173`, en tu `.dot` y en la app de un compañero
-  eres un jugador distinto, con su propio récord
+- **Cada app te ve como otra cuenta.** En tu `.dot`, en un `.dot` temporal y en el `.dot` de un
+  compañero eres un jugador distinto, con su propio récord
   ([capítulo 3, sección 16](./03-smart-contracts.md#16-tus-tres-cuentas)).
 - **El username es único en todo el contrato.** Si alguien ya tomó `ana` en otra app, tú no puedes
   usarlo en la tuya.
@@ -523,15 +587,16 @@ siguiente.
 <summary><b>Problemas comunes</b></summary>
 
 - **`pnpm dev` dice que el puerto 5173 está ocupado.** El servidor usa `strictPort`: no se cambia
-  solo de puerto, porque la app se abre en Desktop en `localhost:5173` y de ese dominio sale tu
-  cuenta. Cierra la otra terminal que corre `pnpm dev`.
+  solo de puerto, para que la URL del navegador siempre sea `http://127.0.0.1:5173`. Cierra la otra
+  terminal que corre `pnpm dev`.
 - **El D-pad no aparece en la PC.** Es a propósito: solo se muestra en pantallas táctiles
   (`pointer: coarse`). En DevTools activa la barra de dispositivos con un teléfono.
 - **El ranking no carga.** Las lecturas van por el ETH-RPC del devnet
   (`https://eth-rpc-testnet.polkadot.io`). Revisa tu conexión y toca «Reintentar». `pnpm test:red`
   te dice si el contrato responde.
-- **No puedo guardar desde el navegador.** Guardar necesita el Host: abre el juego dentro de
-  Polkadot Desktop o de la Polkadot App.
+- **No puedo guardar desde el navegador.** Guardar necesita el Host: publica el juego en tu `.dot` y
+  ábrelo desde Polkadot Desktop o la Polkadot App
+  ([sección 3](#probar-dentro-del-host-publica-en-tu-dot)). El Host no se conecta a `localhost`.
 - **La IA cambió `package.json`, `pnpm-lock.yaml` o `pnpm-workspace.yaml`.** Descarta esos cambios
   con `git restore package.json pnpm-lock.yaml pnpm-workspace.yaml game/package.json` y pídele que no
   los toque ([capítulo 4, sección 15](./04-vibe-coding.md#15-errores-comunes-de-la-ia-en-este-stack)).
