@@ -37,7 +37,7 @@ export interface Maze {
   house: Vec[];
 }
 
-/** Fases de la partida (design §4.5). Cada etapa usa las que ya existen. */
+/** Estados de la partida (design §4.5). */
 export type Phase = 'titulo' | 'listo' | 'jugando' | 'muriendo' | 'rondaLimpia' | 'pausa' | 'fin';
 
 /** Fases desde las que se puede pausar y a las que se regresa al reanudar. */

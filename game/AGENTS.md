@@ -22,16 +22,15 @@ navegador y dentro de Polkadot Desktop o la Polkadot App. Guarda récords en un 
 ## Gestor de paquetes
 - Solo pnpm. Nunca npm ni yarn.
 - No toques `package.json`, `game/package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml` ni
-  `contrato/`. Todas las dependencias ya están instaladas.
+  `contrato/`.
 
 ## Reglas del juego
 - `src/engine/` es lógica pura: sin DOM, sin `window`, sin `document`, sin tiempo real. Todo avanza
   con `dt` (segundos simulados) y se prueba con Vitest.
-- Todos los números del juego viven en `src/engine/rules.ts`, con los nombres que pida el prompt.
+- Todos los números del juego viven en `src/engine/rules.ts`.
 - El laberinto (`MAZE` en `src/engine/maze.ts`) solo cambia si yo lo pido.
 - La dirección del contrato vive solo en `src/contract/config.ts`.
-- No modifiques `src/contract/`, `src/hub/` ni `src/lib/` salvo que el prompt lo pida. Ya están
-  completos y probados; úsalos por su API.
+- `src/contract/`, `src/hub/` y `src/lib/` tienen sus propios tests; si cambias su API, actualiza los tests.
 
 ## SDK
 - Toda la conexión con el Host ya está en `src/hub/hub.ts` (`createHub()`).

@@ -299,7 +299,7 @@ button:focus-visible {
   outline-offset: 3px;
 }
 
-/* Etapa 5: conexión, ranking, fin de partida y modal de username. */
+/* Conexión, ranking, fin de partida y modal de username. */
 .overlay-extra {
   display: flex;
   flex-direction: column;

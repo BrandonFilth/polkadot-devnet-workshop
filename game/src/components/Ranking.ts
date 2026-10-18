@@ -1,4 +1,4 @@
-// Top 10 del Leaderboard compartido: cargando, vacío, error con Reintentar y la tabla.
+// Top 10 de tu Leaderboard: cargando, vacío, error con Reintentar y la tabla.
 import { shortAddress } from '../contract/ranking';
 import type { Hub, RankingRow } from '../hub/hub';
 
