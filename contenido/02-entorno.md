@@ -16,13 +16,13 @@ de lo que hagas aquí cuesta dinero real.
 | Herramienta | Dónde | Para qué |
 |---|---|---|
 | Polkadot App (versión devnet) | Teléfono | Tu cuenta, tu llave y tus firmas |
-| Polkadot Desktop 0.1.3 | Computadora | Abrir y probar tu app mientras la construyes |
+| Polkadot Desktop 0.1.3 | Computadora | Abrir y probar tu app publicada en su `.dot` (no se conecta a `localhost`) |
 | Node.js, pnpm y Git | Computadora | Correr, construir y guardar tu código |
 | Kiro | Computadora | El editor con IA con el que vas a programar |
 | MetaMask | Navegador | Desplegar tu smart contract desde Remix |
 | Product SDK | En cada proyecto | Que tu app hable con el Host |
 | GitHub CLI (`gh`) | Computadora | Conectar tu terminal con tu cuenta de GitHub |
-| `pad` y `dotns` | Se ejecutan sin instalar | Publicar tu app con su nombre `.dot` |
+| `pad` y `dotns` | Se ejecutan sin instalar | `pad` sube tu app a Bulletin ([capítulo 5](./05-el-juego.md#probar-dentro-del-host-publica-en-tu-dot)); tu nombre `.dot` se compra y se apunta desde la Polkadot App (`dotns.dot`) |
 
 ---
 
@@ -59,7 +59,7 @@ o al gestor de archivos con el que bajaste el APK.
 
 ## Paso 3 · Polkadot Desktop
 
-Desktop es donde vas a abrir tu app mientras la programas. No guarda tu llave: se empareja con tu
+Desktop es donde vas a abrir tu app, publicada en su `.dot`, mientras la programas. No guarda tu llave: se empareja con tu
 teléfono y te manda ahí cada firma
 ([docs](https://docs.polkadot.com/apps/get-started/)).
 

@@ -14,7 +14,7 @@ o de la Polkadot App para guardar tu récord. Aquí puedes jugar y ver el rankin
 
 ## Tiempo estimado
 
-30 a 40 minutos, más la prueba dentro de Polkadot Desktop.
+30 a 40 minutos, más unos 5 minutos por cada publicación en tu `.dot` para probar desde el Host.
 
 ## El prompt
 
@@ -128,18 +128,21 @@ Cómo se comprueba:
    dentro de Polkadot Desktop…». Juega y pierde: el fin muestra el ranking y el aviso, sin botón de
    guardar.
 3. Celular en DevTools (390 x 667): el top 10 se puede desplazar dentro del overlay.
-4. Ni Desktop ni la Polkadot App se conectan a `localhost`: lo que sigue se prueba en tu `.dot`.
-   Corre `pnpm build`, publica `game/dist` en tu `.dot` con el ciclo del taller
-   ([capítulo 5, «Probar dentro del Host»](../contenido/05-el-juego.md#probar-dentro-del-host-publica-en-tu-dot))
-   y abre tu nombre desde Polkadot Desktop o la Polkadot App. Toca «Conectar»: el teléfono pide la
-   cuenta y el permiso de gas.
+4. Ni Desktop ni la Polkadot App se conectan a `localhost`: lo que sigue se prueba en tu `.dot`,
+   nunca en localhost. Corre `pnpm build` y, desde la raíz, las tres líneas de `pad` del
+   [capítulo 5, «Probar dentro del Host»](../contenido/05-el-juego.md#probar-dentro-del-host-publica-en-tu-dot)
+   (la última es `pad .\game\dist $tmp --env devnet --js-merkle --no-manifest`). Copia el CID de la
+   última línea, pégalo en tu nombre (`dotns.dot` → Profile → tu nombre → Edit → `contenthash`) y
+   firma. Abre tu nombre desde Polkadot Desktop o la Polkadot App y toca «Conectar»: el teléfono pide
+   la cuenta y el permiso de gas.
 5. Juega y termina con más puntos que tu récord: «Guardar récord» pide una firma. Mientras firmas,
    «Jugar otra vez» y Enter no hacen nada. Al terminar, el ranking y el HUD muestran tu récord.
 6. Termina con menos puntos: «No supera tu récord», sin firma.
 7. Toca «Username», escribe `Ana`: el campo lo pasa a `ana`. Prueba `a`: mensaje de 3 a 16
    caracteres sin firma. Un username válido pide una firma y aparece en el ranking.
 
-Publicar el juego en tu nombre `.dot` es el capítulo 6.
+Es el mismo método con el que publicas el juego al final; el capítulo 6 amplía el nombre, el
+manifest y la renovación.
 
 ## Tests automáticos que debe agregar
 

@@ -131,6 +131,16 @@
 .j-checks div { display: grid; grid-template-columns: 44px 1fr; align-items: center; font: 22px var(--display); padding: 12px 0; border-bottom: 1px solid #2a2a2a; }
 .j-box { width: 22px; height: 22px; border: 2px solid var(--accent); }
 
+/* Comando de publicación y teléfono con contenthash */
+.term .body.j-cmd { white-space: pre-wrap; font-size: 18px; line-height: 1.6; padding: 20px 28px 22px; }
+.j-cmd > div { padding-left: 2ch; text-indent: -2ch; }
+.j-ph { padding: 44px 26px 26px; }
+.j-ph-top { font: 18px var(--mono); color: var(--muted); }
+.j-ph-name { font: 700 22px/1.25 var(--display); text-transform: uppercase; margin-top: 10px; }
+.j-ph-lbl { font: 18px var(--mono); color: var(--muted); margin-top: 18px; }
+.j-ph-field { border: 2px solid var(--accent); background: #0b0b0b; font: 18px var(--mono); color: var(--ink); padding: 10px 14px; margin-top: 8px; }
+.j-ph-btn { background: var(--accent); color: #000; font: 700 20px var(--display); text-transform: uppercase; text-align: center; padding: 12px; margin-top: 18px; border-radius: 6px; }
+
 /* Repaso */
 .j-steps > div { display: grid; grid-template-columns: 60px 1fr; column-gap: 22px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--line); }
 .j-steps .c { width: 52px; height: 52px; border-radius: 50%; border: 2px solid #d6d3d1; display: grid; place-items: center; font: 700 20px var(--display); }
@@ -444,7 +454,41 @@
     <div class="item lead" style="left:110px; top:700px; width:1380px; font-size:22px;">La dirección vive solo en <span class="j-code j-pink">src/contract/config.ts</span>. Cambiarla es una línea.</div>
   </section>
 
-  <!-- 12 · Guardar -->
+  <!-- 12 · Prueba en tu .dot -->
+  <section class="slide" data-title="Prueba en tu .dot" style="--bgpos: 70% 30%;">
+    <div class="panel" style="left:110px; top:50px; width:1380px; padding:30px 52px 32px;">
+      <div class="h">Prueba en tu .dot</div>
+      <div class="lead" style="font-size:22px; margin-top:12px;">El Host no abre localhost. Es el mismo método para probar y para publicar al final.</div>
+    </div>
+    <div class="item j-cyc" style="left:110px; top:250px; width:1380px;">
+      <div class="box"><div class="n">01</div><b>pnpm build</b><span>game/dist</span></div>
+      <div class="a">→</div>
+      <div class="box"><div class="n">02</div><b>pad</b><span>pool · nombre tmp</span></div>
+      <div class="a">→</div>
+      <div class="box"><div class="n">03</div><b>Copia el CID</b><span>CID: bafy… al final</span></div>
+      <div class="a">→</div>
+      <div class="box"><div class="n">04</div><b>Pégalo en tu .dot</b><span>dotns.dot → Edit → contenthash</span></div>
+      <div class="a">→</div>
+      <div class="box pink"><div class="n">05</div><b>Abre tu .dot</b><span>en el Host</span></div>
+    </div>
+    <div class="item term" style="left:110px; top:460px; width:960px;">
+      <div class="bar"><i></i><i></i><i></i><span>PowerShell · raíz del repo</span></div>
+      <div class="body code j-cmd"><div><span class="kw">function</span> pad { $env:PAD_UPDATE_CHECK = '0'; pnpm dlx --ignore-scripts @polkadot-community-foundation/polkadot-app-deploy@0.16.7 @args }</div><div>$tmp = 'tmp' + (-join ((Get-Date -Format 'yyyyMMddHHmmss').ToCharArray() | ForEach-Object { [char](97 + [int]"$_") })) + '.dot'</div><div><span class="kw">pad</span> .\game\dist $tmp --env devnet --js-merkle --no-manifest</div></div>
+    </div>
+    <div class="item lead" style="left:110px; top:730px; width:960px; font-size:20px;">Termina con la línea <span class="j-code j-pink">CID: bafy…</span> · unos 3.5 min · sin frase de recuperación</div>
+    <div class="item" style="left:1110px; top:460px; width:380px;">
+      <div class="j-phone j-ph">
+        <div class="j-ph-top">dotns.dot</div>
+        <div class="j-ph-name">tu-nombre.dot · Edit</div>
+        <div class="j-ph-lbl">contenthash</div>
+        <div class="j-ph-field">bafybei…</div>
+        <div class="j-ph-btn">Firmar</div>
+      </div>
+      <div class="j-cap">la única firma, en tu teléfono</div>
+    </div>
+  </section>
+
+  <!-- 13 · Guardar -->
   <section class="slide grid" data-title="Guardar: simula, firma, relee">
     <div class="item" style="left:110px; top:60px;"><div class="h">Guardar: simula, firma, relee</div></div>
     <div class="item j-flow" style="left:110px; top:170px; width:1380px;">
@@ -463,7 +507,7 @@
     </div>
   </section>
 
-  <!-- 13 · Si te atoras -->
+  <!-- 14 · Si te atoras -->
   <section class="slide" data-title="Si te atoras" style="--bgpos: 55% 45%;">
     <div class="panel" style="left:110px; top:50px; width:900px; padding:34px 52px 38px;"><div class="h">Si te atoras</div></div>
     <div class="item term" style="left:110px; top:240px; width:760px;">
@@ -490,7 +534,7 @@
     </div>
   </section>
 
-  <!-- 14 · Lo que sigue -->
+  <!-- 15 · Lo que sigue -->
   <section class="slide plain" data-title="Repaso y lo que sigue">
     <div class="item" style="left:110px; top:70px;"><div class="h">Repaso y lo que sigue</div></div>
     <div class="item j-steps" style="left:110px; top:180px; width:860px;">
@@ -503,7 +547,7 @@
     <div class="panel" style="left:1040px; top:500px; width:450px; padding:30px 44px;">
       <div class="kicker">Capítulo 06</div>
       <div class="h" style="font-size:44px; margin-top:12px;">Publica tu app</div>
-      <div class="lead j-mut" style="font-size:20px; margin-top:12px;">Tu juego con su nombre .dot.</div>
+      <div class="lead j-mut" style="font-size:20px; margin-top:12px;">El mismo método de la etapa 5, más nombre, icono y renovación.</div>
     </div>
   </section>
 
@@ -511,7 +555,7 @@
   <footer class="foot">
     <span id="where">05</span>
     <a href="../contenido/05-el-juego.md">Guía: contenido/05-el-juego.md</a>
-    <span><span id="count">01 / 14</span></span>
+    <span><span id="count">01 / 15</span></span>
   </footer>
 </main>
 <script src="assets/deck.js"></script>

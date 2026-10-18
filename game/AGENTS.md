@@ -48,6 +48,14 @@ navegador y dentro de Polkadot Desktop o la Polkadot App. Guarda récords en el 
 - Cada cambio con su test. No borrar, saltar ni desactivar tests.
 - Al terminar, decir qué archivos cambiaste y cómo probarlo.
 
+## Dónde se prueba
+- `pnpm dev` (http://127.0.0.1:5173) solo en un navegador normal: visual, juego y lecturas por
+  ETH-RPC.
+- Ningún Host se conecta a localhost. Conectar, firmas, gas, guardar récord y username se prueban
+  con el juego publicado en un `.dot` (`contenido/05-el-juego.md`, «Probar dentro del Host»).
+- Nunca sugerir probar en localhost dentro de un Host ni pedir una frase de recuperación para
+  publicar.
+
 ## Comandos (desde la raíz del repo)
 - pnpm dev
 - pnpm test

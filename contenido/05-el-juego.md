@@ -113,63 +113,78 @@ de abajo.
 
 ### Probar dentro del Host: publica en tu .dot
 
-Este es el ciclo del taller para subir el bundle a Bulletin sin conectar tu cuenta a la PC: sin
-sesión, sin frase de recuperación y sin keystore de DotNS. La única firma es la del `contenthash`,
-en tu teléfono. El [capítulo 6](./06-publicar.md) lo explica a fondo. Fuente: la skill
+Ni Polkadot Desktop ni la Polkadot App se conectan a `localhost`: para probar en el Host publicas el
+juego en tu `.dot`. **Es el mismo método con el que publicas tu app al final del hackatón**; el
+capítulo 6 (próximamente) amplía la compra del nombre, el manifest y la renovación. No necesitas
+sesión, frase de recuperación ni keystore: la única firma es la del `contenthash`, en tu teléfono.
+Fuente: la skill
 ([`publicar.md`, sección 2](https://github.com/BrandonFilth/polkadot-products-devnet/blob/main/skills/polkadot-products-devnet/references/publicar.md)).
-Comprobado con `pad` 0.16.7.
+Comprobado el 2026-10-18 con `pad` 0.16.7.
+
+Ciclo: cambias → `pnpm build` → subes con `pad` → copias el CID → lo pegas en tu `.dot` → abres tu
+`.dot` en el Host. Cada build da un CID nuevo.
 
 1. Una sola vez: compra tu nombre en la Polkadot App desde `dotns.dot` (9 caracteres o más). El
    nombre es de la cuenta de tu teléfono.
 2. Desde la raíz del repo, `pnpm build`. El bundle queda en `game/dist`.
-3. Copia el bundle a una carpeta **fuera del proyecto**, para que `pad` no encuentre ningún
-   `polkadot-app-deploy.config.ts` al subir por las carpetas (además usarás `--no-manifest`):
+3. Desde la raíz del repo, sube el bundle (unos 3.5 minutos).
+
+   Windows (PowerShell):
 
    ```powershell
-   $d = "$env:TEMP\polkaman"
-   Remove-Item -Recurse -Force $d -ErrorAction SilentlyContinue
-   Copy-Item -Recurse game\dist "$d\dist"
-   Set-Location $d
+   function pad { $env:PAD_UPDATE_CHECK = '0'; pnpm dlx --ignore-scripts @polkadot-community-foundation/polkadot-app-deploy@0.16.7 @args }
+   $tmp = 'tmp' + (-join ((Get-Date -Format 'yyyyMMddHHmmss').ToCharArray() | ForEach-Object { [char](97 + [int]"$_") })) + '.dot'
+   pad .\game\dist $tmp --env devnet --js-merkle --no-manifest
    ```
 
-4. Define el atajo de `pad` y asegúrate de que no hay sesión ni frase de recuperación:
+   macOS o Linux:
 
-   ```powershell
-   function pad { pnpm dlx --ignore-scripts @polkadot-community-foundation/polkadot-app-deploy@0.16.7 @args }
-   pad logout
-   Remove-Item Env:MNEMONIC -ErrorAction SilentlyContinue
+   ```bash
+   pad() { PAD_UPDATE_CHECK=0 pnpm dlx --ignore-scripts @polkadot-community-foundation/polkadot-app-deploy@0.16.7 "$@"; }
+   tmp="tmp$(date +%Y%m%d%H%M%S | tr '0-9' 'a-j').dot"
+   pad ./game/dist "$tmp" --env devnet --js-merkle --no-manifest
    ```
 
-5. Genera un nombre temporal sin dígitos (DotNS solo acepta 0 o 2 dígitos al final):
-
-   ```powershell
-   $ts = Get-Date -Format 'yyyyMMddHHmmss'
-   $tmp = 'tmp' + (-join ($ts.ToCharArray() | ForEach-Object { [char](97 + [int]"$_") })) + '.dot'
-   ```
-
-   En macOS o Linux: `tmp="tmp$(date +%Y%m%d%H%M%S | tr '0-9' 'a-j').dot"`.
-
-6. Sube el bundle (tarda de 3 a 4 minutos):
-
-   ```powershell
-   pad .\dist $tmp --env devnet --js-merkle --no-manifest
-   ```
-
-   Terminó bien si ves `Verified on-chain` y la última línea `CID: bafy…`: ese es el CID raíz. Las
-   líneas `bafkrei…` son los trozos. Si dice `pool account N … is not authorized (or its
-   authorization expired)`, corre el mismo comando otra vez: se elige otra cuenta del pool.
-7. Opcional, sin el Host: `https://<nombre-temporal>.dev-dot.li` muestra el bundle.
-8. En la Polkadot App (o en Desktop) abre `dotns.dot` → Profile → tu nombre → Edit, pega el CID en
-   `contenthash` y firma en el teléfono. Es la única firma.
-9. Abre tu nombre desde el Host y prueba la etapa 5: Conectar, permiso de gas, guardar récord y
+   La primera línea define el atajo para esa terminal. Corre las tres líneas en cada subida: la
+   segunda genera un nombre temporal nuevo.
+4. Terminó bien si ves `Storage signer: pool fallback (no session)`, `Using pool account N`,
+   `Verified on-chain`, el aviso de despliegue completo y la última línea `CID: bafy…`. Ese es el CID
+   raíz: cópialo. Las líneas `bafkrei…` son los trozos.
+5. Opcional, sin el Host: `https://<nombre-temporal>.dev-dot.li` muestra el bundle.
+6. En la Polkadot App (o en Desktop) abre `dotns.dot` → Profile → tu nombre → Edit, pega el CID en
+   `contenthash` y firma en el teléfono.
+7. Abre tu nombre desde el Host y prueba la etapa 5: Conectar, permiso de gas, guardar récord y
    username.
+
+Por qué cada parte:
+
+- `--env devnet`: sin él, `pad` usa otra red (`paseo-next-v2`).
+- `--js-merkle`: no necesitas el binario de IPFS Kubo.
+- `--no-manifest`: `pad` ignora cualquier `polkadot-app-deploy.config.ts` y usa el nombre que le das.
+- Nombre temporal: `pad` siempre registra el nombre que recibe; queda del worker compartido de `pad`
+  y no se vuelve a usar.
+- Letras en lugar de dígitos: DotNS solo acepta 0 o 2 dígitos al final del nombre.
+- `PAD_UPDATE_CHECK=0`: evita que `pad` ofrezca actualizarse después de un fallo.
+
+Si algo falla:
+
+| Síntoma | Qué hacer |
+|---|---|
+| `pool account N … is not authorized (or its authorization expired)` | Esa cuenta del pool venció en Bulletin. Corre otra vez la misma línea `pad`: elige al azar una de las 10 cuentas sin revisar su autorización. La organización mantiene autorizadas las 10 durante el evento |
+| El nombre ya tiene dueño | Genera otro `$tmp` (segunda línea) y repite |
+| Falla por propietario con tu propio nombre | Nunca le pases a `pad` el nombre de tu teléfono: `pad` firma con su worker. Dale el nombre temporal y pega el CID a mano |
+| No aparece `Storage signer: pool fallback (no session)` o pide aprobar en el teléfono | Hay una sesión de `pad` guardada. Corre `pad logout` y repite |
+| `Previous deploy did not exit cleanly. Continuing.` o `Previous deploy was interrupted` | Inofensivo |
+| `A newer version of polkadot-app-deploy is available (0.16.7 → 0.20.0)` | Ignóralo; no actualices (la versión está fija en 0.16.7) |
 
 Notas:
 
-- El nombre temporal queda a nombre del worker compartido de `pad` y no se vuelve a usar.
-- Nunca le pases tu propio nombre a `pad`: falla porque no es dueño del nombre.
-- Cada build nuevo da un CID nuevo; hay que pegarlo otra vez en `contenthash`.
-- Cuántas subidas seguidas aguanta el pool con unas 40 personas está **POR VERIFICAR**.
+- Nunca le pases tu propio nombre a `pad`; solo el nombre temporal.
+- La organización autorizó las 10 cuentas del pool con 1000 transacciones y 1000 MB cada una (unos
+  10 GB en total).
+- Bulletin borra el contenido a los ~14 días: vuelve a publicar antes de la demo o la evaluación.
+- Icono y descripción (manifest) son opcionales y se ven en el capítulo 6; el formato está **POR
+  VERIFICAR**.
 
 ---
 
@@ -607,4 +622,4 @@ siguiente.
 
 ---
 
-👉 [Capítulo 6 · Publica tu app](./06-publicar.md)
+👉 Capítulo 6 · Publica tu app (próximamente)
