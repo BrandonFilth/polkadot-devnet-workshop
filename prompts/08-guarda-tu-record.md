@@ -37,7 +37,8 @@ y contras para alguien que nunca ha usado una wallet, recomiéndame uno y no esc
 
 ## Al terminar, revisa
 
-Republica con el mismo ciclo de la fase 7 y prueba dentro del Host:
+Republica con el ciclo de la fase 7 (`pnpm build` → `pad` → Profile → Resolve → Save) y prueba
+dentro del Host. Repítelo cada vez que cambies algo:
 
 - Un puntaje mayor a tu récord pide **una** firma; uno menor no pide firma.
 - Mientras firmas, los botones quedan deshabilitados.

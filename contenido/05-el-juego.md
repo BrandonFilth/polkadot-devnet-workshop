@@ -85,35 +85,23 @@ Son las decisiones de la muestra; tú tomas las tuyas en la fase 0.
 | Número de fantasmas | Empieza en 2 y sale uno más cada 3 rondas, hasta 6 |
 | Marcador | El mejor puntaje se guarda en el contrato `Leaderboard` |
 
-### Juega la muestra
+### Prueba la muestra
 
-**En un navegador normal, solo el juego.** Desde la raíz del clon del curso
-([capítulo 2, paso 9](./02-entorno.md#paso-9--haz-fork-clónalo-y-verifica-todo)):
+Abre `polka-man.dot` en la Polkadot App o en Polkadot Desktop y juega. Es la muestra terminada,
+conectada al contrato del organizador. Así se verá lo que vas a construir. **POR VERIFICAR**:
+disponible cuando el organizador lo publique.
 
-```bash
-pnpm install
-pnpm test    # opcional, sin red
-pnpm dev
-```
+Prueba:
 
-Abre en tu PC la URL que muestra `pnpm dev` (`http://127.0.0.1:5173`). Para verlo en ancho de
-teléfono usa el modo dispositivo del navegador: F12 y luego Ctrl+Shift+M (en macOS, Cmd+Option+I y
-Cmd+Shift+M). Prueba:
-
-- Moverte con el teclado, o con swipe y D-pad en modo dispositivo.
+- Moverte con swipe y D-pad.
 - Comer bolitas y bolitas especiales, y comerte a los fantasmas asustados.
 - Chocar con un fantasma y perder vidas hasta el fin de la partida.
 - Vaciar el laberinto y ver que cada ronda se pone más difícil.
+- Conectar tu cuenta.
+- Guardar un récord con una firma y verlo en el ranking.
 
-Aquí ves el ranking, pero guardar no funciona: conectar, el permiso de gas y guardar solo funcionan
-publicada en un `.dot` y abierta desde el Host ([sección 8](#8-publica-en-tu-dot)).
-
-**La versión terminada en el Host.** El organizador publica la muestra en `polka-man.dot`, conectada
-a su propio contrato. Ábrela desde la Polkadot App o Polkadot Desktop: ahí ves conectar, guardar un
-récord y el ranking. Así debe verse la tuya al final. **POR VERIFICAR**: disponible cuando el
-organizador lo publique.
-
-Juega 5 minutos y anota 3 cosas que harías distinto.
+Juega 5 minutos y anota 3 cosas que harías distinto. Después armas la tuya con los prompts, fase por
+fase ([sección 3](#3-cómo-vas-a-trabajar)).
 
 ---
 
@@ -245,7 +233,7 @@ Prompt y revisión: [`prompts/00-define-tu-juego.md`](../prompts/00-define-tu-ju
 | 4 | [Fantasmas y vidas](../prompts/04-fantasmas.md) | Fantasmas, vidas y pantalla de fin | Navegador | 30–40 min |
 | 5 | [Bolitas especiales y dificultad](../prompts/05-poder-y-dificultad.md) | Fantasmas asustados y dificultad por ronda con tope | Navegador | 25–35 min |
 | 6 | [Tu contrato y el ranking](../prompts/06-tu-contrato.md) | Top 10 de tu contrato | Navegador | 25–30 min |
-| 7 | [Publica en tu .dot](../prompts/07-publica.md) | Tu juego en tu `.dot`, abierto desde el Host | Host | 15–20 min |
+| 7 | [Publica en tu .dot](../prompts/07-publica.md) | Tu nombre `.dot` y tu juego publicado en él, abierto desde el Host | Host | 15–20 min |
 | 8 | [Guarda tu récord](../prompts/08-guarda-tu-record.md) | Conectar, permiso de gas y guardar con una firma | Host | 30–40 min |
 
 En total, de 3.5 a 4.5 horas (**POR VERIFICAR** con un ensayo). Un commit y un `git push` por fase.
@@ -313,7 +301,7 @@ Fase 7 ([prompt](../prompts/07-publica.md)). Antes de publicar, el agente revisa
 esté listo, sin cambiar archivos. Después sigues este ciclo.
 
 **Qué se prueba dónde.** `pnpm dev` sirve para un navegador normal: ves el juego, juegas y lees el
-ranking por el ETH-RPC; la muestra indica que está fuera del Host (la tuya, desde la fase 8). Ni Polkadot Desktop ni la Polkadot
+ranking por el ETH-RPC; tu juego, desde la fase 8, avisa que está fuera del Host. Ni Polkadot Desktop ni la Polkadot
 App se conectan a `localhost`. Todo lo que pasa por el Host (Conectar, firmas, permiso de gas en
 PGAS y guardar récord) se prueba con la app **publicada en un dominio `.dot`** y abierta
 desde el Host
@@ -324,23 +312,41 @@ de abajo.
 > El Host deriva una cuenta por dominio: tu cuenta en tu `.dot` es distinta de la que tienes en la
 > app de un compañero ([capítulo 3, sección 16](./03-smart-contracts.md#16-tus-tres-cuentas)).
 
+### Compra tu nombre .dot (una sola vez)
+
+Lo haces una vez, antes de la primera subida. El nombre es de la cuenta de tu teléfono.
+
+1. Abre `dotns.dot` en la Polkadot App (o en Desktop).
+2. Search: escribe tu nombre.
+3. Register.
+4. Register otra vez.
+5. Continue.
+6. Firma en el teléfono.
+
+Reglas del nombre:
+
+- 9 caracteres o más (así no pide Proof of Personhood).
+- Solo `a-z`, `0-9` y `-`, sin guion al inicio ni al final.
+- Depósito de 10 PAS, reembolsable.
+
 ### Probar dentro del Host: publica en tu .dot
 
 Ni Polkadot Desktop ni la Polkadot App se conectan a `localhost`: para probar en el Host publicas el
 juego en tu `.dot`. **Es el mismo método con el que publicas tu app al final del hackatón**; el
 capítulo 6 (próximamente) amplía la compra del nombre, el manifest y la renovación. No necesitas
-sesión, frase de recuperación ni keystore: la única firma es la del `contenthash`, en tu teléfono.
+sesión, frase de recuperación ni keystore: en cada publicación la única firma es la de Save en
+Resolve, en tu teléfono.
 Fuente: la skill
 ([`publicar.md`, sección 2](https://github.com/BrandonFilth/polkadot-products-devnet/blob/main/skills/polkadot-products-devnet/references/publicar.md)).
 Comprobado el 2026-10-18 con `pad` 0.16.7.
 
-Ciclo: cambias → `pnpm build` → subes con `pad` → copias el CID → lo pegas en tu `.dot` → abres tu
-`.dot` en el Host. Cada build da un CID nuevo.
+Ciclo: `pnpm build` → subes con `pad` → copias el CID → `dotns.dot` → Profile → Resolve → pegas →
+Save → firmas → abres tu `.dot` en el Host. Cada build da un CID nuevo.
 
-1. Una sola vez: compra tu nombre en la Polkadot App desde `dotns.dot` (9 caracteres o más). El
-   nombre es de la cuenta de tu teléfono.
-2. Desde la raíz del repo, `pnpm build`. El bundle queda en `dist`.
-3. Desde la raíz del repo, sube el bundle (unos 3.5 minutos).
+Primero compra tu nombre ([subsección anterior](#compra-tu-nombre-dot-una-sola-vez)).
+
+1. Desde la raíz del repo, `pnpm build`. El bundle queda en `dist`.
+2. Desde la raíz del repo, sube el bundle (unos 3.5 minutos).
 
    Windows (PowerShell):
 
@@ -360,16 +366,24 @@ Ciclo: cambias → `pnpm build` → subes con `pad` → copias el CID → lo peg
 
    La primera línea define el atajo para esa terminal. Corre las tres líneas en cada subida: la
    segunda genera un nombre temporal nuevo.
-
-   Para publicar el proyecto de muestra, sigue la [sección 11](#11-publica-la-muestra-en-tu-dot).
-4. Terminó bien si ves `Storage signer: pool fallback (no session)`, `Using pool account N`,
+3. Terminó bien si ves `Storage signer: pool fallback (no session)`, `Using pool account N`,
    `Verified on-chain`, el aviso de despliegue completo y la última línea `CID: bafy…`. Ese es el CID
    raíz: cópialo. Las líneas `bafkrei…` son los trozos.
-5. Opcional, sin el Host: `https://<nombre-temporal>.dev-dot.li` muestra el bundle.
-6. En la Polkadot App (o en Desktop) abre `dotns.dot` → Profile → tu nombre → Edit, pega el CID en
-   `contenthash` y firma en el teléfono.
-7. Abre tu nombre desde el Host. En la fase 7 revisa que cargan el juego y el ranking; en la fase 8,
+4. Opcional, sin el Host: `https://<nombre-temporal>.dev-dot.li` muestra el bundle.
+5. En la Polkadot App (o en Desktop) abre `dotns.dot` → Profile → pestaña My Domains → en la fila de
+   tu nombre, botón Resolve. Se abre "Resolve to IPFS": pega el CID (`bafy…`) en "IPFS Hash or
+   Gateway URL", toca Save y firma en el teléfono.
+
+   ![Resolve to IPFS en DotNS](../img/dotns.png "Resolve to IPFS: pega el CID y toca Save")
+
+   En la fila también están Edit, Delegate y Set Primary. Edit es para los registros del perfil
+   (manifest), no para el CID.
+6. Abre tu nombre desde el Host. En la fase 7 revisa que cargan el juego y el ranking; en la fase 8,
    Conectar, permiso de gas y guardar récord.
+
+**Repite el ciclo cuando quieras.** Cada vez que quieras probar la conexión o cualquier función
+dentro del Host, en el taller y en el hackatón, repites los pasos 1 a 6. Cada build da un CID nuevo
+que vuelves a pegar con Resolve. El nombre no se vuelve a comprar.
 
 Por qué cada parte:
 
@@ -398,15 +412,16 @@ Notas:
 - La organización autorizó las 10 cuentas del pool con 1000 transacciones y 1000 MB cada una (unos
   10 GB en total).
 - Bulletin borra el contenido a los ~14 días: vuelve a publicar antes de la demo o la evaluación.
-- Icono y descripción (manifest) son opcionales y se ven en el capítulo 6; el formato está **POR
-  VERIFICAR**.
+- Icono y descripción (manifest) son opcionales y se ven en el capítulo 6: van en Profile → Edit →
+  Edit Profile Records → Custom Records → Add Record. Las claves están **POR VERIFICAR**.
 
 ---
 
 ## 9. Guarda tu récord
 
 Fase 8 ([prompt](../prompts/08-guarda-tu-record.md)). Esto es lo que tu app debe hacer al tocar
-«Guardar récord», y por qué:
+«Guardar récord», y por qué. Se prueba con el ciclo de publicar de la
+[sección 8](#probar-dentro-del-host-publica-en-tu-dot): cada cambio, un build y un CID nuevo.
 
 1. **Simular.** Antes de pedir la firma, pregunta al contrato si aceptaría el puntaje. Si lo va a
    rechazar, muestra el motivo y **no pide firma**
@@ -485,38 +500,10 @@ Sube por esta escalera, en orden:
   ([capítulo 4, sección 15](./04-vibe-coding.md#15-errores-comunes-de-la-ia-en-este-stack)).
 - **Los tests de una fase anterior fallan después de un prompt.** No dejes que la IA los borre o
   los salte. Pídele la causa y que corrija el código.
-- **En el proyecto de muestra, `pnpm dev` dice que el puerto 5173 está ocupado.** Cierra la otra
+- **`pnpm dev` dice que el puerto 5173 está ocupado.** Cierra la otra
   terminal que corre `pnpm dev`.
 
 </details>
-
----
-
-## 11. Publica la muestra en tu .dot
-
-Una práctica guiada del ciclo completo de publicación, sin tocar tu juego: publicas el proyecto de
-muestra tal cual en **tu** nombre `.dot`.
-
-1. Desde la raíz del repo del curso, `pnpm build`. La muestra queda en `game\dist`.
-2. Publica con el ciclo de la [sección 8](#probar-dentro-del-host-publica-en-tu-dot) (la función
-   `pad` y un `$tmp` nuevo), usando `.\game\dist` en lugar de `.\dist` (en macOS o Linux,
-   `./game/dist`):
-
-   ```powershell
-   pad .\game\dist $tmp --env devnet --js-merkle --no-manifest
-   ```
-
-3. Copia el CID `bafy…` de la última línea.
-4. En `dotns.dot` → Profile → tu nombre → Edit, pégalo en el `contenthash` de **tu** `.dot` y firma
-   en el teléfono.
-5. Abre tu `.dot` en el Host y compáralo con `polka-man.dot`.
-
-La muestra lee la dirección del contrato en `game/src/contract/config.ts`. En tu `.dot` ves el ranking
-del contrato de la muestra, a menos que pongas ahí la dirección de tu `Leaderboard`
-([capítulo 3, sección 17](./03-smart-contracts.md#17-despliégalo)) y vuelvas a construir. Tu cuenta en
-tu `.dot` es otro jugador ([capítulo 3, sección 16](./03-smart-contracts.md#16-tus-tres-cuentas)).
-
-Si algo falla, usa la tabla de la [sección 8](#probar-dentro-del-host-publica-en-tu-dot).
 
 ---
 
