@@ -1,4 +1,4 @@
-# Entrevista
+# Fase 0 · Define tu juego
 
 Al terminar tienes `SPEC.md`: las decisiones de tu juego, sin huecos, antes de escribir código.
 15 a 20 minutos.

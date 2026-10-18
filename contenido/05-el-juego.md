@@ -18,7 +18,7 @@ fantasmas. Al final lo publicas en tu nombre `.dot` y el jugador guarda su réco
 una firma desde su teléfono.
 
 El curso trae un juego terminado, Polka-Man, como ejemplo. Estas son **sus** decisiones; tú vas a
-tomar las tuyas en la [entrevista](#5-la-entrevista):
+tomar las tuyas en la fase 0, [Define tu juego](#5-define-tu-juego):
 
 | Regla | Así lo decidió la muestra |
 |---|---|
@@ -56,7 +56,7 @@ polkadot-devnet-workshop/
 ├── package.json            scripts dev, build, test y test:red (llaman a game/)
 ├── pnpm-workspace.yaml     packages: [game] y el override de @parity/truapi 0.13.1
 ├── contrato/               Leaderboard.sol y sus pruebas (capítulo 3)
-├── prompts/                00-entrevista.md … 08-guarda-tu-record.md y revision.md
+├── prompts/                00-define-tu-juego.md … 08-guarda-tu-record.md y revision.md
 └── game/
     ├── AGENTS.md           reglas para el agente
     ├── index.html, vite.config.js
@@ -185,9 +185,9 @@ Pendientes **POR VERIFICAR**:
 
 ---
 
-## 5. La entrevista
+## 5. Define tu juego
 
-Antes de escribir código, le pides a tu agente que **te entreviste**: que pregunte todo lo que
+Antes de escribir código, le pides a tu agente que **te haga preguntas**: todo lo que
 necesita saber para no dejar puntos vacíos ni decisiones arbitrarias. Es la parte que más cambia el
 resultado.
 
@@ -205,7 +205,7 @@ y los casos de la [sección 6](./04-vibe-coding.md#6-casos-de-prueba), más dos 
 - **Decisiones por fase:** una línea por decisión que tomes en cada fase ("Fase 4: al chocar se
   conservan las bolitas"). Si una decisión cambia un número, actualiza también la tabla.
 
-Prompt y revisión: [`prompts/00-entrevista.md`](../prompts/00-entrevista.md). Al terminar,
+Prompt y revisión: [`prompts/00-define-tu-juego.md`](../prompts/00-define-tu-juego.md). Al terminar,
 `git add SPEC.md`, commit y `git push`.
 
 ---
@@ -214,7 +214,7 @@ Prompt y revisión: [`prompts/00-entrevista.md`](../prompts/00-entrevista.md). A
 
 | # | Fase | Qué tienes al terminar | Se prueba en | Tiempo |
 |---|---|---|---|---|
-| 0 | [Entrevista](../prompts/00-entrevista.md) | `SPEC.md` sin huecos | — | 15–20 min |
+| 0 | [Define tu juego](../prompts/00-define-tu-juego.md) | `SPEC.md` sin huecos | — | 15–20 min |
 | 1 | [Tu proyecto](../prompts/01-proyecto.md) | Proyecto que arranca, `AGENTS.md`, un canvas y un test | Navegador | 20–25 min |
 | 2 | [Laberinto y movimiento](../prompts/02-laberinto.md) | Laberinto y personaje con teclado, swipe y D-pad, con pausa | Navegador | 30–35 min |
 | 3 | [Bolitas, puntaje y rondas](../prompts/03-puntos.md) | Comer bolitas, HUD y nueva ronda al vaciar | Navegador | 20–25 min |
