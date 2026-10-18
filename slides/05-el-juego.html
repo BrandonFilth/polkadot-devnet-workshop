@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>05 · El juego — Polkadot App Hackatón</title>
+<title>05 · Tu juego — Polkadot App Hackatón</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -36,6 +36,7 @@
 .j-rows > div { display: grid; grid-template-columns: 300px 1fr; align-items: baseline; padding: 15px 0; border-bottom: 1px solid var(--line); font: 24px var(--display); }
 .j-rows > div:first-child { border-top: 1px solid var(--line); }
 .j-rows .k { font: 20px var(--mono); color: var(--muted); }
+.j-label { font: 18px var(--mono); color: var(--muted); letter-spacing: .2em; text-transform: uppercase; }
 
 /* Bloques numerados */
 .j-blk { padding: 18px 0; border-top: 1px solid #2a2a2a; }
@@ -44,8 +45,9 @@
 .j-blk b i { font-style: normal; color: var(--accent); margin-right: 12px; }
 .j-blk p { font: 20px/1.45 var(--mono); color: #d6d3d1; margin-top: 8px; }
 
-/* Ciclo en fila */
+/* Ciclo en fila (5 o 6 cajas) */
 .j-cyc { display: grid; grid-template-columns: 1fr 40px 1fr 40px 1fr 40px 1fr 40px 1fr; align-items: stretch; }
+.j-cyc.six { grid-template-columns: 1fr 30px 1fr 30px 1fr 30px 1fr 30px 1fr 30px 1fr; }
 .j-cyc .a { font: 700 26px var(--display); color: var(--muted); display: grid; place-items: center; }
 .j-cyc .box { border: 2px solid #d6d3d1; background: #050505; padding: 16px 18px; }
 .j-cyc .box.pink { border-color: var(--accent); }
@@ -54,63 +56,39 @@
 .j-cyc .box.pink b { color: var(--accent); }
 .j-cyc .box span { display: block; font: 18px/1.4 var(--mono); color: var(--muted); margin-top: 8px; }
 
-/* Laberinto como texto */
-.j-maze { font: 22px/1.12 var(--mono); white-space: pre; color: #8b8b86; }
-.j-maze .w { color: #d6d3d1; }
-.j-maze .o, .j-maze .p { color: var(--accent); }
-.j-maze .n { color: #4a4a46; }
-.j-chars > div { display: grid; grid-template-columns: 90px 1fr; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); font: 22px var(--display); }
-.j-chars > div:first-child { border-top: 1px solid var(--line); }
-.j-chars .c { font: 500 26px var(--mono); color: var(--accent); }
+/* Chat con el agente */
+.j-chat { display: flex; flex-direction: column; gap: 16px; }
+.j-who { font: 18px var(--mono); letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+.j-who.r { align-self: flex-end; }
+.j-msg { border: 1px solid #3a3a37; background: #050505; padding: 14px 18px; font: 20px/1.45 var(--mono); color: #d6d3d1; max-width: 88%; }
+.j-msg.me { align-self: flex-end; border-color: var(--accent); }
+.j-msg ol { margin: 8px 0 0 26px; }
+.j-msg li { margin-top: 4px; }
 
-/* D-pad y teclas */
-.j-pad { display: grid; grid-template-columns: repeat(3, 96px); grid-template-rows: repeat(3, 96px); gap: 10px; }
-.j-pad div { border: 2px solid #3a3a37; border-radius: 18px; background: #0b0b0b; display: grid; place-items: center; font: 700 30px var(--display); color: var(--ink); }
-.j-pad div.hi { border-color: var(--accent); color: var(--accent); }
-.j-keys { display: flex; gap: 10px; }
-.j-keys span { border: 2px solid #3a3a37; border-radius: 8px; padding: 6px 14px; font: 500 20px var(--mono); }
+/* Opciones con pros y contras */
+.j-opts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.j-opt { border: 2px solid #3a3a37; background: #050505; padding: 22px 24px; }
+.j-opt.pink { border-color: var(--accent); }
+.j-opt b { display: block; font: 700 24px var(--display); text-transform: uppercase; }
+.j-opt.pink b { color: var(--accent); }
+.j-opt p { font: 19px/1.45 var(--mono); color: #d6d3d1; margin-top: 12px; }
+.j-opt p::before { content: '+ '; color: #9be7b0; }
+.j-opt p.no::before { content: '− '; color: var(--accent); }
+.j-opt .rec { font: 18px var(--mono); color: var(--accent); letter-spacing: .14em; text-transform: uppercase; margin-top: 14px; }
 
-/* Marcas sí */
-.j-marks div { font: 22px/1.4 var(--display); padding: 12px 0; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 44px 1fr; }
-.j-marks div::before { content: '✔'; color: #9be7b0; }
-.j-marks div.no::before { content: '✘'; color: var(--accent); }
-
-/* HUD dibujado */
-.j-hud { border: 2px solid #3a3a37; background: #000; padding: 22px 28px; display: grid; grid-template-columns: 1fr auto auto; align-items: center; column-gap: 28px; }
-.j-hud b { font: 700 32px var(--mono); letter-spacing: .02em; }
-.j-hud small { display: block; font: 20px var(--mono); color: var(--muted); margin-top: 6px; }
-.j-lives { display: flex; gap: 10px; }
-.j-lives i { width: 26px; height: 26px; border-radius: 50%; background: var(--accent); }
-.j-pause { width: 64px; height: 64px; border: 2px solid #3a3a37; border-radius: 14px; display: grid; place-items: center; font: 700 26px var(--display); }
-.j-lane { margin-top: 26px; border-top: 2px solid #d6d3d1; border-bottom: 2px solid #d6d3d1; height: 92px; display: flex; align-items: center; gap: 34px; padding: 0 22px; }
-.j-lane .d { width: 14px; height: 14px; border-radius: 50%; background: #d6d3d1; flex: none; }
-.j-lane .pw { width: 28px; height: 28px; border-radius: 50%; background: var(--accent); flex: none; }
-.j-lane .e { width: 14px; flex: none; }
-
-/* Fantasmas */
-.j-ghosts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-.j-g { border: 1px solid #2a2a2a; background: #000; padding: 20px 22px; display: grid; grid-template-columns: 76px 1fr; column-gap: 20px; align-items: center; }
-.j-g svg { width: 76px; height: 76px; }
-.j-g b { display: block; font: 700 26px var(--display); text-transform: uppercase; }
-.j-g em { font: normal 18px var(--mono); color: var(--muted); margin-left: 10px; }
-.j-g span { display: block; font: 19px/1.35 var(--mono); color: #d6d3d1; margin-top: 6px; }
-
-/* Tabla de dificultad */
-.j-tab > div { display: grid; grid-template-columns: 120px 140px 1fr 100px; align-items: center; padding: 5px 0; border-bottom: 1px solid #1c1c1c; font: 20px var(--mono); color: #d6d3d1; }
-.j-tab > div.hd { font: 18px var(--mono); color: var(--muted); letter-spacing: .08em; border-bottom: 1px solid var(--line); }
-.j-tab > div.cap { color: var(--accent); }
-.j-bar2 { height: 14px; background: #d6d3d1; display: inline-block; vertical-align: middle; margin-right: 12px; }
-.j-tab > div.cap .j-bar2 { background: var(--accent); }
-
-/* Diagrama de composabilidad */
-.j-app { position: absolute; width: 400px; border: 2px solid #d6d3d1; background: #050505; padding: 14px 20px; }
-.j-app b { display: block; font: 700 22px var(--display); text-transform: uppercase; }
-.j-app span { display: block; font: 18px var(--mono); color: var(--muted); margin-top: 4px; }
-.j-app.pink { border-color: var(--accent); }
-.j-app.pink b { color: var(--accent); }
-.j-lb { position: absolute; border: 2px solid var(--accent); background: #000; padding: 26px 30px; }
-.j-lb b { display: block; font: 700 34px var(--display); text-transform: uppercase; }
-.j-lb span { display: block; font: 19px/1.5 var(--mono); color: #d6d3d1; margin-top: 10px; }
+/* Partes de un archivo de fase */
+.j-parts { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.j-part { border: 1px solid #2a2a2a; border-left: 4px solid #d6d3d1; background: #000; padding: 22px 28px; }
+.j-part.pink { border-left-color: var(--accent); }
+.j-part b { display: block; font: 700 24px var(--display); text-transform: uppercase; }
+.j-part b i { font-style: normal; color: var(--accent); margin-right: 12px; }
+.j-part p { font: 20px/1.45 var(--mono); color: #d6d3d1; margin-top: 10px; }
+.j-part .ex { font: 19px/1.45 var(--mono); color: var(--muted); margin-top: 10px; }
+.j-parts.tall .j-part { min-height: 220px; padding: 30px 34px; }
+.j-parts.tall .j-part p { font-size: 22px; }
+.j-parts.tall .j-part .ex { font-size: 20px; margin-top: 18px; border: 1px dashed #3a3a37; padding: 10px 14px; }
+.j-parts.mid .j-part { min-height: 200px; padding: 28px 32px; }
+.j-parts.mid .j-part p { font-size: 22px; }
 
 /* Pasos de guardado */
 .j-flow { display: grid; grid-template-columns: 1fr 44px 1fr 44px 1fr; align-items: stretch; }
@@ -140,13 +118,18 @@
 .j-ph-lbl { font: 18px var(--mono); color: var(--muted); margin-top: 18px; }
 .j-ph-field { border: 2px solid var(--accent); background: #0b0b0b; font: 18px var(--mono); color: var(--ink); padding: 10px 14px; margin-top: 8px; }
 .j-ph-btn { background: var(--accent); color: #000; font: 700 20px var(--display); text-transform: uppercase; text-align: center; padding: 12px; margin-top: 18px; border-radius: 6px; }
+.j-rank { margin-top: 6px; }
+.j-rank > div { display: grid; grid-template-columns: 40px 1fr auto; font: 18px var(--mono); color: #d6d3d1; padding: 8px 0; border-bottom: 1px solid #2a2a2a; }
+.j-empty { font: 18px/1.45 var(--mono); color: var(--muted); text-align: center; padding: 26px 6px; border: 1px dashed #3a3a37; margin-top: 10px; }
 
-/* Repaso */
+/* Lista de fases */
 .j-steps > div { display: grid; grid-template-columns: 60px 1fr; column-gap: 22px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.j-steps > div:last-child { border-bottom: 0; }
 .j-steps .c { width: 52px; height: 52px; border-radius: 50%; border: 2px solid #d6d3d1; display: grid; place-items: center; font: 700 20px var(--display); }
 .j-steps .pink .c { border-color: var(--accent); color: var(--accent); }
 .j-steps b { display: block; font: 700 24px var(--display); text-transform: uppercase; }
 .j-steps span { display: block; font: 19px var(--mono); color: var(--muted); margin-top: 4px; }
+.j-steps .host { color: var(--accent); }
 </style>
 </head>
 <body>
@@ -163,11 +146,11 @@
 <main class="deck" id="deck" data-chapter="05" data-prev="04-vibe-coding.html">
 
   <!-- 1 · Portada -->
-  <section class="slide" data-title="El juego" style="--bgpos: 65% 35%;">
+  <section class="slide" data-title="Tu juego" style="--bgpos: 65% 35%;">
     <div class="panel" style="left:110px; top:110px; width:820px; padding:46px 60px 50px;">
       <div class="kicker">Capítulo 05</div>
-      <div class="title" style="font-size:96px;">El juego</div>
-      <div class="sub">Polka-Man en cinco etapas: del laberinto al marcador compartido.</div>
+      <div class="title" style="font-size:96px;">Tu juego</div>
+      <div class="sub">Tu juego de laberinto: tu repo, tu contrato, tu .dot</div>
     </div>
     <div class="item" style="left:1010px; top:150px; width:480px; height:260px;" aria-hidden="true">
       <svg style="position:absolute; left:0; top:40px; width:180px; height:180px;"><use href="#j-pm"/></svg>
@@ -175,7 +158,7 @@
       <svg style="position:absolute; left:370px; top:70px; width:110px; height:110px; color:#9be7b0;"><use href="#j-ghost"/></svg>
       <div style="position:absolute; left:200px; top:122px; width:18px; height:18px; border-radius:50%; background:#d6d3d1;"></div>
     </div>
-    <div class="tape" style="left:1040px; top:520px; transform:rotate(5deg);">5 ETAPAS</div>
+    <div class="tape" style="left:1040px; top:520px; transform:rotate(5deg);">8 FASES</div>
     <div class="tape" style="left:170px; top:560px; transform:rotate(-4deg);">MOBILE-FIRST</div>
     <div class="tape pink" style="left:640px; top:690px; transform:rotate(-3deg);">LEADERBOARD</div>
   </section>
@@ -183,31 +166,32 @@
   <!-- 2 · Qué vas a construir -->
   <section class="slide plain" data-title="Qué vas a construir">
     <div class="item" style="left:110px; top:70px;"><div class="h">Qué vas a construir</div></div>
-    <div class="item j-rows" style="left:110px; top:190px; width:920px;">
+    <div class="item j-label" style="left:110px; top:170px; width:920px;">Así lo decidió la muestra · tú decides las tuyas</div>
+    <div class="item j-rows" style="left:110px; top:220px; width:920px;">
       <div><span class="k">Vidas</span><span><span class="j-pink">5</span> · pierdes una al chocar con un fantasma</span></div>
-      <div><span class="k">Orbe</span><span>10 puntos</span></div>
-      <div><span class="k">Orbe especial</span><span>50 y te puedes <span class="j-pink">comer a los fantasmas</span></span></div>
+      <div><span class="k">Bolita</span><span>10 puntos</span></div>
+      <div><span class="k">Bolita especial</span><span>50 y te puedes <span class="j-pink">comer a los fantasmas</span></span></div>
       <div><span class="k">Fantasmas comidos</span><span>200 · 400 · 800 · 1600</span></div>
-      <div><span class="k">Velocidad</span><span>+5 % cada ronda, con tope</span></div>
+      <div><span class="k">Velocidad</span><span>sube cada ronda, con tope</span></div>
       <div><span class="k">Fantasmas</span><span>2 al inicio, +1 cada 3 rondas, hasta 6</span></div>
-      <div><span class="k">Marcador</span><span>tu récord en el contrato Leaderboard</span></div>
+      <div><span class="k">Marcador</span><span>el récord en <span class="j-pink">tu</span> contrato Leaderboard</span></div>
     </div>
-    <div class="item lead" style="left:110px; top:700px; width:920px; font-size:22px;">Mobile-first: swipe y D-pad en el celular, teclado en la PC.</div>
+    <div class="item lead" style="left:110px; top:730px; width:920px; font-size:22px;">Mobile-first: swipe y D-pad en el celular, teclado en la PC.</div>
     <div class="item" style="left:1160px; top:60px; width:300px;">
-      <div class="j-phone"><img src="../img/cap5/polka-man-movil.png" alt="Polka-Man en un celular de 390 px: HUD con puntos, ronda y 5 vidas; el laberinto con Polka-Man rosa y dos fantasmas; el D-pad abajo"></div>
+      <div class="j-phone"><img src="../img/cap5/polka-man-movil.png" alt="Polka-Man en un celular de 390 px: HUD con puntaje, ronda y 5 vidas; el laberinto con Polka-Man rosa y dos fantasmas; el D-pad abajo"></div>
       <div class="j-cap">captura real · 390 x 844</div>
     </div>
   </section>
 
-  <!-- 3 · El proyecto -->
-  <section class="slide grid" data-title="El proyecto">
-    <div class="item" style="left:110px; top:70px;"><div class="h">El proyecto · game/</div></div>
+  <!-- 3 · El proyecto de muestra -->
+  <section class="slide grid" data-title="El proyecto de muestra">
+    <div class="item" style="left:110px; top:70px;"><div class="h">El proyecto de muestra · game/</div></div>
     <div class="item j-win" style="left:110px; top:180px; width:740px;">
       <div class="j-bar"><i></i><i></i><i></i><span>polkadot-devnet-workshop/</span></div>
       <div class="j-body code" style="font-size:20px; line-height:1.55;">├── package.json          <span class="cm">pnpm dev · test · build</span>
 ├── pnpm-workspace.yaml   <span class="cm">packages: [game]</span>
 ├── contrato/             <span class="cm">capítulo 3</span>
-├── prompts/              <span class="cm">etapa-1.md … etapa-5.md</span>
+├── prompts/              <span class="cm">00-entrevista.md … revision.md</span>
 └── game/
     ├── <span class="kw">AGENTS.md</span>
     └── src/
@@ -215,26 +199,25 @@
         ├── render/       <span class="cm">canvas</span>
         ├── input/        <span class="cm">teclado, swipe, D-pad</span>
         ├── components/   <span class="cm">HUD, ranking, fin</span>
-        ├── <span class="kw">contract/</span>     <span class="cm">ya hecho</span>
-        ├── <span class="kw">hub/</span>          <span class="cm">ya hecho</span>
-        └── <span class="kw">lib/</span>          <span class="cm">ya hecho</span></div>
+        ├── <span class="kw">contract/</span>     <span class="cm">dirección y ABI</span>
+        ├── <span class="kw">hub/</span>          <span class="cm">Host, gas, firmas</span>
+        └── <span class="kw">lib/</span>          <span class="cm">errores y formato</span></div>
     </div>
     <div class="panel" style="left:910px; top:180px; width:580px; padding:30px 36px;">
-      <div class="j-blk"><b><i>01</i>Versiones fijas</b><p>Todo instalado en main. Ninguna etapa agrega dependencias.</p></div>
-      <div class="j-blk"><b><i>02</i>El laberinto ya se ve</b><p>Datos en engine/maze.ts, dibujados en el canvas.</p></div>
-      <div class="j-blk"><b><i>03</i>Contrato ya conectable</b><p>contract/, hub/ y lib/ probados, sin conectar a la interfaz. La etapa 5 solo los usa.</p></div>
-      <div class="j-blk"><b><i>04</i>Reglas para el agente</b><p>game/AGENTS.md: qué puede tocar y qué no.</p></div>
+      <div class="j-blk"><b><i>01</i>Versiones fijas</b><p>Las de la skill, sin ^ ni ~.</p></div>
+      <div class="j-blk"><b><i>02</i>El laberinto es texto</b><p>Se lee a ojo y la IA lo edita sin errores.</p></div>
+      <div class="j-blk"><b><i>03</i>Contrato aparte</b><p>contract/, hub/ y lib/ con sus propios tests.</p></div>
+      <div class="j-blk"><b><i>04</i>Reglas para el agente</b><p>game/AGENTS.md es un ejemplo: el tuyo lo arma tu agente.</p></div>
     </div>
   </section>
 
-  <!-- 4 · Arranca la plantilla -->
-  <section class="slide" data-title="Arranca la plantilla" style="--bgpos: 25% 60%;">
-    <div class="panel" style="left:110px; top:50px; width:900px; padding:34px 52px 38px;"><div class="h">Arranca la plantilla</div></div>
+  <!-- 4 · Juega la muestra -->
+  <section class="slide" data-title="Juega la muestra" style="--bgpos: 25% 60%;">
+    <div class="panel" style="left:110px; top:50px; width:900px; padding:34px 52px 38px;"><div class="h">Juega la muestra</div></div>
     <div class="item term" style="left:110px; top:240px; width:680px;">
-      <div class="bar"><i></i><i></i><i></i><span>Raíz del repo</span></div>
+      <div class="bar"><i></i><i></i><i></i><span>Clon del curso</span></div>
       <div class="body code" style="font-size:22px; line-height:1.7;"><span class="kw">pnpm</span> install
-<span class="kw">pnpm</span> test       <span class="cm"># unidad, sin red</span>
-<span class="kw">pnpm</span> test:red   <span class="cm"># lee el contrato real</span>
+<span class="kw">pnpm</span> test       <span class="cm"># sin red</span>
 <span class="kw">pnpm</span> dev
 <span class="cm">  ➜  Local:</span> <span class="ty">http://127.0.0.1:5173/</span></div>
     </div>
@@ -249,209 +232,146 @@
       </div>
     </div>
     <div class="panel" style="left:110px; top:640px; width:1380px; padding:26px 52px;">
-      <div class="lead" style="font-size:24px;">Ves el laberinto y «La plantilla funciona. Sigue con la etapa 1.»</div>
+      <div class="lead" style="font-size:24px;">Ves POLKA-MAN y los controles. Juega 5 minutos y anota 3 cosas que harías distinto.</div>
     </div>
   </section>
 
-  <!-- 5 · Cómo trabajas cada etapa -->
-  <section class="slide plain" data-title="Cómo trabajas cada etapa">
-    <div class="item" style="left:110px; top:70px;"><div class="h">Cómo trabajas cada etapa</div></div>
-    <div class="item j-cyc" style="left:110px; top:190px; width:1380px;">
-      <div class="box"><div class="n">01</div><b>Copia el prompt</b><span>prompts/etapa-N.md</span></div>
+  <!-- 5 · Tu repo -->
+  <section class="slide plain" data-title="Tu repo">
+    <div class="item" style="left:110px; top:70px;"><div class="h">Tu repo</div></div>
+    <div class="item term" style="left:110px; top:170px; width:960px;">
+      <div class="bar"><i></i><i></i><i></i><span>PowerShell, macOS o Linux</span></div>
+      <div class="body code j-cmd" style="font-size:20px;"><div><span class="kw">cd</span> polkadot-devnet-workshop   <span class="cm"># el clon del capítulo 2</span></div><div><span class="kw">cd</span> ..</div><div><span class="kw">mkdir</span> mi-juego</div><div><span class="kw">cd</span> mi-juego</div><div><span class="kw">git</span> init</div><div><span class="kw">npx</span> skills@1.7.2 add https://github.com/BrandonFilth/polkadot-products-devnet --skill polkadot-products-devnet</div><div><span class="kw">git</span> add .</div><div><span class="kw">git</span> commit -m <span class="ty">"skill del hackatón"</span></div><div><span class="kw">gh</span> repo create mi-juego --public --source=. --push</div></div>
+    </div>
+    <div class="item j-win" style="left:1120px; top:170px; width:370px;">
+      <div class="j-bar"><i></i><i></i><i></i><span>tu carpeta</span></div>
+      <div class="j-body code" style="font-size:18px; line-height:1.8; padding:18px 18px;">├── polkadot-devnet-workshop/
+│   └── <span class="cm">game/  muestra</span>
+└── <span class="kw">mi-juego/</span>
+    ├── .agents/
+    └── skills-lock.json</div>
+    </div>
+    <div class="item lead" style="left:1120px; top:470px; width:370px; font-size:20px;"><span class="j-code">mi-juego</span> queda junto a <span class="j-code">polkadot-devnet-workshop</span>.</div>
+    <div class="panel" style="left:110px; top:650px; width:1380px; padding:24px 52px;">
+      <div class="lead" style="font-size:24px;">Después: entrevista → <span class="j-code j-pink">SPEC.md</span> → commit + push. Luego, una fase por commit.</div>
+    </div>
+  </section>
+
+  <!-- 6 · El ciclo -->
+  <section class="slide grid" data-title="El ciclo de cada fase">
+    <div class="item" style="left:110px; top:70px;"><div class="h">El ciclo de cada fase</div></div>
+    <div class="item j-cyc six" style="left:110px; top:180px; width:1380px;">
+      <div class="box"><div class="n">01</div><b>Pensar</b><span>escenarios y errores</span></div>
       <div class="a">→</div>
-      <div class="box"><div class="n">02</div><b>Revisa el plan</b><span>modo supervisado</span></div>
+      <div class="box"><div class="n">02</div><b>Preguntar</b><span>opciones si no sabes</span></div>
       <div class="a">→</div>
-      <div class="box"><div class="n">03</div><b>Prueba</b><span>pnpm test · build · a mano</span></div>
+      <div class="box"><div class="n">03</div><b>Decidir</b><span>escríbelo en SPEC.md</span></div>
       <div class="a">→</div>
-      <div class="box"><div class="n">04</div><b>git diff</b><span>solo game/src/</span></div>
+      <div class="box"><div class="n">04</div><b>Pedir</b><span>prompt corto, modo supervisado</span></div>
       <div class="a">→</div>
-      <div class="box pink"><div class="n">05</div><b>Commit</b><span>el mensaje del prompt</span></div>
+      <div class="box"><div class="n">05</div><b>Revisar</b><span>a mano, tests, git diff</span></div>
+      <div class="a">→</div>
+      <div class="box pink"><div class="n">06</div><b>Commit</b><span>y git push</span></div>
     </div>
-    <div class="item term" style="left:110px; top:430px; width:860px;">
-      <div class="bar"><i></i><i></i><i></i><span>Ramas de respaldo</span></div>
-      <div class="body code" style="font-size:21px; line-height:1.7;"><span class="kw">git</span> switch etapa-3          <span class="cm"># la solución de la etapa 3</span>
-<span class="kw">git</span> switch -c mi-version    <span class="cm"># tu rama desde ahí</span>
-<span class="kw">git</span> diff etapa-2 etapa-3    <span class="cm"># qué agregó la etapa 3</span>
-<span class="kw">git</span> switch main            <span class="cm"># vuelve a tu trabajo</span></div>
-    </div>
-    <div class="panel" style="left:1020px; top:430px; width:470px; padding:28px 36px;">
-      <div class="lead" style="font-size:22px;">Cada rama <span class="j-code">etapa-N</span> es la anterior más lo que pide su prompt.</div>
-      <div class="lead j-mut" style="font-size:20px; margin-top:14px;">Tiempo total: de 2 a 3 horas.</div>
+    <div class="item j-label" style="left:110px; top:420px; width:1380px;">Tres frases en casi todos los prompts</div>
+    <div class="item j-parts mid" style="left:110px; top:470px; width:1380px; grid-template-columns:1fr 1fr 1fr;">
+      <div class="j-part"><b><i>01</i>Lee SPEC.md y AGENTS.md</b><p>El contexto vive en archivos, no en el prompt.</p></div>
+      <div class="j-part pink"><b><i>02</i>Si te falta algo, pregúntame</b><p>Antes de escribir código. La IA no decide por ti.</p></div>
+      <div class="j-part"><b><i>03</i>Primero dime tu plan</b><p>Revisas antes de que toque archivos.</p></div>
     </div>
   </section>
 
-  <!-- 6 · El laberinto son datos -->
-  <section class="slide grid" data-title="El laberinto son datos">
-    <div class="item" style="left:110px; top:60px;"><div class="h">El laberinto son datos</div></div>
-    <div class="item j-win" style="left:110px; top:160px; width:470px;">
-      <div class="j-bar"><i></i><i></i><i></i><span>engine/maze.ts</span></div>
-      <div class="j-body j-maze" style="padding:12px 24px;"><span class="w">###################</span><span class="n">  0</span>
-<span class="w">#</span>........<span class="w">#</span>........<span class="w">#</span>
-<span class="w">#</span><span class="o">o</span><span class="w">##</span>.<span class="w">###</span>.<span class="w">#</span>.<span class="w">###</span>.<span class="w">##</span><span class="o">o</span><span class="w">#</span>
-<span class="w">#</span>.................<span class="w">#</span>
-<span class="w">#</span>.<span class="w">##</span>.<span class="w">#</span>.<span class="w">#####</span>.<span class="w">#</span>.<span class="w">##</span>.<span class="w">#</span>
-<span class="w">#</span>....<span class="w">#</span>...<span class="w">#</span>...<span class="w">#</span>....<span class="w">#</span>
-<span class="w">####</span>.<span class="w">###</span> <span class="w">#</span> <span class="w">###</span>.<span class="w">####</span>
-<span class="w">####</span>.<span class="w">#</span>       <span class="w">#</span>.<span class="w">####</span>
-<span class="w">####</span>.<span class="w">#</span> <span class="w">##</span>-<span class="w">##</span> <span class="w">#</span>.<span class="w">####</span>
-    .  <span class="w">#</span>GGG<span class="w">#</span>  .    <span class="n">  9</span>
-<span class="w">####</span>.<span class="w">#</span> <span class="w">#####</span> <span class="w">#</span>.<span class="w">####</span>
-<span class="w">####</span>.<span class="w">#</span>       <span class="w">#</span>.<span class="w">####</span>
-<span class="w">####</span>.<span class="w">#</span> <span class="w">#####</span> <span class="w">#</span>.<span class="w">####</span>
-<span class="w">#</span>........<span class="w">#</span>........<span class="w">#</span>
-<span class="w">#</span>.<span class="w">##</span>.<span class="w">###</span>.<span class="w">#</span>.<span class="w">###</span>.<span class="w">##</span>.<span class="w">#</span>
-<span class="w">#</span><span class="o">o</span>.<span class="w">#</span>.....<span class="p">P</span>.....<span class="w">#</span>.<span class="o">o</span><span class="w">#</span>
-<span class="w">##</span>.<span class="w">#</span>.<span class="w">#</span>.<span class="w">#####</span>.<span class="w">#</span>.<span class="w">#</span>.<span class="w">##</span>
-<span class="w">#</span>....<span class="w">#</span>...<span class="w">#</span>...<span class="w">#</span>....<span class="w">#</span>
-<span class="w">#</span>.<span class="w">######</span>.<span class="w">#</span>.<span class="w">######</span>.<span class="w">#</span>
-<span class="w">#</span>.................<span class="w">#</span>
-<span class="w">###################</span><span class="n"> 20</span></div>
+  <!-- 7 · La entrevista -->
+  <section class="slide" data-title="La entrevista" style="--bgpos: 80% 20%;">
+    <div class="panel" style="left:110px; top:50px; width:1380px; padding:30px 52px 34px;">
+      <div class="h">La entrevista</div>
+      <div class="lead" style="font-size:22px; margin-top:12px;">Antes del código, la IA te pregunta. Tú descubres lo que no habías decidido.</div>
     </div>
-    <div class="item j-chars" style="left:660px; top:160px; width:830px;">
-      <div><span class="c">#</span><span>Pared</span></div>
-      <div><span class="c">.</span><span>Orbe · 10 puntos</span></div>
-      <div><span class="c">o</span><span>Orbe especial · 50 puntos, asusta a los fantasmas</span></div>
-      <div><span class="c">P</span><span>Inicio de Polka-Man</span></div>
-      <div><span class="c">-</span><span>Puerta de la casa</span></div>
-      <div><span class="c">G</span><span>Interior de la casa</span></div>
+    <div class="item j-win" style="left:110px; top:250px; width:900px;">
+      <div class="j-bar"><i></i><i></i><i></i><span>Chat del agente · mi-juego</span></div>
+      <div class="j-body j-chat">
+        <div class="j-who r">Tú</div>
+        <div class="j-msg me">Quiero hacer un juego tipo Pac-Man para celular… Antes de escribir código, pregúntame cualquier duda para no dejar puntos vacíos ni decisiones arbitrarias.</div>
+        <div class="j-who">Agente</div>
+        <div class="j-msg">Antes de empezar:<ol><li>¿Cuántas vidas tiene el jugador?</li><li>Al chocar, ¿se conservan las bolitas comidas?</li><li>¿Qué ve el jugador si no hay red?</li></ol></div>
+      </div>
     </div>
-    <div class="panel" style="left:660px; top:600px; width:830px; padding:26px 40px;">
-      <div class="lead" style="font-size:22px;">19 x 21 · 146 orbes + 4 especiales · túnel: fila 9</div>
-      <div class="lead j-mut" style="font-size:20px; margin-top:10px;">maze.test.ts exige que no haya callejones sin salida.</div>
+    <div class="panel" style="left:1060px; top:250px; width:430px; padding:30px 36px;">
+      <div class="j-blk"><b><i>01</i>De pocas en pocas</b><p>Respondes y sigue preguntando.</p></div>
+      <div class="j-blk"><b><i>02</i>«No sé»</b><p>Pide opciones y elige tú.</p></div>
+      <div class="j-blk"><b><i>03</i>SPEC.md</b><p>El resultado. Commit y push.</p></div>
     </div>
   </section>
 
-  <!-- 7 · Etapa 1 -->
-  <section class="slide" data-title="Etapa 1 · Moverse" style="--bgpos: 80% 20%;">
-    <div class="panel" style="left:110px; top:50px; width:1380px; padding:32px 52px 36px;">
-      <div class="h">Etapa 1 · Polka-Man se mueve</div>
-      <div class="lead" style="margin-top:12px;">Título, LISTO, pausa y túnel. Sin orbes ni fantasmas todavía.</div>
+  <!-- 8 · Si no sabes, pide opciones -->
+  <section class="slide plain" data-title="Si no sabes, pide opciones">
+    <div class="item" style="left:110px; top:70px;"><div class="h">Si no sabes, pide opciones</div></div>
+    <div class="item j-chat" style="left:110px; top:170px; width:1380px;">
+      <div class="j-msg me" style="max-width:100%;">No sé qué tan difícil debería ser. Dame 3 opciones con pros y contras para alguien que juega en el celular, recomiéndame una y no escribas código.</div>
     </div>
-    <div class="item" style="left:110px; top:300px; width:420px;">
-      <div class="j-pad">
-        <span></span><div>▲</div><span></span>
-        <div class="hi">◀</div><div style="border:0; background:none;"><svg width="64" height="64" aria-hidden="true" style="transform:scaleX(-1);"><use href="#j-pm"/></svg></div><div>▶</div>
-        <span></span><div>▼</div><span></span>
-      </div>
-      <div class="j-keys" style="margin-top:26px;"><span>← ↑ → ↓</span><span>WASD</span><span>P</span><span>swipe</span></div>
+    <div class="item j-opts" style="left:110px; top:330px; width:1380px;">
+      <div class="j-opt"><b>Igual cada ronda</b><p>Fácil de entender</p><p class="no">Se vuelve aburrido</p></div>
+      <div class="j-opt pink"><b>Un poco más cada ronda, con tope</b><p>Reto que crece</p><p class="no">Hay que elegir el tope</p><div class="rec">Recomendada</div></div>
+      <div class="j-opt"><b>Por escalones</b><p>Cambios que se notan</p><p class="no">Saltos bruscos</p></div>
     </div>
-    <div class="panel" style="left:600px; top:690px; width:890px; padding:22px 44px;">
-      <div class="lead j-mut" style="font-size:20px;">prompts/etapa-1.md · tests: movement, swipe, game · 25 a 35 min</div>
-    </div>
-    <div class="panel" style="left:600px; top:300px; width:890px; padding:30px 44px;">
-      <div class="j-marks">
-        <div><span>JUGAR → LISTO → avanza a la izquierda a los 1.5 s</span></div>
-        <div><span>Gira en el cruce, no antes; la reversa es inmediata</span></div>
-        <div><span>Cambias de pestaña: queda en PAUSA, no se reanuda solo</span></div>
-        <div class="no"><span>Aviso «Gira tu teléfono» dentro del escenario: queda recortado</span></div>
-      </div>
+    <div class="item lead" style="left:110px; top:680px; width:1380px; font-size:24px;">Tú eliges y lo escribes en <span class="j-code j-pink">SPEC.md</span>. La IA no decide por ti.</div>
+  </section>
+
+  <!-- 9 · Un archivo de fase -->
+  <section class="slide grid" data-title="Un archivo de fase">
+    <div class="item" style="left:110px; top:70px;"><div class="h">Un archivo de fase</div></div>
+    <div class="item lead j-mut" style="left:110px; top:160px; width:1380px; font-size:22px;">prompts/04-fantasmas.md · las mismas cuatro partes en todas las fases</div>
+    <div class="item j-parts tall" style="left:110px; top:230px; width:1380px;">
+      <div class="j-part"><b><i>01</i>Antes de pedir</b><p>2 a 4 decisiones que te tocan a ti.</p><div class="ex">¿Cuántas vidas? p. ej. 3</div></div>
+      <div class="j-part pink"><b><i>02</i>El prompt</b><p>12 líneas o menos. Sin números: están en SPEC.md.</p><div class="ex">Lee SPEC.md y AGENTS.md…</div></div>
+      <div class="j-part"><b><i>03</i>Si no sabes</b><p>Opciones con pros y contras, sin código.</p><div class="ex">No sé cómo… Dame 3 opciones…</div></div>
+      <div class="j-part"><b><i>04</i>Al terminar, revisa</b><p>Pruebas a mano, tests, casos raros y commit.</p><div class="ex">Después dime 3 casos raros que no consideré.</div></div>
     </div>
   </section>
 
-  <!-- 8 · Etapa 2 -->
-  <section class="slide plain" data-title="Etapa 2 · Orbes y rondas">
-    <div class="item" style="left:110px; top:70px;"><div class="h">Etapa 2 · Orbes y rondas</div></div>
-    <div class="item" style="left:110px; top:190px; width:840px;">
-      <div class="j-hud">
-        <div><b>PUNTOS 340 · RONDA 1</b><small>HUD</small></div>
-        <div class="j-lives" aria-label="Vidas: 5"><i></i><i></i><i></i><i></i><i></i></div>
-        <div class="j-pause">II</div>
-      </div>
-      <div class="j-lane">
-        <span class="e"></span><span class="e"></span><span class="e"></span>
-        <svg width="56" height="56" aria-hidden="true" style="flex:none; transform:scaleX(-1);"><use href="#j-pm"/></svg>
-        <span class="d"></span><span class="d"></span><span class="d"></span><span class="d"></span><span class="pw"></span><span class="d"></span><span class="d"></span><span class="d"></span><span class="d"></span>
-      </div>
+  <!-- 10 · Las 8 fases -->
+  <section class="slide" data-title="Las 8 fases" style="--bgpos: 40% 70%;">
+    <div class="panel" style="left:110px; top:50px; width:1380px; padding:30px 52px 34px;">
+      <div class="h">Las 8 fases</div>
+      <div class="lead" style="font-size:22px; margin-top:12px;">Una a la vez, un commit por fase. De 3.5 a 4.5 horas.</div>
     </div>
-    <div class="item j-rows" style="left:1010px; top:190px; width:480px;">
-      <div style="grid-template-columns:200px 1fr;"><span class="k">Orbe</span><span>10</span></div>
-      <div style="grid-template-columns:200px 1fr;"><span class="k">Especial</span><span>50</span></div>
-      <div style="grid-template-columns:200px 1fr;"><span class="k">Laberinto</span><span>150 orbes</span></div>
-      <div style="grid-template-columns:200px 1fr;"><span class="k">Vacío</span><span class="j-pink">RONDA 2</span></div>
+    <div class="panel j-steps" style="left:110px; top:250px; width:670px; padding:20px 40px;">
+      <div><span class="c">00</span><div><b>Entrevista</b><span>SPEC.md · 15–20 min</span></div></div>
+      <div><span class="c">01</span><div><b>Tu proyecto</b><span>navegador · 20–25 min</span></div></div>
+      <div><span class="c">02</span><div><b>Laberinto y movimiento</b><span>navegador · 30–35 min</span></div></div>
+      <div><span class="c">03</span><div><b>Bolitas, puntaje y rondas</b><span>navegador · 20–25 min</span></div></div>
+      <div><span class="c">04</span><div><b>Fantasmas y vidas</b><span>navegador · 30–40 min</span></div></div>
     </div>
-    <div class="item" style="left:110px; top:540px; width:1380px; display:grid; grid-template-columns:1fr 1fr; gap:24px;">
-      <div style="border:1px solid #2a2a2a; border-left:4px solid var(--accent); background:#000; padding:22px 26px;">
-        <div style="font:700 23px var(--display);"><span class="j-pink">✘</span>  Borra los orbes de MAZE</div>
-        <div style="font:19px/1.5 var(--mono); color:#d6d3d1; margin-top:12px;">→ el estado guarda su propia copia; si no, la ronda 2 empieza vacía</div>
-      </div>
-      <div style="border:1px solid #2a2a2a; border-left:4px solid var(--accent); background:#000; padding:22px 26px;">
-        <div style="font:700 23px var(--display);"><span class="j-pink">✘</span>  Escribe 5 en el HUD</div>
-        <div style="font:19px/1.5 var(--mono); color:#d6d3d1; margin-top:12px;">→ las vidas se leen de LIVES en rules.ts</div>
-      </div>
-    </div>
-    <div class="item lead j-mut" style="left:110px; top:740px; width:1380px; font-size:20px;">prompts/etapa-2.md · tests en game.test.ts · 15 a 25 min</div>
-  </section>
-
-  <!-- 9 · Etapa 3 -->
-  <section class="slide grid" data-title="Etapa 3 · Fantasmas">
-    <div class="item" style="left:110px; top:60px;"><div class="h">Etapa 3 · Fantasmas y vidas</div></div>
-    <div class="item lead" style="left:110px; top:150px; width:1380px; font-size:24px;">Seis personalidades. En la etapa 3 salen las dos primeras; la etapa 4 agrega las demás.</div>
-    <div class="item j-ghosts" style="left:110px; top:230px; width:1380px;">
-      <div class="j-g"><svg style="color:#ff6b4a;" aria-hidden="true"><use href="#j-ghost"/></svg><div><b>Bug<em>#ff6b4a</em></b><span>persigue tu casilla</span></div></div>
-      <div class="j-g"><svg style="color:#9be7b0;" aria-hidden="true"><use href="#j-ghost"/></svg><div><b>Lag<em>#9be7b0</em></b><span>tu casilla de hace 2 s</span></div></div>
-      <div class="j-g"><svg style="color:#ffd479;" aria-hidden="true"><use href="#j-ghost"/></svg><div><b>Spam<em>#ffd479</em></b><span>elige al azar, con semilla</span></div></div>
-      <div class="j-g"><svg style="color:#7fb8ff;" aria-hidden="true"><use href="#j-ghost"/></svg><div><b>Fork<em>#7fb8ff</em></b><span>4 casillas delante de ti</span></div></div>
-      <div class="j-g"><svg style="color:#c39bff;" aria-hidden="true"><use href="#j-ghost"/></svg><div><b>Gas<em>#c39bff</em></b><span>te sigue si estás lejos</span></div></div>
-      <div class="j-g"><svg style="color:#5ee0d0;" aria-hidden="true"><use href="#j-ghost"/></svg><div><b>Nonce<em>#5ee0d0</em></b><span>esquinas; cerca, te sigue</span></div></div>
-    </div>
-    <div class="panel" style="left:110px; top:560px; width:1380px; padding:24px 44px;">
-      <div style="display:grid; grid-template-columns:1fr 1fr; column-gap:40px; font:21px/1.5 var(--display); color:#d6d3d1;">
-        <div><span class="j-pink">5 vidas.</span> Al quinto choque, fin.</div>
-        <div><span class="j-pink">✘</span> Math.random() o media vuelta en un pasillo.</div>
-      </div>
-      <div class="lead j-mut" style="font-size:19px; margin-top:10px;">prompts/etapa-3.md · tests: ghosts, game · 30 a 40 min</div>
+    <div class="panel j-steps" style="left:820px; top:250px; width:670px; padding:20px 40px;">
+      <div><span class="c">05</span><div><b>Bolitas especiales</b><span>navegador · 25–35 min</span></div></div>
+      <div><span class="c">06</span><div><b>Tu contrato y el ranking</b><span>navegador · 25–30 min</span></div></div>
+      <div class="pink"><span class="c">07</span><div><b>Publica en tu .dot</b><span class="host">Host · 15–20 min</span></div></div>
+      <div class="pink"><span class="c">08</span><div><b>Guarda tu récord</b><span class="host">Host · 30–40 min</span></div></div>
     </div>
   </section>
 
-  <!-- 10 · Etapa 4 -->
-  <section class="slide" data-title="Etapa 4 · Dificultad" style="--bgpos: 40% 80%;">
-    <div class="panel" style="left:110px; top:50px; width:1000px; padding:32px 52px 36px;"><div class="h">Etapa 4 · Dificultad</div></div>
-    <div class="panel" style="left:110px; top:220px; width:740px; padding:22px 36px 18px;">
-      <div class="j-tab">
-        <div class="hd"><span>RONDA</span><span>FANTASMAS</span><span>VELOCIDAD (C/S)</span><span>SUSTO</span></div>
-        <div><span>1</span><span>2</span><span><i class="j-bar2" style="width:56px;"></i>4.000</span><span>6.0 s</span></div>
-        <div><span>2</span><span>2</span><span><i class="j-bar2" style="width:67px;"></i>4.200</span><span>5.5 s</span></div>
-        <div><span>3</span><span>2</span><span><i class="j-bar2" style="width:79px;"></i>4.410</span><span>5.0 s</span></div>
-        <div><span>4</span><span>3</span><span><i class="j-bar2" style="width:91px;"></i>4.631</span><span>4.5 s</span></div>
-        <div><span>5</span><span>3</span><span><i class="j-bar2" style="width:104px;"></i>4.862</span><span>4.0 s</span></div>
-        <div><span>6</span><span>3</span><span><i class="j-bar2" style="width:118px;"></i>5.105</span><span>3.5 s</span></div>
-        <div><span>7</span><span>4</span><span><i class="j-bar2" style="width:132px;"></i>5.360</span><span>3.0 s</span></div>
-        <div><span>8</span><span>4</span><span><i class="j-bar2" style="width:146px;"></i>5.628</span><span>2.5 s</span></div>
-        <div class="cap"><span>9</span><span>4</span><span><i class="j-bar2" style="width:150px;"></i>5.700 tope</span><span>2.0 s</span></div>
-        <div><span>10 a 12</span><span>5</span><span><i class="j-bar2" style="width:150px;"></i>5.700</span><span>2.0 s</span></div>
-        <div style="border-bottom:0;"><span>13 +</span><span>6</span><span><i class="j-bar2" style="width:150px;"></i>5.700</span><span>2.0 s</span></div>
+  <!-- 11 · Despliega tu contrato -->
+  <section class="slide plain" data-title="Tu contrato">
+    <div class="item" style="left:110px; top:70px;"><div class="h">Tu contrato y el ranking</div></div>
+    <div class="item j-flow" style="left:110px; top:180px; width:1380px;">
+      <div class="j-stage"><div class="n">01</div><b>Remix</b><span>despliegas tu Leaderboard (capítulo 3)</span></div>
+      <div class="a">→</div>
+      <div class="j-stage"><div class="n">02</div><b>Dirección y ABI</b><span>la ABI en src/contract/leaderboard.abi.json</span></div>
+      <div class="a">→</div>
+      <div class="j-stage pink"><div class="n">03</div><b>Un solo archivo</b><span>la dirección vive en un solo lugar de tu juego</span></div>
+    </div>
+    <div class="item j-rows" style="left:110px; top:430px; width:880px;">
+      <div style="grid-template-columns:260px 1fr;"><span class="k">Contrato nuevo</span><span>tu ranking empieza vacío</span></div>
+      <div style="grid-template-columns:260px 1fr;"><span class="k">MetaMask</span><span>es otro jugador</span></div>
+      <div style="grid-template-columns:260px 1fr;"><span class="k">Leer</span><span>sin firma: se prueba con pnpm dev</span></div>
+      <div style="grid-template-columns:260px 1fr;"><span class="k">El contrato</span><span>no sabe si el puntaje es legítimo</span></div>
+    </div>
+    <div class="item j-win" style="left:1060px; top:430px; width:430px;">
+      <div class="j-bar"><i></i><i></i><i></i><span>Top 10</span></div>
+      <div class="j-body">
+        <div class="j-empty">Todavía no hay récords.<br>Juega y sé el primero.</div>
       </div>
     </div>
-    <div class="panel" style="left:900px; top:220px; width:590px; padding:28px 30px;">
-      <div class="code" style="font-size:18px; line-height:1.7; white-space:nowrap;">
-        <div><span class="fn">ghostSpeed</span>(r) = min(5.7, 4.0 × <span class="kw">1.05</span>^(r−1))</div>
-        <div style="margin-top:12px;"><span class="fn">ghostCount</span>(r) = min(6, 2 + floor((r−1) / <span class="kw">3</span>))</div>
-        <div style="margin-top:12px;"><span class="fn">frightenedSeconds</span>(r) = max(2, 6 − 0.5 × (r−1))</div>
-      </div>
-    </div>
-    <div class="panel" style="left:900px; top:440px; width:590px; padding:26px 36px; border-color:var(--accent);">
-      <div class="lead" style="font-size:21px;">Especial: los asustados se comen por 200 · 400 · 800 · 1600.</div>
-      <div class="lead j-mut" style="font-size:19px; margin-top:10px;">El 5 % es compuesto. Tope: 95 % de Polka-Man.</div>
-    </div>
-  </section>
-
-  <!-- 11 · Etapa 5 -->
-  <section class="slide plain" data-title="Etapa 5 · Un contrato para todos">
-    <div class="item" style="left:110px; top:70px;"><div class="h">Etapa 5 · Un contrato para todos</div></div>
-    <div class="item" style="left:110px; top:180px; width:1380px; height:470px;">
-      <svg width="1380" height="470" style="position:absolute; left:0; top:0;" aria-hidden="true">
-        <path d="M400 46 C 620 46, 640 235, 860 235" fill="none" stroke="#ff2867" stroke-width="2"/>
-        <path d="M400 168 C 620 168, 640 235, 860 235" fill="none" stroke="#d6d3d1" stroke-width="2" opacity=".75"/>
-        <path d="M400 290 C 620 290, 640 235, 860 235" fill="none" stroke="#d6d3d1" stroke-width="2" opacity=".75"/>
-        <path d="M400 412 C 620 412, 640 235, 860 235" fill="none" stroke="#d6d3d1" stroke-width="2" opacity=".75"/>
-      </svg>
-      <div class="j-app pink" style="left:0; top:0;"><b>Tu Polka-Man</b><span>tu-polkaman.dot · cuenta A</span></div>
-      <div class="j-app" style="left:0; top:122px;"><b>Tu app publicada</b><span>tu-app.dot · cuenta B</span></div>
-      <div class="j-app" style="left:0; top:244px;"><b>App de un compañero</b><span>su-app.dot · cuenta C</span></div>
-      <div class="j-app" style="left:0; top:366px;"><b>Cualquier script</b><span>con la ABI y la dirección</span></div>
-      <div class="j-lb" style="left:860px; top:110px; width:520px;"><b>Leaderboard</b><span>0xa262…8542 · chainId 420420417</span><span>un récord por cuenta<br>username único en todo el contrato</span></div>
-    </div>
-    <div class="item lead" style="left:110px; top:700px; width:1380px; font-size:22px;">La dirección vive solo en <span class="j-code j-pink">src/contract/config.ts</span>. Cambiarla es una línea.</div>
   </section>
 
   <!-- 12 · Prueba en tu .dot -->
@@ -461,7 +381,7 @@
       <div class="lead" style="font-size:22px; margin-top:12px;">El Host no abre localhost. Es el mismo método para probar y para publicar al final.</div>
     </div>
     <div class="item j-cyc" style="left:110px; top:250px; width:1380px;">
-      <div class="box"><div class="n">01</div><b>pnpm build</b><span>game/dist</span></div>
+      <div class="box"><div class="n">01</div><b>pnpm build</b><span>dist</span></div>
       <div class="a">→</div>
       <div class="box"><div class="n">02</div><b>pad</b><span>pool · nombre tmp</span></div>
       <div class="a">→</div>
@@ -473,7 +393,7 @@
     </div>
     <div class="item term" style="left:110px; top:460px; width:960px;">
       <div class="bar"><i></i><i></i><i></i><span>PowerShell · raíz del repo</span></div>
-      <div class="body code j-cmd"><div><span class="kw">function</span> pad { $env:PAD_UPDATE_CHECK = '0'; pnpm dlx --ignore-scripts @polkadot-community-foundation/polkadot-app-deploy@0.16.7 @args }</div><div>$tmp = 'tmp' + (-join ((Get-Date -Format 'yyyyMMddHHmmss').ToCharArray() | ForEach-Object { [char](97 + [int]"$_") })) + '.dot'</div><div><span class="kw">pad</span> .\game\dist $tmp --env devnet --js-merkle --no-manifest</div></div>
+      <div class="body code j-cmd"><div><span class="kw">function</span> pad { $env:PAD_UPDATE_CHECK = '0'; pnpm dlx --ignore-scripts @polkadot-community-foundation/polkadot-app-deploy@0.16.7 @args }</div><div>$tmp = 'tmp' + (-join ((Get-Date -Format 'yyyyMMddHHmmss').ToCharArray() | ForEach-Object { [char](97 + [int]"$_") })) + '.dot'</div><div><span class="kw">pad</span> .\dist $tmp --env devnet --js-merkle --no-manifest</div></div>
     </div>
     <div class="item lead" style="left:110px; top:730px; width:960px; font-size:20px;">Termina con la línea <span class="j-code j-pink">CID: bafy…</span> · unos 3.5 min · sin frase de recuperación</div>
     <div class="item" style="left:1110px; top:460px; width:380px;">
@@ -491,45 +411,41 @@
   <!-- 13 · Guardar -->
   <section class="slide grid" data-title="Guardar: simula, firma, relee">
     <div class="item" style="left:110px; top:60px;"><div class="h">Guardar: simula, firma, relee</div></div>
-    <div class="item j-flow" style="left:110px; top:170px; width:1380px;">
-      <div class="j-stage"><div class="n">01</div><b>Simula</b><span>submitScore.query(): si revierte, el motivo y sin firma</span></div>
+    <div class="item lead j-mut" style="left:110px; top:150px; width:1380px; font-size:22px;">Lo que tu app debe hacer al tocar «Guardar récord».</div>
+    <div class="item j-flow" style="left:110px; top:210px; width:1380px;">
+      <div class="j-stage"><div class="n">01</div><b>Simula</b><span>si fallaría, muestra el motivo sin pedir firma</span></div>
       <div class="a">→</div>
       <div class="j-stage pink"><div class="n">02</div><b>Firma</b><span>una sola en el teléfono; botones deshabilitados</span></div>
       <div class="a">→</div>
-      <div class="j-stage"><div class="n">03</div><b>Relee</b><span>bestScore hasta 3 veces: el RPC puede ir un bloque atrás</span></div>
+      <div class="j-stage"><div class="n">03</div><b>Relee</b><span>vuelve a leer tu récord; la red puede ir un poco atrás</span></div>
     </div>
-    <div class="item j-msgs" style="left:110px; top:420px; width:1380px;">
+    <div class="item j-label" style="left:110px; top:420px; width:1380px;">Así lo resuelve la muestra</div>
+    <div class="item j-msgs" style="left:110px; top:470px; width:1380px;">
       <div><span class="k">Permiso de gas aceptado</span><span>Cuenta conectada</span></div>
       <div><span class="k">Permiso rechazado</span><span>«Rechazaste el permiso de gas. Sin él no puedes guardar; toca Conectar otra vez.»</span></div>
       <div><span class="k">NotAvailable o más de 90 s</span><span class="j-pink">«Cuenta conectada. El gas se pedirá al guardar.»</span></div>
       <div><span class="k">Firma en curso</span><span>«Espera a que termine la firma en curso.»</span></div>
-      <div><span class="k">Fuera del Host</span><span>«Abre Polka-Man dentro de Polkadot Desktop o de la Polkadot App…»</span></div>
+      <div><span class="k">Fuera del Host</span><span>«Abre el juego dentro de Polkadot Desktop o de la Polkadot App…»</span></div>
     </div>
   </section>
 
   <!-- 14 · Si te atoras -->
   <section class="slide" data-title="Si te atoras" style="--bgpos: 55% 45%;">
     <div class="panel" style="left:110px; top:50px; width:900px; padding:34px 52px 38px;"><div class="h">Si te atoras</div></div>
-    <div class="item term" style="left:110px; top:240px; width:760px;">
-      <div class="bar"><i></i><i></i><i></i><span>Trae game/ de una etapa</span></div>
-      <div class="body code" style="font-size:20px; line-height:1.75;"><span class="kw">git</span> fetch upstream
-<span class="kw">git</span> diff upstream/etapa-3 -- game
-<span class="kw">git</span> restore --source=upstream/etapa-3 \
-    --staged --worktree -- game
-<span class="kw">git</span> commit -m <span class="ty">"Etapa 3 desde la rama de respaldo"</span></div>
-    </div>
-    <div class="panel" style="left:110px; top:640px; width:760px; padding:24px 40px;">
-      <div class="lead j-mut" style="font-size:20px;">Deja game/ igual a la etapa. Lo demás no cambia.</div>
+    <div class="panel j-steps" style="left:110px; top:240px; width:760px; padding:20px 40px;">
+      <div><span class="c">01</span><div><b>Último commit</b><span>git restore descarta lo que no sirve</span></div></div>
+      <div><span class="c">02</span><div><b>Pide diagnóstico</b><span>la causa antes de cambiar código</span></div></div>
+      <div><span class="c">03</span><div><b>Compara con la muestra</b><span>qué le falta a la tuya, sin copiar</span></div></div>
+      <div class="pink"><span class="c">04</span><div><b>Copia una carpeta</b><span>último recurso, solo el contrato</span></div></div>
     </div>
     <div class="item j-clip" style="left:930px; top:240px; width:560px;">
       <div class="j-clip-top"></div>
       <div class="j-checks">
         <div><span class="j-box"></span><span>pnpm test y pnpm build pasan</span></div>
         <div><span class="j-box"></span><span>Ningún test borrado ni saltado</span></div>
-        <div><span class="j-box"></span><span>git status: solo game/src/</span></div>
+        <div><span class="j-box"></span><span>git status: solo lo que pediste</span></div>
         <div><span class="j-box"></span><span>package.json y lock sin cambios</span></div>
-        <div><span class="j-box"></span><span>Números solo en rules.ts</span></div>
-        <div style="border-bottom:0;"><span class="j-box"></span><span>Ninguna llamada a .tx() en pantallas</span></div>
+        <div style="border-bottom:0;"><span class="j-box"></span><span>Números solo en un archivo</span></div>
       </div>
     </div>
   </section>
@@ -537,17 +453,24 @@
   <!-- 15 · Lo que sigue -->
   <section class="slide plain" data-title="Repaso y lo que sigue">
     <div class="item" style="left:110px; top:70px;"><div class="h">Repaso y lo que sigue</div></div>
-    <div class="item j-steps" style="left:110px; top:180px; width:860px;">
-      <div><span class="c">01</span><div><b>Se mueve</b><span>teclado, swipe, D-pad, pausa y túnel</span></div></div>
-      <div><span class="c">02</span><div><b>Orbes y rondas</b><span>HUD, 10 y 50 puntos, RONDA N</span></div></div>
-      <div><span class="c">03</span><div><b>Fantasmas y vidas</b><span>6 personalidades, 5 vidas, fin</span></div></div>
-      <div><span class="c">04</span><div><b>Dificultad</b><span>+5 % por ronda con tope, +1 fantasma cada 3</span></div></div>
-      <div class="pink" style="border-bottom:0;"><span class="c">05</span><div><b>Marcador compartido</b><span>simula, firma una vez, relee</span></div></div>
+    <div class="item j-steps" style="left:110px; top:170px; width:420px;">
+      <div><span class="c">00</span><div><b>Entrevista</b><span>SPEC.md sin huecos</span></div></div>
+      <div><span class="c">01</span><div><b>Proyecto</b><span>AGENTS.md y un test</span></div></div>
+      <div><span class="c">02</span><div><b>Laberinto</b><span>moverse y pausa</span></div></div>
+      <div><span class="c">03</span><div><b>Bolitas</b><span>puntaje, HUD y rondas</span></div></div>
+      <div><span class="c">04</span><div><b>Fantasmas</b><span>vidas y fin</span></div></div>
     </div>
-    <div class="panel" style="left:1040px; top:500px; width:450px; padding:30px 44px;">
+    <div class="item j-steps" style="left:580px; top:170px; width:420px;">
+      <div><span class="c">05</span><div><b>Especiales</b><span>susto y dificultad</span></div></div>
+      <div><span class="c">06</span><div><b>Contrato</b><span>top 10 de tu Leaderboard</span></div></div>
+      <div class="pink"><span class="c">07</span><div><b>Publica</b><span>tu .dot en el Host</span></div></div>
+      <div class="pink"><span class="c">08</span><div><b>Récord</b><span>simula, firma, relee</span></div></div>
+    </div>
+    <div class="item lead" style="left:110px; top:680px; width:890px; font-size:22px;">Pensar → Preguntar → Decidir → Pedir → Revisar → Commit</div>
+    <div class="panel" style="left:1060px; top:400px; width:430px; padding:30px 44px;">
       <div class="kicker">Capítulo 06</div>
       <div class="h" style="font-size:44px; margin-top:12px;">Publica tu app</div>
-      <div class="lead j-mut" style="font-size:20px; margin-top:12px;">El mismo método de la etapa 5, más nombre, icono y renovación.</div>
+      <div class="lead j-mut" style="font-size:20px; margin-top:12px;">El mismo método de la fase 7, más nombre, icono y renovación.</div>
     </div>
   </section>
 
