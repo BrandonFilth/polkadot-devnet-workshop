@@ -305,7 +305,9 @@ por qué.
 ## Paso 9 · Haz fork, clónalo y verifica todo
 
 Haz una copia del tutorial en tu cuenta (un *fork*) y bájala a tu computadora. Así puedes seguir
-los pasos en tu propia pantalla, a tu ritmo, sin depender del proyector.
+los pasos en tu propia pantalla, a tu ritmo, sin depender del proyector. El fork es para seguir el
+curso y correr el proyecto de muestra; tu juego va en un repo nuevo que creas en el
+[capítulo 5](./05-el-juego.md#4-crea-tu-repo).
 
 ```bash
 gh repo fork BrandonFilth/polkadot-devnet-workshop --clone
@@ -371,8 +373,8 @@ Lo que el script no puede revisar:
 
 ## Tu primer commit
 
-Esto es lo que vas a repetir cada vez que avances en tu app, y es como entregas tu proyecto del
-hackatón. Pruébalo ahora, en tu fork:
+Esto es lo que vas a repetir cada vez que avances en tu app. Practícalo ahora en tu fork; tu
+proyecto lo entregas en su propio repo:
 
 ```bash
 git add .
@@ -392,7 +394,8 @@ To https://github.com/tu-usuario/polkadot-devnet-workshop.git
 - `git commit -m "…"` lo guarda en tu computadora, con un mensaje de qué hiciste.
 - `git push` lo sube a tu cuenta de GitHub. Si no te pide contraseña, el paso 5 quedó bien.
 
-Cuando empieces tu propio proyecto en el hackatón, créalo así desde su carpeta:
+Cuando empieces tu propio proyecto en el hackatón, créalo así desde su carpeta
+([capítulo 5, sección 4](./05-el-juego.md#4-crea-tu-repo)):
 
 ```bash
 gh repo create mi-juego --public --source=. --push

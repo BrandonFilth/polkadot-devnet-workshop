@@ -447,7 +447,7 @@ Toma unos 5 minutos. Necesitas MetaMask con la red **Polkadot Hub TestNet** (cap
    ![Desplegar](../img/cap3/05-remix-desplegar.png)
 
 5. **Guarda la dirección y la ABI.** Copia la dirección del contrato desde *Deployed Contracts*, y la
-   ABI con el botón **ABI** de la pestaña del compilador. Las vas a usar en el capítulo 4.
+   ABI con el botón **ABI** de la pestaña del compilador. Las vas a usar en los capítulos 4 y 5.
 
    ![Contrato desplegado](../img/cap3/07-remix-contrato.png)
 

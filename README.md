@@ -53,8 +53,8 @@ Elige la forma que te acomode:
   tu computadora. Después del capítulo 2 ya tienes el repositorio en tu equipo; abre
   `slides/00-introduccion.html` con tu navegador (doble clic en el archivo). Si todavía no lo tienes,
   descárgalo con **Code → Download ZIP** y ábrelo desde ahí.
-- **Construir el juego.** El juego está en `game/`, los prompts de cada etapa en `prompts/` y cada
-  etapa terminada en una rama `etapa-1` … `etapa-5` (capítulo 5).
+- **Construir el juego.** El juego terminado de muestra está en `game/` y los prompts de ejemplo en
+  `prompts/`; tú construyes el tuyo en un repo nuevo (capítulo 5).
 
 En las diapositivas:
 
