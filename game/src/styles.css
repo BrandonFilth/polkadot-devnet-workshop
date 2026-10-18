@@ -53,6 +53,64 @@ body {
   font-size: 16px;
 }
 
+.hud-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.hud-stats,
+.hud-best {
+  margin: 0;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.hud-best {
+  font-size: 0.8em;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.hud-lives {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.hud-life {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.hud-pause {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #0d0d0d;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.hud-pause svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+@media (max-width: 360px) {
+  .hud { font-size: 14px; gap: 8px; }
+  .hud-life { width: 10px; height: 10px; }
+}
+
 .stage {
   position: relative;
   display: flex;
@@ -122,11 +180,19 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  /* Centrado que no recorta arriba cuando el contenido desborda y se desplaza. */
+  justify-content: flex-start;
   gap: 16px;
   padding: 24px;
   text-align: center;
   background: rgba(5, 5, 5, 0.78);
+}
+
+.overlay::before,
+.overlay::after {
+  content: '';
+  flex: 1 0 0;
+  margin: -8px 0;
 }
 
 .overlay[hidden] {
@@ -151,11 +217,315 @@ body {
   color: var(--muted);
 }
 
+/* «LISTO»: deja ver el tablero y no bloquea el swipe. */
+.overlay--quiet {
+  background: transparent;
+  pointer-events: none;
+}
+
+.overlay [hidden] {
+  display: none;
+}
+
 button {
   font: inherit;
+}
+
+/* Botones JUGAR y Seguir. */
+.overlay-action {
+  min-height: 48px;
+  min-width: 160px;
+  padding: 12px 28px;
+  border: 2px solid var(--accent);
+  border-radius: 12px;
+  background: var(--accent);
+  color: var(--bg);
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.overlay-action:hover {
+  background: #ff4d82;
+}
+
+.overlay-action:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 4px;
+}
+
+/* «Gira tu teléfono»: tapa toda la pantalla (HUD, escenario y D-pad). */
+.rotate {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+    max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  background: #050505;
+  text-align: center;
+}
+
+.rotate[hidden] {
+  display: none;
+}
+
+.rotate p {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(24px, 6vmin, 40px);
+  line-height: 1.2;
+  color: var(--accent);
+}
+
+.rotate .rotate-hint {
+  font-family: var(--mono);
+  font-weight: 400;
+  font-size: 16px;
+  color: var(--muted);
 }
 
 button:focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: 3px;
+}
+
+/* Etapa 5: conexión, ranking, fin de partida y modal de username. */
+.overlay-extra {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.overlay-extra[hidden] {
+  display: none;
+}
+
+.overlay-action:disabled,
+.overlay-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.overlay-action:disabled:hover {
+  background: var(--accent);
+}
+
+.overlay-secondary {
+  min-height: 44px;
+  min-width: 160px;
+  padding: 10px 20px;
+  border: 1px solid var(--muted);
+  border-radius: 12px;
+  background: #0d0d0d;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 16px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.overlay-secondary:hover:not(:disabled) {
+  border-color: var(--ink);
+}
+
+.link-button {
+  min-height: 44px;
+  padding: 8px 4px;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 16px;
+  text-decoration: underline;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.overlay .conexion-status,
+.overlay .fin-notice,
+.overlay .fin-message,
+.overlay .conexion-result,
+.overlay .ranking-status {
+  max-width: 36ch;
+  font-size: 15px;
+}
+
+.overlay .conexion-status--aviso,
+.overlay .fin-notice {
+  color: var(--ink);
+}
+
+.overlay .fin-summary {
+  font-size: 18px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.ranking {
+  width: 100%;
+}
+
+.ranking h2,
+.modal h2 {
+  margin: 0 0 8px;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+}
+
+.ranking > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.ranking-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ranking-table th,
+.ranking-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+
+.ranking-table th {
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.ranking-table th:first-child,
+.ranking-table td:first-child {
+  width: 2.5em;
+  text-align: right;
+}
+
+.ranking-table th:last-child,
+.ranking-table td:last-child {
+  text-align: right;
+}
+
+.ranking-table td:nth-child(2) {
+  overflow-wrap: anywhere;
+}
+
+.ranking-mine td {
+  color: var(--bg);
+  background: var(--accent);
+  font-weight: 500;
+}
+
+.fin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.fin [hidden],
+.conexion [hidden] {
+  display: none;
+}
+
+.conexion {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px;
+  overflow-y: auto;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+  background: rgba(5, 5, 5, 0.9);
+}
+
+.modal::before,
+.modal::after {
+  content: '';
+  flex: 1 0 0;
+}
+
+.modal[hidden] {
+  display: none;
+}
+
+.modal-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 360px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg);
+}
+
+.modal label {
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.modal input {
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 1px solid var(--muted);
+  border-radius: 10px;
+  background: #0d0d0d;
+  color: var(--ink);
+  font: inherit;
+  font-size: 18px;
+}
+
+.modal input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.modal-message {
+  margin: 0;
+  min-height: 1.4em;
+  color: var(--ink);
+  font-size: 15px;
+}
+
+.modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.modal-actions button {
+  min-width: 120px;
 }

@@ -1,4 +1,5 @@
-// reemplazar por la dirección oficial del evento
+// Pon aquí la dirección de TU PROPIO contrato Leaderboard (el que tú desplegaste).
+// Este valor es el despliegue de prueba del proyecto de muestra.
 export const LEADERBOARD_ADDRESS = '0xa2625aa8e8790a3322acd045b32f67fba1808542' as const;
 export const ETH_RPC_URL = 'https://eth-rpc-testnet.polkadot.io';
 export const CHAIN_ID = 420_420_417;
