@@ -215,6 +215,8 @@ Qué esperar:
 - Preguntas que no habías pensado. Esa es la idea: descubrir lo que no habías decidido.
 - Cuando no sepas, responde "no sé" y pídele opciones concretas, con números, cada una con un pro y
   un contra. Tú eliges.
+- Responde en orden, con los mismos números que usó el agente (1., 2., 3.), y numera tus pasos
+  cuando le pidas varias cosas.
 
 ### Una o varias specs
 

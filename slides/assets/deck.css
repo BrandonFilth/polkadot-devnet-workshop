@@ -64,7 +64,7 @@ body { font-family: var(--mono); }
 /* Pie de cada diapositiva */
 .foot {
   position: absolute; z-index: 5; left: 70px; right: 70px; bottom: 34px;
-  display: flex; justify-content: space-between; align-items: center;
+  display: flex; justify-content: flex-end; gap: 40px; align-items: center;
   font-size: 15px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted);
 }
 .foot a { color: var(--muted); text-decoration: none; border-bottom: 1px solid #444; }

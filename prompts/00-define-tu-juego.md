@@ -54,6 +54,8 @@ y Decisiones por fase. Si una parte necesita mucho detalle, propón un spec apar
 (p. ej. spec-fantasmas.md). No escribas código.
 ```
 
+Responde en el mismo orden y con los mismos números que use el agente: `1. 3 vidas. 2. Sí. 3. No sé, dame opciones.`
+
 ## Si no sabes
 
 Cuando una pregunta del agente no la sepas responder, no inventes ni le dejes decidir solo:

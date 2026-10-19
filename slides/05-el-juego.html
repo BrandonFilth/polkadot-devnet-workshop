@@ -77,17 +77,15 @@
 .j-cc .a::before { content: '● '; color: #d97757; }
 .j-cc ol { margin: 4px 0 0 26px; text-indent: 0; }
 
-/* Opciones con pros y contras */
-.j-opts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-.j-opt { border: 2px solid #3a3a37; background: #050505; padding: 22px 24px; }
-.j-opt.pink { border-color: var(--accent); }
-.j-opt b { display: block; font: 700 24px var(--display); text-transform: uppercase; }
-.j-opt.pink b { color: var(--accent); }
-.j-opt p { font: 19px/1.45 var(--mono); color: #d6d3d1; margin-top: 12px; }
-.j-opt p::before { content: '+ '; color: #9be7b0; }
-.j-opt p.no::before { content: '− '; color: var(--accent); }
-.j-opt .d { font: 20px/1.45 var(--mono); color: var(--ink); margin-top: 12px; padding-bottom: 12px; border-bottom: 1px solid #2a2a2a; }
-.j-opt .rec { font: 18px var(--mono); color: var(--accent); letter-spacing: .14em; text-transform: uppercase; margin-top: 14px; }
+/* Ventana de Claude Code en grande, para leerse desde lejos */
+.j-cc.big .j-bar { height: 52px; }
+.j-cc.big .j-body { font-size: 24px; line-height: 1.45; gap: 14px; padding: 22px 30px 24px; }
+.j-cc.big .j-bar span, .j-cc.big .j-bar em { font-size: 22px; }
+.j-cc .j-op { padding-left: 24px; }
+
+/* Fondo negro liso, sin textura */
+.slide.flat { background: #050505; }
+.slide.flat::before { display: none; }
 
 /* Partes de un archivo de fase */
 .j-parts { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
@@ -311,12 +309,12 @@
       <div class="j-body">
         <div class="u">Quiero hacer un juego tipo Pac-Man para celular con mi contrato Leaderboard. Pregúntame cualquier duda antes de escribir código.</div>
         <div class="a">Antes de escribir SPEC.md, 4 preguntas:<ol><li>¿Cuántas vidas tiene el jugador?</li><li>Al chocar, ¿se conservan las bolitas comidas?</li><li>¿Cómo sube la dificultad en cada ronda?</li><li>¿Qué ve el jugador si no hay red?</li></ol></div>
-        <div class="u">3 vidas. Sí. La 3 no sé, dame opciones. La 4: un aviso y un botón para reintentar.</div>
+        <div class="u">1. 3 vidas. 2. Sí, se conservan. 3. No sé, dame opciones. 4. Un aviso y un botón para reintentar.</div>
         <div class="a">Para la 3:<br>A) fantasmas 5 % más rápidos por ronda, hasta la 9<br>B) un fantasma más cada 3 rondas, hasta 6<br>C) susto 0.5 s más corto por ronda, mínimo 2 s<br>Recomiendo A. ¿La anoto en SPEC.md?</div>
       </div>
     </div>
     <div class="panel" style="left:1060px; top:250px; width:430px; padding:30px 36px;">
-      <div class="j-blk"><b><i>01</i>De pocas en pocas</b><p>Respondes y sigue preguntando.</p></div>
+      <div class="j-blk"><b><i>01</i>Responde en orden</b><p>Con los mismos números: 1., 2., 3. Numera también tus pasos.</p></div>
       <div class="j-blk"><b><i>02</i>«No sé»</b><p>Pide opciones concretas y elige tú.</p></div>
       <div class="j-blk"><b><i>03</i>Una o varias specs</b><p>SPEC.md, spec-niveles.md, spec-fantasmas.md… El agente las escribe; tú revisas.</p></div>
     </div>
@@ -325,15 +323,17 @@
   <!-- 8 · Si no sabes, pide opciones -->
   <section class="slide plain" data-title="Si no sabes, pide opciones">
     <div class="item" style="left:110px; top:70px;"><div class="h">Si no sabes, pide opciones</div></div>
-    <div class="item j-chat" style="left:110px; top:170px; width:1380px;">
-      <div class="j-msg me" style="max-width:100%;">No sé qué tan difícil debería ser. Dame 3 opciones concretas, con números, cada una con un pro y un contra para alguien que juega en el celular. Recomiéndame una y no escribas código.</div>
+    <div class="item j-cc big" style="left:110px; top:170px; width:1380px;">
+      <div class="j-bar"><svg width="26" height="26" aria-hidden="true"><use href="#j-cc"/></svg><span>Claude Code</span><em>~/mi-juego</em></div>
+      <div class="j-body">
+        <div class="u">No sé qué tan difícil debería ser. Dame 3 opciones concretas, con números, cada una con un pro y un contra para alguien que juega en el celular. Recomiéndame una y no escribas código.</div>
+        <div class="a">3 opciones para la dificultad:</div>
+        <div class="j-op"><div>A) Fantasmas 5 % más rápidos por ronda, hasta la ronda 9</div><div><span class="j-ok">+</span> sube parejo y es fácil de ajustar · <span class="j-pink">−</span> desde la ronda 9 ya no cambia</div></div>
+        <div class="j-op"><div>B) Un fantasma más cada 3 rondas, hasta 6</div><div><span class="j-ok">+</span> el cambio se nota · <span class="j-pink">−</span> salto brusco en las rondas 3, 6 y 9</div></div>
+        <div class="j-op"><div>C) Bolitas especiales 0.5 s más cortas por ronda, mínimo 2 s</div><div><span class="j-ok">+</span> no cambia la velocidad · <span class="j-pink">−</span> casi no se nota al principio</div></div>
+        <div class="j-op">Recomiendo A: sube parejo y es fácil de ajustar.<br>¿Cuál anoto en SPEC.md?</div>
+      </div>
     </div>
-    <div class="item j-opts" style="left:110px; top:320px; width:1380px;">
-      <div class="j-opt pink"><b>A · +5 % por ronda</b><div class="d">Los fantasmas van 5 % más rápido cada ronda, hasta la ronda 9.</div><p>Sube parejo y es fácil de ajustar</p><p class="no">Desde la ronda 9 ya no cambia</p><div class="rec">Recomendada por el agente</div></div>
-      <div class="j-opt"><b>B · +1 fantasma</b><div class="d">Un fantasma más cada 3 rondas, hasta 6.</div><p>El cambio se nota</p><p class="no">Salto brusco en las rondas 3, 6 y 9</p></div>
-      <div class="j-opt"><b>C · susto más corto</b><div class="d">Las bolitas especiales duran 0.5 s menos por ronda, mínimo 2 s.</div><p>No cambia la velocidad</p><p class="no">Casi no se nota al principio</p></div>
-    </div>
-    <div class="item lead" style="left:110px; top:720px; width:1380px; font-size:24px;">Tú eliges y lo escribes en <span class="j-code j-pink">SPEC.md</span>. La IA no decide por ti.</div>
   </section>
 
   <!-- 9 · Un archivo de fase -->
@@ -349,11 +349,9 @@
   </section>
 
   <!-- 10 · El ciclo de trabajo -->
-  <section class="slide" data-title="El ciclo de trabajo" style="--bgpos: 40% 70%;">
-    <div class="panel" style="left:110px; top:50px; width:1380px; padding:30px 52px 34px;">
-      <div class="h">El ciclo de trabajo</div>
-      <div class="lead" style="font-size:22px; margin-top:12px;">Sirve para este juego y para tu app del hackatón.</div>
-    </div>
+  <section class="slide flat" data-title="El ciclo de trabajo">
+    <div class="item" style="left:110px; top:70px;"><div class="h">El ciclo de trabajo</div></div>
+    <div class="item lead" style="left:110px; top:160px; width:1380px; font-size:22px;">Sirve para este juego y para tu app del hackatón.</div>
     <div class="item j-ring" style="left:110px; top:250px; width:860px; height:560px;">
       <svg viewBox="0 0 860 560" width="860" height="560" aria-hidden="true">
         <defs><marker id="j-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#d6d3d1"/></marker></defs>
@@ -386,7 +384,7 @@
   </section>
 
   <!-- 11 · Despliega tu contrato -->
-  <section class="slide plain" data-title="Tu contrato">
+  <section class="slide grid" data-title="Tu contrato">
     <div class="item" style="left:110px; top:70px;"><div class="h">Tu contrato y el ranking</div></div>
     <div class="item j-flow" style="left:110px; top:180px; width:1380px;">
       <div class="j-stage"><div class="n">01</div><b>Remix</b><span>despliegas tu Leaderboard (capítulo 3)</span></div>
@@ -543,7 +541,6 @@
 
   <div class="progress" id="progress"></div>
   <footer class="foot">
-    <span id="where">05</span>
     <a href="../contenido/05-el-juego.md">Guía: contenido/05-el-juego.md</a>
     <span><span id="count">01 / 16</span></span>
   </footer>

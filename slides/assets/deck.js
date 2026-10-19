@@ -13,7 +13,6 @@ function show(n) {
   slides.forEach((s, k) => s.classList.toggle('on', k === i));
   const pad = (v) => String(v).padStart(2, '0');
   document.getElementById('count').textContent = `${pad(i + 1)} / ${pad(slides.length)}`;
-  document.getElementById('where').textContent = `${deck.dataset.chapter} · ${slides[i].dataset.title}`;
   document.getElementById('progress').style.width = `${((i + 1) / slides.length) * 100}%`;
   // En la última diapositiva, el contador avisa a qué capítulo lleva la flecha.
   const siguiente = deck.dataset.next?.match(/^(\d+)/)?.[1];

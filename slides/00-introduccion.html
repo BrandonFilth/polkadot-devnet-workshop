@@ -8,6 +8,13 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/deck.css">
+<style>
+/* Teléfono con la captura de la muestra */
+.i-phone { border: 2px solid #d6d3d1; border-radius: 42px; padding: 40px 14px 22px; background: #050505; position: relative; }
+.i-phone::before { content: ''; position: absolute; top: 18px; left: 50%; width: 80px; height: 8px; margin-left: -40px; border-radius: 4px; background: #2a2a2a; }
+.i-phone img { display: block; width: 100%; border-radius: 6px; }
+.i-url { font: 18px var(--mono); color: var(--accent); text-align: center; margin-bottom: 10px; }
+</style>
 </head>
 <body>
 <main class="deck" id="deck" data-chapter="00" data-next="01-como-funciona.html">
@@ -27,21 +34,20 @@
 
   <!-- 2 · Qué vas a construir -->
   <section class="slide" data-title="Qué vas a construir" style="--bgpos: 10% 30%;">
-    <div class="panel" style="left:110px; top:150px; width:820px;">
+    <div class="panel" style="left:110px; top:110px; width:860px;">
       <div class="kicker">Qué vas a construir</div>
-      <div class="title">Un juego.<br>Una firma.</div>
-      <div class="sub">Un Pac-Man cyberpunk que corre dentro de la Polkadot App.</div>
+      <div class="title" style="font-size:72px;">Tu app en Polkadot</div>
+      <div class="sub">Una app y un smart contract, hechos con IA, en tu propio dominio <span class="pink">.dot</span>.</div>
     </div>
-    <div class="panel" style="right:90px; top:400px; width:500px; transform:rotate(3deg); padding:40px 48px;">
-      <div class="kicker">Al terminar la partida</div>
-      <div class="rows" style="margin-top:22px;">
-        <div class="row" style="grid-template-columns:1fr auto;"><span class="t">Puntaje</span><span>12 480</span></div>
-        <div class="row" style="grid-template-columns:1fr auto;"><span class="t">Firma</span><span>tu teléfono</span></div>
-        <div class="row hi" style="grid-template-columns:1fr auto;"><span class="t">Guardado en</span><span>la cadena</span></div>
-      </div>
+    <div class="item flow" style="left:110px; top:560px;">
+      <div class="chip"><b>Tu app</b><span>corre en la Polkadot App</span></div>
+      <div class="chip"><b>Tu smart contract</b><span>lo despliegas tú</span></div>
+      <div class="chip"><b class="pink">Tu .dot</b><span>tu propio dominio</span></div>
     </div>
-    <div class="tape pink" style="right:110px; top:190px; transform:rotate(-5deg);">POLKADOT</div>
-    <div class="tape" style="left:150px; bottom:150px; transform:rotate(4deg);">SMART CONTRACT</div>
+    <div class="item lead" style="left:110px; top:710px; width:960px; font-size:22px;">Ejemplo: Polka-Man en <span class="pink">polka-man.dot</span>. En el hackatón construyes la tuya de la misma forma.</div>
+    <div class="item" style="left:1160px; top:90px; width:300px;">
+      <div class="i-phone"><div class="i-url">polka-man.dot</div><img src="../img/cap5/polka-man-movil.png" alt="Polka-Man en el celular: HUD con puntaje, ronda y vidas; el laberinto con Polka-Man rosa y dos fantasmas; el D-pad abajo"></div>
+    </div>
   </section>
 
   <!-- 3 · Qué vas a aprender -->
@@ -81,26 +87,10 @@
     <div class="tape pink" style="right:90px; bottom:250px; transform:rotate(-5deg);">HACKATÓN</div>
   </section>
 
-  <!-- 5 · Qué necesitas -->
-  <section class="slide" data-title="Qué necesitas" style="--bgpos: 70% 20%;">
-    <div class="panel" style="left:110px; top:170px; width:820px;">
-      <div class="kicker">Qué necesitas</div>
-      <div class="title">Solo tres cosas</div>
-      <div class="rows">
-        <div class="row" style="grid-template-columns:90px 1fr;"><span class="n">[ ]</span><span class="t">Una laptop</span></div>
-        <div class="row" style="grid-template-columns:90px 1fr;"><span class="n">[ ]</span><span class="t">Un celular</span></div>
-        <div class="row" style="grid-template-columns:90px 1fr;"><span class="n">[ ]</span><span class="t">Una cuenta de GitHub</span></div>
-      </div>
-    </div>
-    <div class="tape pink" style="right:60px; top:260px; transform:rotate(-6deg);">POLKADOT APP</div>
-    <div class="tape" style="right:60px; bottom:130px; transform:rotate(4deg);">AUTOCUSTODIA</div>
-  </section>
-
   <div class="progress" id="progress"></div>
   <footer class="foot">
-    <span id="where">00 · Introducción</span>
     <a href="../README.md">Guía: README.md</a>
-    <span><span id="count">01 / 05</span></span>
+    <span><span id="count">01 / 04</span></span>
   </footer>
 </main>
 

@@ -10,11 +10,13 @@ empezamos por cómo funciona la plataforma y terminamos con tu app en línea.
 
 ## Qué vas a construir
 
-Polka-Man, un juego de laberinto inspirado en los clásicos de arcade, que corre dentro de la
-Polkadot App y está pensado primero para el celular. Al terminar una partida, tu mejor puntaje se
-guarda en un smart contract con una sola firma desde tu teléfono.
+Una app y un smart contract dentro de Polkadot, hechos con IA y publicados en tu propio dominio
+`.dot`.
 
-El juego es el ejemplo. Lo importante es que al final sepas construir y publicar cualquier app.
+El ejemplo es Polka-Man, un juego móvil tipo Pac-Man que puedes abrir en `polka-man.dot` desde la
+Polkadot App o Polkadot Desktop. Al terminar una partida, el mejor puntaje se guarda en un smart
+contract. En el capítulo 5 construyes tu versión en tu propio repo, y en el hackatón construyes tu
+propia app de la misma forma.
 
 ## Qué vas a aprender
 
