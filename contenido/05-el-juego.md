@@ -30,6 +30,8 @@ Qué es una app en el Host y por qué corre en un `.dot`: [capítulo 1](./01-com
 
 ## 2. El proyecto de muestra
 
+![El proyecto de muestra: su estructura en carpetas](../img/cap5/proyecto-de-muestra.png)
+
 Es solo una muestra de un proyecto terminado. Úsalo como ejemplo para construir el tuyo: sigue su
 estructura, sus versiones compatibles y sus reglas para el agente (`game/AGENTS.md`). No lo copias;
 construyes el tuyo en tu repo. El juego terminado, Polka-Man, vive en la carpeta `game/` del curso:
@@ -89,6 +91,8 @@ Son las decisiones de la muestra; tú tomas las tuyas en la fase 0.
 
 ### Prueba la muestra
 
+![Prueba la muestra en polka-man.dot](../img/cap5/prueba-la-muestra.png)
+
 Abre **polka-man.dot** en la Polkadot App o en Polkadot Desktop y juega. Es la aplicación de ejemplo
 terminada: así se verá lo que vas a construir. La aplicación de ejemplo está conectada a un contrato
 ya desplegado: `0x0aAf511a454c6A522b37210ca6931Cde1c400Ac9`.
@@ -110,6 +114,8 @@ fase ([sección 3](#3-cómo-vas-a-trabajar)).
 ---
 
 ## 3. Cómo vas a trabajar
+
+![El ciclo de trabajo: planificación, sugerencias, ejecución, corrección y commit](../img/cap5/ciclo-de-trabajo.png)
 
 Trabajas con un ciclo que sirve para este juego y para tu app del hackatón:
 
@@ -205,6 +211,8 @@ Pendientes **POR VERIFICAR**:
 
 ## 5. Define tu juego
 
+![Define tu juego: el agente pregunta en orden y tú respondes con los mismos números](../img/cap5/define-tu-juego.png)
+
 Antes de escribir código, le pides a tu agente que **te haga preguntas**: todo lo que
 necesita saber para no dejar puntos vacíos ni decisiones arbitrarias. Es la parte que más cambia el
 resultado.
@@ -217,6 +225,8 @@ Qué esperar:
   un contra. Tú eliges.
 - Responde en orden, con los mismos números que usó el agente (1., 2., 3.), y numera tus pasos
   cuando le pidas varias cosas.
+
+![Si no sabes, pide opciones: tres opciones con números, pros y contras](../img/cap5/pide-opciones.png)
 
 ### Una o varias specs
 
@@ -344,6 +354,8 @@ de abajo.
 
 Lo haces una vez, antes de la primera subida. El dominio es de la cuenta de tu teléfono.
 
+![Compra tu dominio .dot en dotns.dot](../img/cap5/compra-tu-dominio.png)
+
 1. Abre `dotns.dot` en la Polkadot App (o en Desktop).
 2. Search: escribe el dominio que quieres.
 3. Register.
@@ -358,6 +370,8 @@ Reglas del dominio:
 - Depósito de 10 PAS, reembolsable.
 
 ### Probar dentro del Host: publica en tu .dot
+
+![El ciclo de publicar: build, subir a Bulletin, copiar el CID y Resolve](../img/cap5/ciclo-de-publicar.png)
 
 Ni Polkadot Desktop ni la Polkadot App se conectan a `localhost`: para probar en el Host publicas el
 juego en tu `.dot`. **Es el mismo método con el que publicas tu app al final del hackatón**; el
@@ -448,6 +462,8 @@ Notas:
 ---
 
 ## 9. Guarda tu récord
+
+![Guardar: simula, firma y relee](../img/cap5/guardar.png)
 
 Fase 8 ([prompt](../prompts/08-guarda-tu-record.md)). Esto es lo que tu app debe hacer al tocar
 «Guardar récord», y por qué. Se prueba con el ciclo de publicar de la

@@ -13,6 +13,8 @@ de lo que hagas aquí cuesta dinero real.
 
 ## Qué vas a instalar
 
+![Prepara tu entorno: tu teléfono y tu computadora](../img/cap2/prepara-tu-entorno.png)
+
 | Herramienta | Dónde | Para qué |
 |---|---|---|
 | Polkadot App (versión devnet) | Teléfono | Tu cuenta, tu llave y tus firmas |
@@ -38,8 +40,6 @@ sirven para este tutorial ([PCF](https://docs.polkadotcommunity.foundation/refer
 
 En Android te va a pedir permiso para instalar apps de fuentes desconocidas: dáselo solo al navegador
 o al gestor de archivos con el que bajaste el APK.
-
-![Instalar la Polkadot App](../img/cap2/01-polkadot-app.png)
 
 ---
 
@@ -81,7 +81,7 @@ teléfono y te manda ahí cada firma
 4. En la Polkadot App abre el escáner, apunta al QR y toca **Link**.
 5. Espera a que Desktop pase de *Completing pairing…* al tablero principal.
 
-![Emparejar Desktop con el teléfono](../img/cap2/02-emparejar.png)
+![El QR de Polkadot Desktop para emparejar tu teléfono](../img/cap2/polkadot-desktop-qr.png)
 
 > Usa la 0.1.3 aunque veas versiones más nuevas marcadas como *rc* (*release candidate*). Son de
 > prueba y pueden no ser compatibles con el SDK que vamos a usar.
@@ -273,8 +273,6 @@ Tienes dos formas de usarlo sin pagar:
 
 > **POR VERIFICAR:** condiciones y enlace de la promoción de Kiro Plus.
 
-![Kiro](../img/cap2/03-kiro.png)
-
 ---
 
 ## Paso 8 · MetaMask
@@ -287,6 +285,15 @@ por qué.
 
 1. Instala la extensión desde [metamask.io](https://metamask.io) y crea una cuenta nueva. Guarda su
    frase igual que la del paso 2.
+
+   En *Browser Extension* elige tu navegador:
+
+   ![metamask.io: elige tu navegador](../img/cap2/metamask-download.png)
+
+   Te lleva a la tienda de extensiones. Toca **Add extension** (Agregar extensión):
+
+   ![Agrega la extensión de MetaMask](../img/cap2/metamask-extension.png)
+
 2. Agrega la red de pruebas: **Redes → Agregar red → Agregar una red manualmente**.
 
    | Campo | Valor |
@@ -296,6 +303,10 @@ por qué.
    | ID de cadena | `420420417` |
    | Símbolo | `PAS` |
    | Explorador | `https://blockscout-testnet.polkadot.io` |
+
+   Si MetaMask sugiere otro nombre para la red, puedes ignorarlo. Toca **Save**.
+
+   <img src="../img/cap2/metamask-custom-network.png" alt="La red Polkadot Hub TestNet en MetaMask, lista para guardar" width="320">
 
 > Remix ofrece en su lista una red llamada "Paseo PassetHub (420420422)". Ya no existe: usa la de la
 > tabla.
@@ -357,6 +368,8 @@ Todo lo que se puede revisar desde aquí está listo.
 - `✔` está listo.
 - `✘` falta algo: debajo te dice cómo arreglarlo.
 - `!` es un aviso o algo que tienes que revisar tú.
+
+![Verifica todo: fork, pnpm install y el resultado de verificar-entorno](../img/cap2/verifica-todo.png)
 
 ---
 

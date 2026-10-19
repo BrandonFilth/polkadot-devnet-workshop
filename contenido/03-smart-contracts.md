@@ -432,6 +432,10 @@ Toma unos 5 minutos. Necesitas MetaMask con la red **Polkadot Hub TestNet** (cap
 
    ![Faucet con una dirección 0x](../img/cap3/01-faucet-0x.png)
 
+   En MetaMask revisa que la red sea **Polkadot Hub TestNet** y que ya aparezcan tus PAS.
+
+   ![MetaMask en Polkadot Hub TestNet con saldo en PAS](../img/cap3/02-metamask-red.png)
+
 2. **Abre Remix** en [remix.ethereum.org](https://remix.ethereum.org), crea `Leaderboard.sol` y pega
    el contrato.
 
@@ -441,18 +445,35 @@ Toma unos 5 minutos. Necesitas MetaMask con la red **Polkadot Hub TestNet** (cap
 
    ![Compilar](../img/cap3/04-remix-compilar.png)
 
-4. **Despliega.** En *Deploy & run transactions* elige **Injected Provider - MetaMask**, revisa que
-   la red sea la 420420417, pulsa **Deploy** y confirma en MetaMask.
+4. **Despliega.** En *Deploy & run transactions*, en *Environment*, elige **Browser Extension** y
+   **MetaMask**. Revisa que la red sea **Polkadot Testnet (420420417)**, pulsa **Deploy** y confirma
+   en MetaMask.
 
    ![Desplegar](../img/cap3/05-remix-desplegar.png)
 
-5. **Guarda la dirección y la ABI.** Copia la dirección del contrato desde *Deployed Contracts*, y la
-   ABI con el botón **ABI** de la pestaña del compilador. Las vas a usar en los capítulos 4 y 5.
+   ![Confirma el despliegue en MetaMask](../img/cap3/06-metamask-confirmar.png)
 
-   ![Contrato desplegado](../img/cap3/07-remix-contrato.png)
+5. **Guarda la dirección y la ABI.** En la pestaña *Deployed Contracts* copia la dirección con el
+   icono junto al nombre del contrato, y la ABI desde el menú **⋮** → **Copy ABI**. Las vas a usar en
+   los capítulos 4 y 5.
 
-Para probarlo, en *Deployed Contracts* los botones **naranjas** escriben (piden firma) y los
-**azules** solo leen. Llama `submitScore` con `1240` y luego `bestScore` con tu dirección.
+   ![Contrato desplegado: copia la dirección y la ABI](../img/cap3/07-remix-contrato-abi.png)
+
+6. **Pruébalo.** En *Deployed Contracts* cada función tiene un botón:
+   - **Transact** escribe y pide firma en MetaMask (`setUsername`, `submitScore`).
+   - **Call** solo lee, sin firma (`bestScore`, `getScores`, `playerCount`, …).
+
+   Llama `submitScore` con `1240` (**Transact**, confirma en MetaMask) y luego `bestScore` con tu
+   dirección (**Call**). El resultado aparece debajo de la función: `0: uint256: 1240`.
+
+7. **Mira tu contrato en el explorador.** Como ejemplo, abre el contrato de Polka-Man en Blockscout:
+   [0x0aAf511a454c6A522b37210ca6931Cde1c400Ac9](https://blockscout-testnet.polkadot.io/address/0x0aAf511a454c6A522b37210ca6931Cde1c400Ac9?tab=index).
+   Revisa:
+   - **La dirección**, arriba: es la misma que usa la app.
+   - **La transacción de creación**: quién desplegó el contrato y el hash de esa transacción.
+   - **La pestaña *Transactions***: cada llamada a `submitScore` o `setUsername`, con quién la firmó.
+
+   Para ver el tuyo, cambia en la URL la dirección por la que copiaste en el paso 5.
 
 > Si en Remix aparece "Paseo PassetHub (420420422)", no la uses: esa red ya no existe.
 

@@ -10,6 +10,8 @@ empezamos por cómo funciona la plataforma y terminamos con tu app en línea.
 
 ## Qué vas a construir
 
+![Qué vas a construir: tu app, tu smart contract y tu .dot](img/cap0/que-vas-a-construir.png)
+
 Una app y un smart contract dentro de Polkadot, hechos con IA y publicados en tu propio dominio
 `.dot`.
 
@@ -19,6 +21,8 @@ contract. En el capítulo 5 construyes tu versión en tu propio repo, y en el ha
 propia app de la misma forma.
 
 ## Qué vas a aprender
+
+![Qué vas a aprender](img/cap0/que-vas-a-aprender.png)
 
 - Cómo funciona una app de Polkadot por dentro: dónde vive sin tener servidor, cómo firma sin ver
   tu llave y por qué cada app te ve como alguien distinto.
@@ -33,6 +37,8 @@ propia app de la misma forma.
 ## El recorrido
 
 Cada capítulo tiene una guía para leer y unas diapositivas para seguir la clase.
+
+![El recorrido del curso, capítulo por capítulo](img/cap0/recorrido.png)
 
 | Cap. | Tema | Guía | Diapositivas |
 |---|---|---|---|

@@ -45,6 +45,8 @@ cadena no hay vuelta atrás ([capítulo 3, sección 9](./03-smart-contracts.md#9
 
 ## 2. Anatomía de un prompt
 
+![Anatomía de un prompt: sus cinco partes](../img/cap4/anatomia-prompt.png)
+
 Un buen prompt tiene cinco partes. No siempre necesitas todas, pero si falta una, la IA la rellena
 adivinando.
 
@@ -75,6 +77,8 @@ Cómo se comprueba: con puntajes 40, 900, 15 y 300, la tabla los muestra como
 ---
 
 ## 3. Prompt malo vs bueno
+
+![Prompt malo vs bueno](../img/cap4/malo-vs-bueno.png)
 
 | Malo | Bueno | Qué cambió |
 |---|---|---|
@@ -112,6 +116,8 @@ La lista completa, con componentes, estados, tipografía y términos de juego, e
 ---
 
 ## 5. Specs
+
+![Specs: decide qué hace tu app antes de pedir código](../img/cap4/specs.png)
 
 Una spec es la descripción de lo que vas a construir, escrita **antes** de pedir código. Te obliga a
 decidir qué hace la app y qué no, y le da a la IA una sola fuente de verdad para todo lo que sigue.
@@ -232,6 +238,8 @@ pnpm test
 
 ## 7. Pasos chicos y commits
 
+![Pasos chicos y commits](../img/cap4/pasos-chicos.png)
+
 Un cambio por prompt. Cuando funciona, commit. Si el siguiente cambio sale mal, regresas al último
 punto bueno sin perder lo demás.
 
@@ -285,6 +293,8 @@ terminen en GitHub.
 
 ## 9. Agentes
 
+![Un chat responde, un agente trabaja en tu proyecto](../img/cap4/agentes.png)
+
 Un chat responde con texto: tú copias el código, lo pegas y lo corres. Un agente trabaja dentro de
 tu proyecto: lee tus archivos, los edita, corre comandos (build, tests, git) y repite hasta terminar.
 
@@ -324,6 +334,8 @@ Dos reglas para cualquier agente:
 ---
 
 ## 10. AGENTS.md
+
+![AGENTS.md: las reglas del proyecto para el agente](../img/cap4/agents-md.png)
 
 `AGENTS.md` es un archivo markdown en la raíz del proyecto con instrucciones para los agentes: cómo
 se construye, cómo se prueba y qué reglas seguir. Es un formato abierto; en proyectos con varias
@@ -423,6 +435,8 @@ Para este hackatón no necesitas ningún servidor MCP.
 ## 12. Skills
 
 ### Qué es una skill
+
+![Qué es una skill: una carpeta con SKILL.md](../img/cap4/que-es-una-skill.png)
 
 Una skill es una carpeta con un archivo `SKILL.md`. Ese archivo empieza con un `name` y una
 `description`, y puede venir con carpetas `references/` (documentos) y `scripts/` (programas). Es un
@@ -620,6 +634,8 @@ quítala con `npx skills@1.7.2 remove <nombre>`.
 ---
 
 ## 14. Cómo supervisar a la IA
+
+![Cómo supervisar a la IA](../img/cap4/supervisar.png)
 
 El agente escribe el código, pero tú decides qué se queda. Esto sirve para cualquier proyecto y
 cualquier agente.

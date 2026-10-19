@@ -63,6 +63,8 @@ Nadie te "sirve" la app: tu dispositivo la busca en la cadena, la descarga por s
 Un sandbox es un entorno aislado donde un código corre con capacidades limitadas: puede
 funcionar, pero no puede tocar lo que está fuera de él.
 
+![El sandbox: tu app encerrada, con el Host como única salida](../img/cap1/03-sandbox.png)
+
 En Polkadot el sandbox lo impone el Host, y tu app no puede saltárselo
 ([sandbox](https://docs.polkadot.com/reference/apps/protocol/truapi/sandbox/)):
 
@@ -84,12 +86,16 @@ En Polkadot el sandbox lo impone el Host, y tu app no puede saltárselo
   ([permisos en Desktop](https://docs.polkadot.com/reference/apps/hosts/polkadot-desktop/permissions/)).
   La documentación marca esta lista de permisos como provisional.
 
+![Un tú distinto en cada app: una cuenta derivada por dominio](../img/cap1/04-una-cuenta-por-app.png)
+
 | Lo que tu app hace | Cómo lo hace dentro del sandbox |
 |---|---|
 | Llamar a una URL externa | La declara como `ExternalRequest` y el usuario la aprueba |
 | Leer o escribir en una cadena | Se lo pide al Host |
 | Firmar una transacción | El Host manda la petición a tu teléfono |
 | Guardar datos locales | Se lo pide al Host |
+
+![Así viaja una firma: de tu app al Host y a tu teléfono](../img/cap1/05-firma.png)
 
 **Por qué importa.** Para el usuario: una app no puede espiar a otra ni firmar por él. Para quien
 programa: en vez de las APIs web normales, usas el Product SDK (`@parity/product-sdk`) para
