@@ -26,7 +26,8 @@ es otro jugador ([capítulo 3, sección 16](../contenido/03-smart-contracts.md#1
 ## El prompt
 
 ```text
-Lee SPEC.md y AGENTS.md. Usa la skill polkadot-products-devnet.
+Lee SPEC.md (y el spec de esta parte si existe) y AGENTS.md.
+Usa la skill polkadot-products-devnet.
 Mi contrato Leaderboard está en la dirección <tu-dirección> y su ABI está en
 src/contract/leaderboard.abi.json.
 En la pantalla de título muestra el top 10 leyendo mi contrato por la red, como dice

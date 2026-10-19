@@ -16,7 +16,7 @@ Escribe tus respuestas en `SPEC.md`.
 ## El prompt
 
 ```text
-Lee SPEC.md y AGENTS.md.
+Lee SPEC.md (y el spec de esta parte si existe) y AGENTS.md.
 Dibuja el laberinto en el canvas y haz que el personaje se mueva por él con los controles
 de SPEC.md. Debe detenerse en las paredes y girar en los cruces.
 Agrega un botón de pausa. Si el jugador cambia de pestaña, el juego se pausa y no se

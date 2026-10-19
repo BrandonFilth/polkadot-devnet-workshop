@@ -9,7 +9,7 @@ y revisa los [errores comunes de la sección 15](../contenido/04-vibe-coding.md#
 Después de cada fase, para encontrar decisiones que no tomaste tú.
 
 ```text
-¿Qué decidiste tú que no estaba en SPEC.md ni en mi prompt?
+¿Qué decidiste tú que no estaba en mis specs ni en mi prompt?
 ```
 
 ## 2. Qué puede fallar en un celular

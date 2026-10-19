@@ -1,6 +1,6 @@
 # Fase 0 · Define tu juego
 
-Al terminar tienes `SPEC.md`: las decisiones de tu juego, sin huecos, antes de escribir código.
+Al terminar tienes `SPEC.md` (y, si hace falta, otros `spec-*.md`): las decisiones de tu juego, sin huecos, antes de escribir código.
 15 a 20 minutos.
 
 ## Antes de pedir
@@ -32,6 +32,11 @@ Así se va a ver tu `SPEC.md`. Las secciones que ya conoces vienen del
 ## Decisiones por fase
 ```
 
+Puedes tener varias specs: `SPEC.md` para lo general y, si una parte necesita mucho detalle,
+`spec-niveles.md`, `spec-fantasmas.md` o `spec-contrato.md`. Lo grande vive en un archivo para que
+el agente no lo deforme en una sesión larga; los cambios pequeños van como prompt. No las escribes
+solo: el agente pregunta, propone y escribe; tú revisas y corriges.
+
 ## El prompt
 
 ```text
@@ -42,10 +47,11 @@ y guardar récord. El mejor puntaje se guarda en mi propio contrato Leaderboard.
 Usa la skill polkadot-products-devnet.
 Antes de escribir código, pregúntame cualquier duda que tengas, de pocas en pocas, para no
 dejar puntos vacíos ni decisiones arbitrarias.
-Si te digo "no sé", dame opciones y recomiéndame una.
+Si te digo "no sé", dame opciones concretas y recomiéndame una.
 Al terminar, escribe SPEC.md con estas secciones: Objetivo, Usuario, Qué hace, Qué no hace,
 Reglas y números, Datos y contrato, Pantallas y estados, Casos de prueba, Fuera de alcance
-y Decisiones por fase. No escribas código.
+y Decisiones por fase. Si una parte necesita mucho detalle, propón un spec aparte
+(p. ej. spec-fantasmas.md). No escribas código.
 ```
 
 ## Si no sabes
@@ -53,8 +59,9 @@ y Decisiones por fase. No escribas código.
 Cuando una pregunta del agente no la sepas responder, no inventes ni le dejes decidir solo:
 
 ```text
-No sé qué tan difícil debería ser. Dame 3 opciones con pros y contras para alguien que
-juega en el celular por primera vez, recomiéndame una y no escribas código.
+No sé qué tan difícil debería ser. Dame 3 opciones concretas, con números (por ejemplo
+"fantasmas 5 % más rápidos por ronda, hasta la ronda 9"), cada una con un pro y un contra
+para alguien que juega en el celular. Recomiéndame una y no escribas código.
 ```
 
 ## Al terminar, revisa
@@ -62,13 +69,15 @@ juega en el celular por primera vez, recomiéndame una y no escribas código.
 - Cada fila de "Reglas y números" tiene un valor concreto (por ejemplo "Vidas: 3", no "algunas").
 - "Qué no hace" y "Casos de prueba" no están vacíos.
 - Existe la sección "Decisiones por fase" (puede estar vacía por ahora).
+- Si el agente propuso specs aparte, cada una dice de qué parte es y `SPEC.md` las menciona.
 - Pídele que busque huecos:
 
   ```text
   ¿Qué parte de SPEC.md sigue siendo ambigua o se contradice? No cambies nada todavía.
   ```
 
-Cuando estés de acuerdo con `SPEC.md`, guárdalo en tu repo:
+Cuando estés de acuerdo con `SPEC.md`, guárdalo en tu repo. Si crearon otros specs, agrégalos
+también por nombre (p. ej. `git add spec-fantasmas.md`).
 
 ```bash
 git add SPEC.md

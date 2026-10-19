@@ -14,7 +14,7 @@ Escribe tus respuestas en `SPEC.md`.
 ## El prompt
 
 ```text
-Lee SPEC.md y AGENTS.md.
+Lee SPEC.md (y el spec de esta parte si existe) y AGENTS.md.
 Pon bolitas en los pasillos del laberinto. Cuando el personaje pasa por una, se la come y
 el puntaje sube según SPEC.md.
 Agrega un HUD arriba con lo que dice SPEC.md.

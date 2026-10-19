@@ -11,14 +11,15 @@ vas a pedirle cada parte a tu agente con prompts cortos, una fase a la vez.
 
 ## 1. Qué vas a construir
 
-![Polka-Man en el celular](../img/cap5/polka-man-movil.png "Polka-Man en el celular: HUD arriba, laberinto y D-pad")
+<img src="../img/cap5/polka-man-movil.png" alt="Polka-Man en el celular: HUD arriba, laberinto y D-pad" width="220" align="right">
 
-Tu primera app en Polkadot: un juego tipo Pac-Man para el celular, a tu manera.
+Una app y un smart contract dentro de Polkadot, construidos con IA, en tu propio dominio `.dot`.
+La app es un juego tipo Pac-Man para el celular, a tu manera.
 
-- **Tu juego** corre dentro de la Polkadot App.
-- **Tu repo:** lo construyes con IA, fase por fase.
-- **Tu contrato** guarda el mejor puntaje, y lo despliegas tú.
-- **Tu `.dot`:** lo publicas en tu propio nombre.
+- **Tu app:** un juego tipo Pac-Man que corre dentro de la Polkadot App.
+- **Tu smart contract:** guarda el mejor puntaje; lo despliegas tú.
+- **Con IA:** lo construyes en tu repo, fase por fase.
+- **Tu dominio `.dot`:** lo publicas en tu propio dominio.
 
 Las reglas las decides tú en la [fase 0](#5-define-tu-juego); la muestra tiene las suyas
 ([Las decisiones de la muestra](#las-decisiones-de-la-muestra)).
@@ -29,8 +30,9 @@ Qué es una app en el Host y por qué corre en un `.dot`: [capítulo 1](./01-com
 
 ## 2. El proyecto de muestra
 
-Es solo una muestra: sirve para ver cómo luce la estructura de un proyecto terminado. No la copias;
-construyes la tuya en tu repo. El juego terminado, Polka-Man, vive en la carpeta `game/` del curso:
+Es solo una muestra de un proyecto terminado. Úsalo como ejemplo para construir el tuyo: sigue su
+estructura, sus versiones compatibles y sus reglas para el agente (`game/AGENTS.md`). No lo copias;
+construyes el tuyo en tu repo. El juego terminado, Polka-Man, vive en la carpeta `game/` del curso:
 lo lees, lo juegas y lo comparas con el tuyo.
 
 ```text
@@ -61,7 +63,7 @@ Por qué está así:
 - **El laberinto es texto.** Un arreglo de filas con `#` para paredes, `.` para bolitas y `o` para
   bolitas especiales. Se lee a ojo, la IA lo edita sin errores y el diff se entiende. Un test revisa
   que no haya callejones sin salida, porque los fantasmas no dan media vuelta.
-- **La dificultad sube por ronda con tope.** Los fantasmas van un poco más rápido cada ronda, pero
+- **La dificultad sube por ronda con tope.** Los fantasmas van 5 % más rápido cada ronda, pero
   nunca tan rápido como el jugador: con control táctil sería imposible escapar en una recta.
 - **El contrato va aparte y con tests.** `contract/`, `hub/` y `lib/` tienen sus propias pruebas con
   datos falsos, sin red.
@@ -87,9 +89,11 @@ Son las decisiones de la muestra; tú tomas las tuyas en la fase 0.
 
 ### Prueba la muestra
 
-Abre `polka-man.dot` en la Polkadot App o en Polkadot Desktop y juega. Es la muestra terminada,
-conectada al contrato del organizador. Así se verá lo que vas a construir. **POR VERIFICAR**:
-disponible cuando el organizador lo publique.
+Abre **polka-man.dot** en la Polkadot App o en Polkadot Desktop y juega. Es la aplicación de ejemplo
+terminada; está conectada a un contrato `Leaderboard` ya desplegado en
+`0xa2625aa8e8790a3322acd045b32f67fba1808542`. Así se verá lo que vas a construir.
+
+Puedes ver el contrato en [Blockscout](https://blockscout-testnet.polkadot.io/address/0xa2625aa8e8790a3322acd045b32f67fba1808542).
 
 Prueba:
 
@@ -107,22 +111,23 @@ fase ([sección 3](#3-cómo-vas-a-trabajar)).
 
 ## 3. Cómo vas a trabajar
 
-Cada fase sigue el mismo ciclo:
+Trabajas con un ciclo que sirve para este juego y para tu app del hackatón:
 
-**Pensar → Preguntar → Decidir → Pedir → Revisar → Commit**
+**Planificación → Ronda de sugerencias con la IA → Ejecución del plan con la IA → Corrección de bugs + cambios → Commit**, y repites hasta terminar.
 
 | Paso | Qué haces | Dónde se explica |
 |---|---|---|
-| Pensar | Lees "Antes de pedir" y piensas escenarios: celular, pestaña en segundo plano, doble toque, red lenta | Esta guía |
-| Preguntar | Si no sabes algo, usas el prompt "Si no sabes": opciones con pros y contras y una recomendación, sin código | Esta guía |
-| Decidir | Escribes tus decisiones en `SPEC.md` | [Capítulo 4, sección 5](./04-vibe-coding.md#5-specs) |
-| Pedir | Pegas el prompt corto en modo supervisado; el agente da su plan y pregunta lo que falte | [Sección 2](./04-vibe-coding.md#2-anatomía-de-un-prompt), [sección 9](./04-vibe-coding.md#9-agentes) |
-| Revisar | Pruebas a mano, el prompt de tests y casos raros, `git diff` | [Sección 6](./04-vibe-coding.md#6-casos-de-prueba), [sección 14](./04-vibe-coding.md#14-cómo-supervisar-a-la-ia) |
-| Commit | Un commit por fase y `git push` | [Sección 7](./04-vibe-coding.md#7-pasos-chicos-y-commits) |
+| 1. Planificación | Decides qué quieres en esta parte y piensas escenarios: celular, pestaña en segundo plano, doble toque, red lenta. Lo grande queda en un spec | [Capítulo 4, sección 5](./04-vibe-coding.md#5-specs) |
+| 2. Ronda de sugerencias con la IA | Pegas el prompt corto; el agente pregunta lo que falta y propone. Si no sabes, pides opciones concretas con pros y contras y una recomendación. Tú decides y lo anotas en el spec | [Sección 5](#5-define-tu-juego) |
+| 3. Ejecución del plan con la IA | El agente te dice su plan, lo revisas y lo ejecuta en modo supervisado | [Sección 2](./04-vibe-coding.md#2-anatomía-de-un-prompt), [sección 9](./04-vibe-coding.md#9-agentes) |
+| 4. Corrección de bugs + cambios | Pruebas a mano, el prompt de tests y casos raros, `git diff`. Bugs y cambios pequeños van como prompts cortos; si cambia una decisión grande, actualizas el spec | [Sección 6](./04-vibe-coding.md#6-casos-de-prueba), [sección 14](./04-vibe-coding.md#14-cómo-supervisar-a-la-ia) |
+| 5. Commit | Un commit y `git push`; luego la siguiente vuelta | [Sección 7](./04-vibe-coding.md#7-pasos-chicos-y-commits) |
+
+En este juego, cada vuelta del ciclo es una fase de [`prompts/`](../prompts/) ([sección 6](#6-las-fases-1-a-5)).
 
 Casi todos los prompts llevan tres frases. Son el hábito que practicas:
 
-1. "Lee `SPEC.md` y `AGENTS.md`." El contexto vive en archivos, no en el prompt.
+1. "Lee `SPEC.md` (y el spec de esta parte si existe) y `AGENTS.md`." El contexto vive en archivos, no en el prompt.
 2. "Si te falta algún dato o hay que decidir algo que no está en `SPEC.md`, pregúntame antes de
    escribir código." La IA no decide por ti.
 3. "Primero dime tu plan." Revisas antes de que toque archivos.
@@ -130,8 +135,9 @@ Casi todos los prompts llevan tres frases. Son el hábito que practicas:
 Cada archivo de [`prompts/`](../prompts/) tiene cuatro partes:
 
 - **Antes de pedir:** 2 a 4 decisiones que te tocan a ti, con un ejemplo de respuesta.
-- **El prompt:** 12 líneas o menos. Los números del juego no van en el prompt: están en `SPEC.md`.
-- **Si no sabes:** un prompt para pedir opciones con pros y contras, sin código.
+- **El prompt:** 12 líneas o menos. Los números del juego no van en el prompt: están en tus specs.
+- **Si no sabes:** un prompt para pedir opciones concretas, con números, cada una con un pro y un
+  contra, sin código.
 - **Al terminar, revisa:** pruebas a mano, el prompt de tests y el commit.
 
 Si no sabes algo, no lo dejes al azar: pídele opciones. Y después de cada fase, usa los prompts de
@@ -143,10 +149,10 @@ Un ejemplo de este juego:
 ```text
 Malo: Haz que haya fantasmas.
 
-Bueno: Lee SPEC.md y AGENTS.md. Agrega los fantasmas que dice SPEC.md, cada uno con su
-forma de perseguir. Si uno toca al personaje, se pierde una vida. Si te falta algún dato
-o hay que decidir algo que no está en SPEC.md, pregúntame antes de escribir código.
-Primero dime tu plan.
+Bueno: Lee SPEC.md (y spec-fantasmas.md si existe) y AGENTS.md. Agrega los fantasmas que
+dice el spec, cada uno con su forma de perseguir. Si uno toca al personaje, se pierde una
+vida. Si te falta algún dato o hay que decidir algo que no está en el spec, pregúntame
+antes de escribir código. Primero dime tu plan.
 ```
 
 El malo deja que la IA decida cuántos fantasmas, cómo persiguen y qué pasa al chocar. El bueno le da
@@ -207,9 +213,26 @@ Qué esperar:
 
 - Preguntas de pocas en pocas: cuántas vidas, qué pasa al chocar, qué ve el jugador sin red.
 - Preguntas que no habías pensado. Esa es la idea: descubrir lo que no habías decidido.
-- Cuando no sepas, responde "no sé" y pídele opciones con pros y contras. Tú eliges.
+- Cuando no sepas, responde "no sé" y pídele opciones concretas, con números, cada una con un pro y
+  un contra. Tú eliges.
 
-El resultado es `SPEC.md`, con las secciones del [capítulo 4, sección 5](./04-vibe-coding.md#5-specs)
+### Una o varias specs
+
+No todo tiene que vivir en un solo archivo. Puedes tener varios:
+
+- `SPEC.md`: lo general del juego.
+- `spec-niveles.md`, `spec-fantasmas.md`, `spec-contrato.md`: una parte con mucho detalle.
+
+Las decisiones grandes, los prompts largos y la lógica completa van en un archivo. En una sesión
+larga, la ventana de contexto del agente puede malinterpretar o deformar lo que decidiste al inicio;
+el archivo no cambia. Los cambios pequeños pueden ir solo como prompt.
+
+No tienes que escribir la spec solo: el agente pregunta, propone y escribe el archivo; tú lo revisas
+y lo corriges.
+
+### Qué lleva `SPEC.md`
+
+El resultado es `SPEC.md` (y, si hace falta, uno o más `spec-*.md`), con las secciones del [capítulo 4, sección 5](./04-vibe-coding.md#5-specs)
 y los casos de la [sección 6](./04-vibe-coding.md#6-casos-de-prueba), más dos nuevas:
 
 - **Reglas y números:** una tabla con cada regla y su valor (vidas, puntaje por bolita,
@@ -218,11 +241,14 @@ y los casos de la [sección 6](./04-vibe-coding.md#6-casos-de-prueba), más dos 
   conservan las bolitas"). Si una decisión cambia un número, actualiza también la tabla.
 
 Prompt y revisión: [`prompts/00-define-tu-juego.md`](../prompts/00-define-tu-juego.md). Al terminar,
-`git add SPEC.md`, commit y `git push`.
+`git add SPEC.md` (y cada `spec-*.md` que hayan creado, por nombre), commit y `git push`.
 
 ---
 
 ## 6. Las fases 1 a 5
+
+Así se reparte este juego en fases. Cada fase es una vuelta del ciclo de la
+[sección 3](#3-cómo-vas-a-trabajar).
 
 | # | Fase | Qué tienes al terminar | Se prueba en | Tiempo |
 |---|---|---|---|---|
@@ -233,7 +259,7 @@ Prompt y revisión: [`prompts/00-define-tu-juego.md`](../prompts/00-define-tu-ju
 | 4 | [Fantasmas y vidas](../prompts/04-fantasmas.md) | Fantasmas, vidas y pantalla de fin | Navegador | 30–40 min |
 | 5 | [Bolitas especiales y dificultad](../prompts/05-poder-y-dificultad.md) | Fantasmas asustados y dificultad por ronda con tope | Navegador | 25–35 min |
 | 6 | [Tu contrato y el ranking](../prompts/06-tu-contrato.md) | Top 10 de tu contrato | Navegador | 25–30 min |
-| 7 | [Publica en tu .dot](../prompts/07-publica.md) | Tu nombre `.dot` y tu juego publicado en él, abierto desde el Host | Host | 15–20 min |
+| 7 | [Publica en tu .dot](../prompts/07-publica.md) | Tu dominio `.dot` y tu juego publicado en él, abierto desde el Host | Host | 15–20 min |
 | 8 | [Guarda tu récord](../prompts/08-guarda-tu-record.md) | Conectar, permiso de gas y guardar con una firma | Host | 30–40 min |
 
 En total, de 3.5 a 4.5 horas (**POR VERIFICAR** con un ensayo). Un commit y un `git push` por fase.
@@ -312,18 +338,18 @@ de abajo.
 > El Host deriva una cuenta por dominio: tu cuenta en tu `.dot` es distinta de la que tienes en la
 > app de un compañero ([capítulo 3, sección 16](./03-smart-contracts.md#16-tus-tres-cuentas)).
 
-### Compra tu nombre .dot (una sola vez)
+### Compra tu dominio .dot (una sola vez)
 
-Lo haces una vez, antes de la primera subida. El nombre es de la cuenta de tu teléfono.
+Lo haces una vez, antes de la primera subida. El dominio es de la cuenta de tu teléfono.
 
 1. Abre `dotns.dot` en la Polkadot App (o en Desktop).
-2. Search: escribe tu nombre.
+2. Search: escribe el dominio que quieres.
 3. Register.
 4. Register otra vez.
 5. Continue.
 6. Firma en el teléfono.
 
-Reglas del nombre:
+Reglas del dominio:
 
 - 9 caracteres o más (así no pide Proof of Personhood).
 - Solo `a-z`, `0-9` y `-`, sin guion al inicio ni al final.
@@ -333,7 +359,7 @@ Reglas del nombre:
 
 Ni Polkadot Desktop ni la Polkadot App se conectan a `localhost`: para probar en el Host publicas el
 juego en tu `.dot`. **Es el mismo método con el que publicas tu app al final del hackatón**; el
-capítulo 6 (próximamente) amplía la compra del nombre, el manifest y la renovación. No necesitas
+capítulo 6 (próximamente) amplía la compra del dominio, el manifest y la renovación. No necesitas
 sesión, frase de recuperación ni keystore: en cada publicación la única firma es la de Save en
 Resolve, en tu teléfono.
 Fuente: la skill
@@ -343,9 +369,11 @@ Comprobado el 2026-10-18 con `pad` 0.16.7.
 Ciclo: `pnpm build` → subes con `pad` → copias el CID → `dotns.dot` → Profile → Resolve → pegas →
 Save → firmas → abres tu `.dot` en el Host. Cada build da un CID nuevo.
 
-Primero compra tu nombre ([subsección anterior](#compra-tu-nombre-dot-una-sola-vez)).
+Primero compra tu dominio ([subsección anterior](#compra-tu-dominio-dot-una-sola-vez)).
 
-1. Desde la raíz del repo, `pnpm build`. El bundle queda en `dist`.
+1. Desde la raíz de tu repo, `pnpm build`. El bundle queda en `dist`. En el repo del curso, la
+   muestra deja su build en `game\dist` (`./game/dist` en macOS o Linux); cambia la carpeta en la
+   línea `pad` si publicas la muestra.
 2. Desde la raíz del repo, sube el bundle (unos 3.5 minutos).
 
    Windows (PowerShell):
@@ -371,19 +399,19 @@ Primero compra tu nombre ([subsección anterior](#compra-tu-nombre-dot-una-sola-
    raíz: cópialo. Las líneas `bafkrei…` son los trozos.
 4. Opcional, sin el Host: `https://<nombre-temporal>.dev-dot.li` muestra el bundle.
 5. En la Polkadot App (o en Desktop) abre `dotns.dot` → Profile → pestaña My Domains → en la fila de
-   tu nombre, botón Resolve. Se abre "Resolve to IPFS": pega el CID (`bafy…`) en "IPFS Hash or
+   tu dominio, botón Resolve. Se abre "Resolve to IPFS": pega el CID (`bafy…`) en "IPFS Hash or
    Gateway URL", toca Save y firma en el teléfono.
 
    ![Resolve to IPFS en DotNS](../img/dotns.png "Resolve to IPFS: pega el CID y toca Save")
 
    En la fila también están Edit, Delegate y Set Primary. Edit es para los registros del perfil
    (manifest), no para el CID.
-6. Abre tu nombre desde el Host. En la fase 7 revisa que cargan el juego y el ranking; en la fase 8,
+6. Abre tu dominio desde el Host. En la fase 7 revisa que cargan el juego y el ranking; en la fase 8,
    Conectar, permiso de gas y guardar récord.
 
 **Repite el ciclo cuando quieras.** Cada vez que quieras probar la conexión o cualquier función
 dentro del Host, en el taller y en el hackatón, repites los pasos 1 a 6. Cada build da un CID nuevo
-que vuelves a pegar con Resolve. El nombre no se vuelve a comprar.
+que vuelves a pegar con Resolve. El dominio no se vuelve a comprar.
 
 Por qué cada parte:
 
@@ -401,14 +429,14 @@ Si algo falla:
 |---|---|
 | `pool account N … is not authorized (or its authorization expired)` | Esa cuenta del pool venció en Bulletin. Corre otra vez la misma línea `pad`: elige al azar una de las 10 cuentas sin revisar su autorización. La organización mantiene autorizadas las 10 durante el evento |
 | El nombre ya tiene dueño | Genera otro `$tmp` (segunda línea) y repite |
-| Falla por propietario con tu propio nombre | Nunca le pases a `pad` el nombre de tu teléfono: `pad` firma con su worker. Dale el nombre temporal y pega el CID a mano |
+| Falla por propietario con tu propio dominio | Nunca le pases a `pad` el dominio de tu teléfono: `pad` firma con su worker. Dale el nombre temporal y pega el CID a mano |
 | No aparece `Storage signer: pool fallback (no session)` o pide aprobar en el teléfono | Hay una sesión de `pad` guardada. Corre `pad logout` y repite |
 | `Previous deploy did not exit cleanly. Continuing.` o `Previous deploy was interrupted` | Inofensivo |
 | `A newer version of polkadot-app-deploy is available (0.16.7 → 0.20.0)` | Ignóralo; no actualices (la versión está fija en 0.16.7) |
 
 Notas:
 
-- Nunca le pases tu propio nombre a `pad`; solo el nombre temporal.
+- Nunca le pases tu propio dominio a `pad`; solo el nombre temporal.
 - La organización autorizó las 10 cuentas del pool con 1000 transacciones y 1000 MB cada una (unos
   10 GB en total).
 - Bulletin borra el contenido a los ~14 días: vuelve a publicar antes de la demo o la evaluación.
@@ -477,7 +505,7 @@ Sube por esta escalera, en orden:
    3. Borra `src/contract/leaderboard.red.test.ts`: hace lecturas reales por red y haría que
       `pnpm test` dependa de la red.
    4. En `src/contract/config.ts` cambia `LEADERBOARD_ADDRESS` a la dirección de **tu** contrato y
-      `PRODUCT_DOMAIN` a **tu** nombre `.dot`.
+      `PRODUCT_DOMAIN` a **tu** dominio `.dot`.
    5. Si `pnpm build` o `pnpm test` fallan al importar el `.json`, pídele al agente que agregue
       `"resolveJsonModule": true` en `compilerOptions` de tu `tsconfig.json`. Si fallan por otra
       razón, usa el prompt 4 de `revision.md` con el error exacto.

@@ -26,7 +26,7 @@ El juego es el ejemplo. Lo importante es que al final sepas construir y publicar
   skills.
 - A crear los gráficos de tu app con IA.
 - A escribir y desplegar un smart contract.
-- A publicar tu app con su nombre `.dot`, su icono y su descripción.
+- A publicar tu app en su propio dominio `.dot`, con su icono y su descripción.
 
 ## El recorrido
 
@@ -55,7 +55,7 @@ Elige la forma que te acomode:
   descárgalo con **Code → Download ZIP** y ábrelo desde ahí.
 - **Construir el juego.** El juego terminado de muestra está en `game/` y lo pruebas en
   `polka-man.dot` desde la Polkadot App; los prompts de ejemplo están en `prompts/`; tú construyes
-  el tuyo en un repo nuevo y lo publicas en tu propio `.dot` (capítulo 5).
+  el tuyo en un repo nuevo y lo publicas en tu propio dominio `.dot` (capítulo 5).
 
 En las diapositivas:
 

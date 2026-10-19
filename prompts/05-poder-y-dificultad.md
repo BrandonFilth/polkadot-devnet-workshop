@@ -7,15 +7,15 @@ ronda, con un tope. 25 a 35 minutos.
 
 - ¿Cuánto dura el susto? (p. ej. "6 segundos y menos en cada ronda").
 - ¿Cuánto vale comerse un fantasma asustado? (p. ej. "200, y el doble por cada uno seguido").
-- ¿Cómo sube la dificultad y dónde se detiene? (p. ej. "fantasmas un poco más rápidos cada ronda,
-  pero nunca tan rápidos como el jugador").
+- ¿Cómo sube la dificultad y dónde se detiene? (p. ej. "fantasmas 5 % más rápidos cada ronda,
+  hasta la ronda 9; siempre más lentos que el jugador").
 
 Escribe tus respuestas en `SPEC.md`.
 
 ## El prompt
 
 ```text
-Lee SPEC.md y AGENTS.md.
+Lee SPEC.md (y el spec de esta parte si existe) y AGENTS.md.
 Agrega las bolitas especiales. Al comer una, los fantasmas se asustan por un tiempo: huyen
 y el personaje se los puede comer. Un fantasma comido regresa a su casa y vuelve a salir.
 Haz que la dificultad suba en cada ronda como dice SPEC.md, con su tope.
@@ -27,9 +27,9 @@ Primero dime tu plan.
 ## Si no sabes
 
 ```text
-No sé cómo debería subir la dificultad. Dame 3 opciones (por ejemplo igual cada ronda,
-por porcentaje o por escalones) con pros y contras para un juego de celular,
-recomiéndame una y no escribas código.
+No sé cómo debería subir la dificultad. Dame 3 opciones concretas, con números
+(por ejemplo "un fantasma más cada 3 rondas, hasta 6"), cada una con un pro y un
+contra para un juego de celular. Recomiéndame una y no escribas código.
 ```
 
 ## Al terminar, revisa

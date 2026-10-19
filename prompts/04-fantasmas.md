@@ -16,7 +16,7 @@ Escribe tus respuestas en `SPEC.md`.
 ## El prompt
 
 ```text
-Lee SPEC.md y AGENTS.md.
+Lee SPEC.md (y el spec de esta parte si existe) y AGENTS.md.
 Agrega los fantasmas que dice SPEC.md, cada uno con su forma de perseguir.
 Si un fantasma toca al personaje, se pierde una vida. Sin vidas, aparece la pantalla de
 fin con el puntaje y un botón "Jugar otra vez" que reinicia todo.

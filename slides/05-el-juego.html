@@ -30,7 +30,6 @@
 .j-phone { border: 2px solid #d6d3d1; border-radius: 42px; padding: 40px 14px 22px; background: #050505; position: relative; }
 .j-phone::before { content: ''; position: absolute; top: 18px; left: 50%; width: 80px; height: 8px; margin-left: -40px; border-radius: 4px; background: #2a2a2a; }
 .j-phone img { display: block; width: 100%; border-radius: 6px; }
-.j-cap { font: 18px var(--mono); color: var(--muted); text-align: center; margin-top: 12px; }
 
 /* Filas de reglas */
 .j-rows > div { display: grid; grid-template-columns: 300px 1fr; align-items: baseline; padding: 15px 0; border-bottom: 1px solid var(--line); font: 24px var(--display); }
@@ -47,7 +46,6 @@
 
 /* Ciclo en fila (5 o 6 cajas) */
 .j-cyc { display: grid; grid-template-columns: 1fr 40px 1fr 40px 1fr 40px 1fr 40px 1fr; align-items: stretch; }
-.j-cyc.six { grid-template-columns: 1fr 30px 1fr 30px 1fr 30px 1fr 30px 1fr 30px 1fr; }
 .j-cyc .a { font: 700 26px var(--display); color: var(--muted); display: grid; place-items: center; }
 .j-cyc .box { border: 2px solid #d6d3d1; background: #050505; padding: 16px 18px; }
 .j-cyc .box.pink { border-color: var(--accent); }
@@ -65,6 +63,20 @@
 .j-msg ol { margin: 8px 0 0 26px; }
 .j-msg li { margin-top: 4px; }
 
+.j-n { display: inline-block; width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: #000; text-align: center; font: 700 20px/32px var(--display); margin-right: 10px; vertical-align: 2px; text-indent: 0; }
+
+/* Sesión de terminal tipo Claude Code */
+.j-cc { border: 2px solid #3a3a37; background: #0b0b0b; }
+.j-cc .j-bar { height: 44px; border-bottom: 2px solid #3a3a37; display: flex; align-items: center; gap: 10px; padding: 0 16px; }
+.j-cc .j-bar span { font: 700 18px var(--display); color: #d6d3d1; }
+.j-cc .j-bar em { margin-left: auto; font: 18px var(--mono); font-style: normal; color: var(--muted); }
+.j-cc .j-body { padding: 16px 22px 18px; display: flex; flex-direction: column; gap: 12px; font: 19px/1.45 var(--mono); color: #d6d3d1; white-space: normal; }
+.j-cc .u { background: #151515; padding: 8px 12px 8px 36px; text-indent: -24px; }
+.j-cc .u::before { content: '> '; color: #d97757; }
+.j-cc .a { padding-left: 24px; text-indent: -24px; }
+.j-cc .a::before { content: '● '; color: #d97757; }
+.j-cc ol { margin: 4px 0 0 26px; text-indent: 0; }
+
 /* Opciones con pros y contras */
 .j-opts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
 .j-opt { border: 2px solid #3a3a37; background: #050505; padding: 22px 24px; }
@@ -74,6 +86,7 @@
 .j-opt p { font: 19px/1.45 var(--mono); color: #d6d3d1; margin-top: 12px; }
 .j-opt p::before { content: '+ '; color: #9be7b0; }
 .j-opt p.no::before { content: '− '; color: var(--accent); }
+.j-opt .d { font: 20px/1.45 var(--mono); color: var(--ink); margin-top: 12px; padding-bottom: 12px; border-bottom: 1px solid #2a2a2a; }
 .j-opt .rec { font: 18px var(--mono); color: var(--accent); letter-spacing: .14em; text-transform: uppercase; margin-top: 14px; }
 
 /* Partes de un archivo de fase */
@@ -99,9 +112,19 @@
 .j-stage b { display: block; font: 700 26px var(--display); text-transform: uppercase; margin-top: 6px; }
 .j-stage.pink b { color: var(--accent); }
 .j-stage span { display: block; font: 19px/1.45 var(--mono); color: #d6d3d1; margin-top: 8px; }
-.j-msgs > div { display: grid; grid-template-columns: 420px 1fr; align-items: baseline; padding: 13px 0; border-bottom: 1px solid var(--line); font: 21px var(--display); color: #d6d3d1; }
-.j-msgs > div:first-child { border-top: 1px solid var(--line); }
-.j-msgs .k { font: 19px var(--mono); color: var(--muted); }
+.j-save .j-stage { text-align: center; padding: 22px 18px; }
+.j-save .ic { display: block; width: 56px; height: 56px; margin: 0 auto 10px; fill: none; stroke: #d6d3d1; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+.j-save .pink .ic { stroke: var(--accent); }
+.j-go { background: #000; border-radius: 6px; padding: 34px 16px 30px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.j-go b { font: 700 22px/1.25 var(--display); text-transform: uppercase; margin-bottom: 26px; }
+.j-go .k { font: 18px var(--mono); color: var(--muted); letter-spacing: .14em; text-transform: uppercase; }
+.j-go .v { font: 700 40px var(--display); margin: 4px 0 18px; }
+.j-go .btn { margin-top: 34px; background: var(--accent); color: #000; font: 700 20px var(--display); padding: 14px 18px; width: 100%; box-sizing: border-box; }
+.j-fork { border: 2px dashed var(--accent); background: #050505; padding: 18px 22px; }
+.j-fork div { font: 22px/1.4 var(--mono); color: #d6d3d1; }
+.j-fork > span { display: block; font: 18px var(--mono); color: var(--muted); margin-top: 8px; }
+.j-rank > div { display: grid; grid-template-columns: 30px 1fr auto; gap: 10px; font: 19px var(--mono); padding: 8px 0; border-bottom: 1px solid var(--line); }
+.j-rank > div:last-child { border-bottom: 0; }
 
 /* Portapapeles */
 .j-clip { border: 2px solid #d6d3d1; border-radius: 14px; background: #0b0b0b; padding: 56px 40px 26px; position: relative; }
@@ -116,6 +139,26 @@
 .j-url { font: 18px var(--mono); color: var(--accent); text-align: center; margin-bottom: 10px; }
 .j-empty { font: 18px/1.45 var(--mono); color: var(--muted); text-align: center; padding: 26px 6px; border: 1px dashed #3a3a37; margin-top: 10px; }
 
+/* Ciclo de trabajo en círculo */
+.j-ring svg { position: absolute; inset: 0; }
+.j-node { position: absolute; width: 240px; box-sizing: border-box; border: 2px solid #d6d3d1; background: #050505; padding: 12px 16px; }
+.j-node.pink { border-color: var(--accent); }
+.j-node i { display: block; font: 18px var(--mono); font-style: normal; color: var(--muted); letter-spacing: .2em; }
+.j-node b { display: block; font: 700 21px/1.2 var(--display); text-transform: uppercase; margin-top: 4px; }
+.j-node.pink b { color: var(--accent); }
+.j-mid { position: absolute; left: 280px; top: 230px; width: 300px; text-align: center; }
+.j-mid div { font: 700 48px/1 var(--display); color: var(--accent); }
+.j-mid span { display: block; font: 20px var(--mono); color: #d6d3d1; margin-top: 10px; }
+.j-mini { display: grid; grid-template-columns: 1fr 1fr; column-gap: 18px; row-gap: 10px; margin-top: 18px; font: 19px var(--mono); color: #d6d3d1; }
+
+/* Repaso: flecha de regreso y franja de publicar */
+.j-back { border: 2px solid #8b8b86; border-top: 0; border-radius: 0 0 18px 18px; }
+.j-back::before { content: ''; position: absolute; left: -9px; top: -2px; border: 8px solid transparent; border-bottom: 12px solid #8b8b86; border-top: 0; }
+.j-pub { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 18px; }
+.j-pub span { border: 2px solid #d6d3d1; padding: 10px 16px; font: 20px var(--mono); color: #d6d3d1; }
+.j-pub span.pink { border-color: var(--accent); color: var(--accent); }
+.j-pub i { font: 700 22px var(--display); font-style: normal; color: var(--muted); }
+
 /* Lista de fases */
 .j-steps > div { display: grid; grid-template-columns: 60px 1fr; column-gap: 22px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--line); }
 .j-steps > div:last-child { border-bottom: 0; }
@@ -129,6 +172,7 @@
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
+    <symbol id="j-cc" viewBox="-12 -12 24 24"><path d="M0 -11V11M-11 0H11M-7.8 -7.8L7.8 7.8M-7.8 7.8L7.8 -7.8" stroke="#d97757" stroke-width="3.2" stroke-linecap="round"/></symbol>
     <symbol id="j-pm" viewBox="-50 -50 100 100"><path d="M0 0 L43.3 -25 A50 50 0 1 0 43.3 25 Z" fill="#ff2867"/></symbol>
     <symbol id="j-ghost" viewBox="0 0 100 100">
       <path d="M10 95 V45 A40 40 0 0 1 90 45 V95 L76 82 L63 95 L50 82 L37 95 L24 82 Z" fill="currentColor"/>
@@ -160,25 +204,24 @@
   <!-- 2 · Qué vas a construir -->
   <section class="slide plain" data-title="Qué vas a construir">
     <div class="item" style="left:110px; top:70px;"><div class="h">Qué vas a construir</div></div>
-    <div class="item lead" style="left:110px; top:170px; width:920px; font-size:24px;">Tu primera app en Polkadot: un juego tipo Pac-Man para el celular, a tu manera.</div>
-    <div class="item j-rows" style="left:110px; top:290px; width:920px;">
-      <div style="grid-template-columns:240px 1fr;"><span class="k">Tu juego</span><span>corre dentro de la Polkadot App</span></div>
-      <div style="grid-template-columns:240px 1fr;"><span class="k">Tu repo</span><span>lo construyes con IA, fase por fase</span></div>
+    <div class="item" style="left:110px; top:170px; width:940px; font:700 34px/1.3 var(--display);">Una app y un <span class="j-pink">smart contract</span> dentro de Polkadot, construidos con IA, en tu propio dominio <span class="j-pink">.dot</span>.</div>
+    <div class="item j-rows" style="left:110px; top:360px; width:920px;">
+      <div style="grid-template-columns:240px 1fr;"><span class="k">Tu app</span><span>un juego tipo Pac-Man para el celular</span></div>
       <div style="grid-template-columns:240px 1fr;"><span class="k">Tu contrato</span><span>guarda el mejor puntaje; lo despliegas tú</span></div>
-      <div style="grid-template-columns:240px 1fr;"><span class="k">Tu .dot</span><span>lo publicas en <span class="j-pink">tu propio nombre</span></span></div>
+      <div style="grid-template-columns:240px 1fr;"><span class="k">Con IA</span><span>lo construyes fase por fase</span></div>
+      <div style="grid-template-columns:240px 1fr;"><span class="k">Tu .dot</span><span>lo publicas en <span class="j-pink">tu propio dominio</span></span></div>
     </div>
-    <div class="item lead j-mut" style="left:110px; top:640px; width:920px; font-size:22px;">Las reglas las decides tú en la fase 0.</div>
+    <div class="item lead j-mut" style="left:110px; top:700px; width:920px; font-size:22px;">Las reglas las decides tú en la fase 0.</div>
     <div class="item" style="left:1160px; top:60px; width:300px;">
       <div class="j-phone"><img src="../img/cap5/polka-man-movil.png" alt="Polka-Man en un celular de 390 px: HUD con puntaje, ronda y 5 vidas; el laberinto con Polka-Man rosa y dos fantasmas; el D-pad abajo"></div>
-      <div class="j-cap">captura real · 390 x 844</div>
     </div>
   </section>
 
   <!-- 3 · El proyecto de muestra -->
   <section class="slide grid" data-title="El proyecto de muestra">
     <div class="item" style="left:110px; top:70px;"><div class="h">El proyecto de muestra · game/</div></div>
-    <div class="item lead" style="left:110px; top:160px; width:1380px; font-size:22px;"><span class="j-pink">Solo es una muestra</span>: así se ve un proyecto terminado. No lo copias; construyes el tuyo en tu repo.</div>
-    <div class="item j-win" style="left:110px; top:230px; width:740px;">
+    <div class="item lead" style="left:110px; top:160px; width:1380px; font-size:22px;"><span class="j-pink">Es solo una muestra.</span> Úsalo como ejemplo para construir el tuyo: sigue su estructura, sus versiones compatibles y sus reglas para el agente.</div>
+    <div class="item j-win" style="left:110px; top:260px; width:740px;">
       <div class="j-bar"><i></i><i></i><i></i><span>polkadot-devnet-workshop/</span></div>
       <div class="j-body code" style="font-size:20px; line-height:1.55;">├── package.json          <span class="cm">pnpm dev · test · build</span>
 ├── pnpm-workspace.yaml   <span class="cm">packages: [game]</span>
@@ -195,11 +238,11 @@
         ├── <span class="kw">hub/</span>          <span class="cm">Host, gas, firmas</span>
         └── <span class="kw">lib/</span>          <span class="cm">errores y formato</span></div>
     </div>
-    <div class="panel" style="left:910px; top:230px; width:580px; padding:30px 36px;">
-      <div class="j-blk"><b><i>01</i>Versiones fijas</b><p>Las de la skill, sin ^ ni ~.</p></div>
-      <div class="j-blk"><b><i>02</i>El laberinto es texto</b><p>Se lee a ojo y la IA lo edita sin errores.</p></div>
-      <div class="j-blk"><b><i>03</i>Contrato aparte</b><p>contract/, hub/ y lib/ con sus propios tests.</p></div>
-      <div class="j-blk"><b><i>04</i>Reglas para el agente</b><p>game/AGENTS.md es un ejemplo: el tuyo lo arma tu agente.</p></div>
+    <div class="panel" style="left:910px; top:260px; width:580px; padding:30px 36px;">
+      <div class="j-blk"><b><i>01</i>Estructura</b><p>Una carpeta por responsabilidad; la lógica sin pantalla.</p></div>
+      <div class="j-blk"><b><i>02</i>Versiones compatibles</b><p>Las de la skill, fijas, sin ^ ni ~.</p></div>
+      <div class="j-blk"><b><i>03</i>Reglas para el agente</b><p>game/AGENTS.md. El tuyo lo arma tu agente.</p></div>
+      <div class="j-blk"><b><i>04</i>Contrato aparte</b><p>contract/, hub/ y lib/ con sus propios tests.</p></div>
     </div>
   </section>
 
@@ -207,9 +250,9 @@
   <section class="slide" data-title="Prueba la muestra en polka-man.dot" style="--bgpos: 25% 60%;">
     <div class="panel" style="left:110px; top:50px; width:960px; padding:30px 52px 34px;">
       <div class="h">Prueba la muestra</div>
-      <div class="lead" style="font-size:22px; margin-top:12px;">Abre <span class="j-code j-pink">polka-man.dot</span> en la Polkadot App o Desktop. Así se verá lo que vas a construir.</div>
+      <div class="lead" style="font-size:22px; margin-top:12px;">Abre <span class="j-code j-pink">polka-man.dot</span> en la Polkadot App o Desktop. Es la aplicación de ejemplo terminada: así se verá lo que vas a construir.</div>
     </div>
-    <div class="panel j-checks" style="left:110px; top:290px; width:960px; padding:18px 44px;">
+    <div class="panel j-checks" style="left:110px; top:320px; width:960px; padding:18px 44px;">
       <div><span class="j-box"></span><span>Moverte con swipe y D-pad</span></div>
       <div><span class="j-box"></span><span>Comer bolitas y bolitas especiales</span></div>
       <div><span class="j-box"></span><span>Fantasmas y vidas</span></div>
@@ -217,7 +260,7 @@
       <div><span class="j-box"></span><span>Conectar tu cuenta</span></div>
       <div style="border-bottom:0;"><span class="j-box"></span><span>Guardar tu récord y verlo en el ranking</span></div>
     </div>
-    <div class="item lead j-mut" style="left:110px; top:720px; width:960px; font-size:20px;">Disponible cuando el organizador la publique. Juega 5 minutos y anota 3 cosas que harías distinto.</div>
+    <div class="item lead j-mut" style="left:110px; top:740px; width:960px; font-size:20px;">Conectada a un contrato Leaderboard ya desplegado: <span class="j-code">0xa262…8542</span>. Juega 5 minutos y anota 3 cosas que harías distinto.</div>
     <div class="item" style="left:1170px; top:50px; width:300px;">
       <div class="j-phone"><div class="j-url">polka-man.dot</div><img src="../img/cap5/polka-man-movil.png" alt="Polka-Man en el celular: HUD con puntaje, ronda y vidas; el laberinto con Polka-Man rosa y dos fantasmas; el D-pad abajo"></div>
     </div>
@@ -244,25 +287,14 @@
     </div>
   </section>
 
-  <!-- 6 · El ciclo -->
-  <section class="slide grid" data-title="El ciclo de cada fase">
-    <div class="item" style="left:110px; top:70px;"><div class="h">El ciclo de cada fase</div></div>
-    <div class="item j-cyc six" style="left:110px; top:180px; width:1380px;">
-      <div class="box"><div class="n">01</div><b>Pensar</b><span>escenarios y errores</span></div>
-      <div class="a">→</div>
-      <div class="box"><div class="n">02</div><b>Preguntar</b><span>opciones si no sabes</span></div>
-      <div class="a">→</div>
-      <div class="box"><div class="n">03</div><b>Decidir</b><span>escríbelo en SPEC.md</span></div>
-      <div class="a">→</div>
-      <div class="box"><div class="n">04</div><b>Pedir</b><span>prompt corto, modo supervisado</span></div>
-      <div class="a">→</div>
-      <div class="box"><div class="n">05</div><b>Revisar</b><span>a mano, tests, git diff</span></div>
-      <div class="a">→</div>
-      <div class="box pink"><div class="n">06</div><b>Commit</b><span>y git push</span></div>
+  <!-- 6 · Tres frases -->
+  <section class="slide grid" data-title="Tres frases en cada prompt">
+    <div class="item" style="left:110px; top:70px;"><div class="h">Tres frases en cada prompt</div></div>
+    <div class="item j-chat" style="left:110px; top:170px; width:1380px;">
+      <div class="j-msg me" style="max-width:100%; font-size:24px; line-height:1.7; padding:26px 32px;"><b class="j-n">1</b><span class="j-pink">Lee SPEC.md (y spec-fantasmas.md) y AGENTS.md.</span> Agrega los fantasmas que dice el spec; si uno toca al personaje, se pierde una vida. <b class="j-n">2</b><span class="j-pink">Si te falta algún dato, pregúntame antes de escribir código.</span> <b class="j-n">3</b><span class="j-pink">Primero dime tu plan.</span></div>
     </div>
-    <div class="item j-label" style="left:110px; top:420px; width:1380px;">Tres frases en casi todos los prompts</div>
     <div class="item j-parts mid" style="left:110px; top:470px; width:1380px; grid-template-columns:1fr 1fr 1fr;">
-      <div class="j-part"><b><i>01</i>Lee SPEC.md y AGENTS.md</b><p>El contexto vive en archivos, no en el prompt.</p></div>
+      <div class="j-part"><b><i>01</i>Lee tus specs</b><p>El contexto vive en archivos, no en el prompt.</p></div>
       <div class="j-part pink"><b><i>02</i>Si te falta algo, pregúntame</b><p>Antes de escribir código. La IA no decide por ti.</p></div>
       <div class="j-part"><b><i>03</i>Primero dime tu plan</b><p>Revisas antes de que toque archivos.</p></div>
     </div>
@@ -274,19 +306,19 @@
       <div class="h">Define tu juego</div>
       <div class="lead" style="font-size:22px; margin-top:12px;">Antes del código, la IA te pregunta. Tú descubres lo que no habías decidido.</div>
     </div>
-    <div class="item j-win" style="left:110px; top:250px; width:900px;">
-      <div class="j-bar"><i></i><i></i><i></i><span>Chat del agente · mi-juego</span></div>
-      <div class="j-body j-chat">
-        <div class="j-who r">Tú</div>
-        <div class="j-msg me">Quiero hacer un juego tipo Pac-Man para celular… Antes de escribir código, pregúntame cualquier duda para no dejar puntos vacíos ni decisiones arbitrarias.</div>
-        <div class="j-who">Agente</div>
-        <div class="j-msg">Antes de empezar:<ol><li>¿Cuántas vidas tiene el jugador?</li><li>Al chocar, ¿se conservan las bolitas comidas?</li><li>¿Qué ve el jugador si no hay red?</li></ol></div>
+    <div class="item j-cc" style="left:110px; top:250px; width:900px;">
+      <div class="j-bar"><svg width="22" height="22" aria-hidden="true"><use href="#j-cc"/></svg><span>Claude Code</span><em>~/mi-juego</em></div>
+      <div class="j-body">
+        <div class="u">Quiero hacer un juego tipo Pac-Man para celular con mi contrato Leaderboard. Pregúntame cualquier duda antes de escribir código.</div>
+        <div class="a">Antes de escribir SPEC.md, 4 preguntas:<ol><li>¿Cuántas vidas tiene el jugador?</li><li>Al chocar, ¿se conservan las bolitas comidas?</li><li>¿Cómo sube la dificultad en cada ronda?</li><li>¿Qué ve el jugador si no hay red?</li></ol></div>
+        <div class="u">3 vidas. Sí. La 3 no sé, dame opciones. La 4: un aviso y un botón para reintentar.</div>
+        <div class="a">Para la 3:<br>A) fantasmas 5 % más rápidos por ronda, hasta la 9<br>B) un fantasma más cada 3 rondas, hasta 6<br>C) susto 0.5 s más corto por ronda, mínimo 2 s<br>Recomiendo A. ¿La anoto en SPEC.md?</div>
       </div>
     </div>
     <div class="panel" style="left:1060px; top:250px; width:430px; padding:30px 36px;">
       <div class="j-blk"><b><i>01</i>De pocas en pocas</b><p>Respondes y sigue preguntando.</p></div>
-      <div class="j-blk"><b><i>02</i>«No sé»</b><p>Pide opciones y elige tú.</p></div>
-      <div class="j-blk"><b><i>03</i>SPEC.md</b><p>El resultado. Commit y push.</p></div>
+      <div class="j-blk"><b><i>02</i>«No sé»</b><p>Pide opciones concretas y elige tú.</p></div>
+      <div class="j-blk"><b><i>03</i>Una o varias specs</b><p>SPEC.md, spec-niveles.md, spec-fantasmas.md… El agente las escribe; tú revisas.</p></div>
     </div>
   </section>
 
@@ -294,14 +326,14 @@
   <section class="slide plain" data-title="Si no sabes, pide opciones">
     <div class="item" style="left:110px; top:70px;"><div class="h">Si no sabes, pide opciones</div></div>
     <div class="item j-chat" style="left:110px; top:170px; width:1380px;">
-      <div class="j-msg me" style="max-width:100%;">No sé qué tan difícil debería ser. Dame 3 opciones con pros y contras para alguien que juega en el celular, recomiéndame una y no escribas código.</div>
+      <div class="j-msg me" style="max-width:100%;">No sé qué tan difícil debería ser. Dame 3 opciones concretas, con números, cada una con un pro y un contra para alguien que juega en el celular. Recomiéndame una y no escribas código.</div>
     </div>
-    <div class="item j-opts" style="left:110px; top:330px; width:1380px;">
-      <div class="j-opt"><b>Igual cada ronda</b><p>Fácil de entender</p><p class="no">Se vuelve aburrido</p></div>
-      <div class="j-opt pink"><b>Un poco más cada ronda, con tope</b><p>Reto que crece</p><p class="no">Hay que elegir el tope</p><div class="rec">Recomendada</div></div>
-      <div class="j-opt"><b>Por escalones</b><p>Cambios que se notan</p><p class="no">Saltos bruscos</p></div>
+    <div class="item j-opts" style="left:110px; top:320px; width:1380px;">
+      <div class="j-opt pink"><b>A · +5 % por ronda</b><div class="d">Los fantasmas van 5 % más rápido cada ronda, hasta la ronda 9.</div><p>Sube parejo y es fácil de ajustar</p><p class="no">Desde la ronda 9 ya no cambia</p><div class="rec">Recomendada por el agente</div></div>
+      <div class="j-opt"><b>B · +1 fantasma</b><div class="d">Un fantasma más cada 3 rondas, hasta 6.</div><p>El cambio se nota</p><p class="no">Salto brusco en las rondas 3, 6 y 9</p></div>
+      <div class="j-opt"><b>C · susto más corto</b><div class="d">Las bolitas especiales duran 0.5 s menos por ronda, mínimo 2 s.</div><p>No cambia la velocidad</p><p class="no">Casi no se nota al principio</p></div>
     </div>
-    <div class="item lead" style="left:110px; top:680px; width:1380px; font-size:24px;">Tú eliges y lo escribes en <span class="j-code j-pink">SPEC.md</span>. La IA no decide por ti.</div>
+    <div class="item lead" style="left:110px; top:720px; width:1380px; font-size:24px;">Tú eliges y lo escribes en <span class="j-code j-pink">SPEC.md</span>. La IA no decide por ti.</div>
   </section>
 
   <!-- 9 · Un archivo de fase -->
@@ -310,30 +342,46 @@
     <div class="item lead j-mut" style="left:110px; top:160px; width:1380px; font-size:22px;">prompts/04-fantasmas.md · las mismas cuatro partes en todas las fases</div>
     <div class="item j-parts tall" style="left:110px; top:230px; width:1380px;">
       <div class="j-part"><b><i>01</i>Antes de pedir</b><p>2 a 4 decisiones que te tocan a ti.</p><div class="ex">¿Cuántas vidas? p. ej. 3</div></div>
-      <div class="j-part pink"><b><i>02</i>El prompt</b><p>12 líneas o menos. Sin números: están en SPEC.md.</p><div class="ex">Lee SPEC.md y AGENTS.md…</div></div>
-      <div class="j-part"><b><i>03</i>Si no sabes</b><p>Opciones con pros y contras, sin código.</p><div class="ex">No sé cómo… Dame 3 opciones…</div></div>
+      <div class="j-part pink"><b><i>02</i>El prompt</b><p>12 líneas o menos. Sin números: están en tus specs.</p><div class="ex">Lee SPEC.md (y el spec de esta parte)…</div></div>
+      <div class="j-part"><b><i>03</i>Si no sabes</b><p>Opciones concretas con un pro y un contra, sin código.</p><div class="ex">Dame 3 opciones concretas, con números…</div></div>
       <div class="j-part"><b><i>04</i>Al terminar, revisa</b><p>Pruebas a mano, tests, casos raros y commit.</p><div class="ex">Después dime 3 casos raros que no consideré.</div></div>
     </div>
   </section>
 
-  <!-- 10 · Las 8 fases -->
-  <section class="slide" data-title="Las 8 fases" style="--bgpos: 40% 70%;">
+  <!-- 10 · El ciclo de trabajo -->
+  <section class="slide" data-title="El ciclo de trabajo" style="--bgpos: 40% 70%;">
     <div class="panel" style="left:110px; top:50px; width:1380px; padding:30px 52px 34px;">
-      <div class="h">Las 8 fases</div>
-      <div class="lead" style="font-size:22px; margin-top:12px;">Una a la vez, un commit por fase. De 3.5 a 4.5 horas.</div>
+      <div class="h">El ciclo de trabajo</div>
+      <div class="lead" style="font-size:22px; margin-top:12px;">Sirve para este juego y para tu app del hackatón.</div>
     </div>
-    <div class="panel j-steps" style="left:110px; top:250px; width:670px; padding:20px 40px;">
-      <div><span class="c">00</span><div><b>Define tu juego</b><span>SPEC.md · 15–20 min</span></div></div>
-      <div><span class="c">01</span><div><b>Tu proyecto</b><span>navegador · 20–25 min</span></div></div>
-      <div><span class="c">02</span><div><b>Laberinto y movimiento</b><span>navegador · 30–35 min</span></div></div>
-      <div><span class="c">03</span><div><b>Bolitas, puntaje y rondas</b><span>navegador · 20–25 min</span></div></div>
-      <div><span class="c">04</span><div><b>Fantasmas y vidas</b><span>navegador · 30–40 min</span></div></div>
+    <div class="item j-ring" style="left:110px; top:250px; width:860px; height:560px;">
+      <svg viewBox="0 0 860 560" width="860" height="560" aria-hidden="true">
+        <defs><marker id="j-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#d6d3d1"/></marker></defs>
+        <g fill="none" stroke="#8b8b86" stroke-width="2.5">
+          <path d="M561.5 82.3 A300 220 0 0 1 652.9 132.8" marker-end="url(#j-arr)"/>
+          <path d="M728.4 303.0 A300 220 0 0 1 689.8 390.0" marker-end="url(#j-arr)"/>
+          <path d="M461.4 498.8 A300 220 0 0 1 398.6 498.8" marker-end="url(#j-arr)"/>
+          <path d="M170.2 390.0 A300 220 0 0 1 131.6 303.0" marker-end="url(#j-arr)"/>
+          <path d="M207.1 132.8 A300 220 0 0 1 298.5 82.3" marker-end="url(#j-arr)"/>
+        </g>
+      </svg>
+      <div class="j-node" style="left:310px; top:18px;"><i>01</i><b>Planificación</b></div>
+      <div class="j-node" style="left:595px; top:170px;"><i>02</i><b>Sugerencias con la IA</b></div>
+      <div class="j-node" style="left:486px; top:416px;"><i>03</i><b>Ejecución con la IA</b></div>
+      <div class="j-node" style="left:134px; top:416px;"><i>04</i><b>Bugs + cambios</b></div>
+      <div class="j-node pink" style="left:25px; top:170px;"><i>05</i><b>Commit</b></div>
+      <div class="j-mid"><div>↻</div><span>repite hasta terminar</span></div>
     </div>
-    <div class="panel j-steps" style="left:820px; top:250px; width:670px; padding:20px 40px;">
-      <div><span class="c">05</span><div><b>Bolitas especiales</b><span>navegador · 25–35 min</span></div></div>
-      <div><span class="c">06</span><div><b>Tu contrato y el ranking</b><span>navegador · 25–30 min</span></div></div>
-      <div class="pink"><span class="c">07</span><div><b>Publica en tu .dot</b><span class="host">Host · 15–20 min</span></div></div>
-      <div class="pink"><span class="c">08</span><div><b>Guarda tu récord</b><span class="host">Host · 30–40 min</span></div></div>
+    <div class="panel" style="left:1010px; top:250px; width:480px; padding:28px 36px;">
+      <div class="j-label">Ejemplo: así se reparte este juego en fases</div>
+      <div class="j-mini">
+        <span>00 Define tu juego</span><span>05 Especiales</span>
+        <span>01 Proyecto</span><span>06 Contrato</span>
+        <span>02 Laberinto</span><span class="j-pink">07 Publica</span>
+        <span>03 Bolitas</span><span class="j-pink">08 Récord</span>
+        <span>04 Fantasmas</span>
+      </div>
+      <div class="j-mut" style="font:18px/1.45 var(--mono); margin-top:18px;">Cada fase, una vuelta del ciclo. Archivos en prompts/.</div>
     </div>
   </section>
 
@@ -361,14 +409,14 @@
     </div>
   </section>
 
-  <!-- 12 · Compra tu nombre -->
-  <section class="slide" data-title="Compra tu nombre .dot" style="--bgpos: 70% 30%;">
+  <!-- 12 · Compra tu dominio -->
+  <section class="slide" data-title="Compra tu dominio .dot" style="--bgpos: 70% 30%;">
     <div class="panel" style="left:110px; top:50px; width:1380px; padding:30px 52px 34px;">
-      <div class="h">Compra tu nombre .dot</div>
+      <div class="h">Compra tu dominio .dot</div>
       <div class="lead" style="font-size:22px; margin-top:12px;">Una sola vez, antes de la primera subida. En la Polkadot App o Desktop, abre <span class="j-code j-pink">dotns.dot</span>.</div>
     </div>
     <div class="panel j-steps" style="left:110px; top:250px; width:640px; padding:20px 40px;">
-      <div><span class="c">01</span><div><b>Search</b><span>escribe tu nombre</span></div></div>
+      <div><span class="c">01</span><div><b>Search</b><span>escribe tu dominio</span></div></div>
       <div><span class="c">02</span><div><b>Register</b><span>en el resultado</span></div></div>
       <div><span class="c">03</span><div><b>Register</b><span>otra vez</span></div></div>
       <div><span class="c">04</span><div><b>Continue</b><span>confirma</span></div></div>
@@ -389,7 +437,7 @@
     <div class="item" style="left:110px; top:60px;"><div class="h">El ciclo de publicar</div></div>
     <div class="item lead" style="left:110px; top:150px; width:1380px; font-size:22px;">Repítelo cuando quieras probar la conexión o cualquier función, en el taller y en el hackatón. Cada build da un CID nuevo.</div>
     <div class="item j-cyc" style="left:110px; top:250px; width:1380px;">
-      <div class="box"><div class="n">01</div><b>pnpm build</b><span>dist</span></div>
+      <div class="box"><div class="n">01</div><b>pnpm build</b><span>dist · muestra: game\dist</span></div>
       <div class="a">→</div>
       <div class="box"><div class="n">02</div><b>pad</b><span>sube a Bulletin</span></div>
       <div class="a">→</div>
@@ -400,7 +448,7 @@
       <div class="box pink"><div class="n">05</div><b>Abre tu .dot</b><span>en el Host y prueba</span></div>
     </div>
     <div class="item term" style="left:110px; top:450px; width:880px;">
-      <div class="bar"><i></i><i></i><i></i><span>PowerShell · raíz del repo</span></div>
+      <div class="bar"><i></i><i></i><i></i><span>PowerShell · raíz de tu repo</span></div>
       <div class="body code j-cmd"><div><span class="kw">function</span> pad { $env:PAD_UPDATE_CHECK = '0'; pnpm dlx --ignore-scripts @polkadot-community-foundation/polkadot-app-deploy@0.16.7 @args }</div><div>$tmp = 'tmp' + (-join ((Get-Date -Format 'yyyyMMddHHmmss').ToCharArray() | ForEach-Object { [char](97 + [int]"$_") })) + '.dot'</div><div><span class="kw">pad</span> .\dist $tmp --env devnet --js-merkle --no-manifest</div></div>
     </div>
     <div class="item j-win j-shot" style="left:1040px; top:450px; width:450px;">
@@ -412,22 +460,37 @@
   <!-- 14 · Guardar -->
   <section class="slide grid" data-title="Guardar: simula, firma, relee">
     <div class="item" style="left:110px; top:60px;"><div class="h">Guardar: simula, firma, relee</div></div>
-    <div class="item lead j-mut" style="left:110px; top:150px; width:1380px; font-size:22px;">Lo que tu app debe hacer al tocar «Guardar récord». Se prueba con el ciclo de publicar.</div>
-    <div class="item j-flow" style="left:110px; top:210px; width:1380px;">
-      <div class="j-stage"><div class="n">01</div><b>Simula</b><span>si fallaría, muestra el motivo sin pedir firma</span></div>
-      <div class="a">→</div>
-      <div class="j-stage pink"><div class="n">02</div><b>Firma</b><span>una sola en el teléfono; botones deshabilitados</span></div>
-      <div class="a">→</div>
-      <div class="j-stage"><div class="n">03</div><b>Relee</b><span>vuelve a leer tu récord; la red puede ir un poco atrás</span></div>
+    <div class="item" style="left:110px; top:160px; width:300px;">
+      <div class="j-phone"><div class="j-go">
+        <b>Fin de la partida</b>
+        <span class="k">Puntaje</span><span class="v">4 210</span>
+        <span class="k">Récord 3 980</span>
+        <span class="btn">Guardar récord</span>
+      </div></div>
     </div>
-    <div class="item j-label" style="left:110px; top:420px; width:1380px;">Así lo resuelve la muestra</div>
-    <div class="item j-msgs" style="left:110px; top:470px; width:1380px;">
-      <div><span class="k">Permiso de gas aceptado</span><span>Cuenta conectada</span></div>
-      <div><span class="k">Permiso rechazado</span><span>«Rechazaste el permiso de gas. Sin él no puedes guardar; toca Conectar otra vez.»</span></div>
-      <div><span class="k">NotAvailable o más de 90 s</span><span class="j-pink">«Cuenta conectada. El gas se pedirá al guardar.»</span></div>
-      <div><span class="k">Firma en curso</span><span>«Espera a que termine la firma en curso.»</span></div>
-      <div><span class="k">Fuera del Host</span><span>«Abre el juego dentro de Polkadot Desktop o de la Polkadot App…»</span></div>
+    <div style="position:absolute; left:425px; top:300px; font:700 44px var(--display); color:var(--accent);" aria-hidden="true">→</div>
+    <div class="item j-flow j-save" style="left:500px; top:180px; width:990px;">
+      <div class="j-stage"><svg class="ic" viewBox="0 0 56 56" aria-hidden="true"><circle cx="24" cy="24" r="14"/><path d="M34 34L48 48"/></svg><div class="n">01</div><b>Simula</b><span>el contrato dice si pasaría</span></div>
+      <div class="a">→</div>
+      <div class="j-stage pink"><svg class="ic" viewBox="0 0 56 56" aria-hidden="true"><rect x="15" y="4" width="26" height="48" rx="5"/><path d="M21 28l5 5l10-11"/></svg><div class="n">02</div><b>Firma</b><span>una sola, en tu teléfono</span></div>
+      <div class="a">→</div>
+      <div class="j-stage"><svg class="ic" viewBox="0 0 56 56" aria-hidden="true"><path d="M44 22A17 17 0 0 0 12 20M12 34A17 17 0 0 0 44 36"/><path d="M6 14l6 6l6-6M50 42l-6-6l-6 6"/></svg><div class="n">03</div><b>Relee</b><span>tu récord aparece en el ranking</span></div>
     </div>
+    <div style="position:absolute; left:648px; top:400px; width:0; height:60px; border-left:3px dashed var(--accent);" aria-hidden="true"></div>
+    <div class="item j-fork" style="left:500px; top:470px; width:440px;">
+      <div><span class="j-pink">✕</span> No supera tu récord → no se pide firma</div>
+      <span>muestra el motivo</span>
+    </div>
+    <div style="position:absolute; left:1338px; top:400px; width:0; height:40px; border-left:3px dashed #8b8b86;" aria-hidden="true"></div>
+    <div class="item j-win" style="left:1190px; top:450px; width:300px;">
+      <div class="j-bar"><i></i><i></i><i></i><span>Ranking</span></div>
+      <div class="j-body j-rank">
+        <div class="j-pink"><span>1</span><span>tú</span><span>4 210</span></div>
+        <div><span>2</span><span>ana_dev</span><span>3 640</span></div>
+        <div><span>3</span><span>0x3f…a1</span><span>2 750</span></div>
+      </div>
+    </div>
+    <div class="item lead j-mut" style="left:110px; top:740px; width:1380px; font-size:20px;">Se prueba con el ciclo de publicar.</div>
   </section>
 
   <!-- 15 · Si te atoras -->
@@ -454,24 +517,27 @@
   <!-- 16 · Lo que sigue -->
   <section class="slide plain" data-title="Repaso y lo que sigue">
     <div class="item" style="left:110px; top:70px;"><div class="h">Repaso y lo que sigue</div></div>
-    <div class="item j-steps" style="left:110px; top:170px; width:420px;">
-      <div><span class="c">00</span><div><b>Define tu juego</b><span>SPEC.md sin huecos</span></div></div>
-      <div><span class="c">01</span><div><b>Proyecto</b><span>AGENTS.md y un test</span></div></div>
-      <div><span class="c">02</span><div><b>Laberinto</b><span>moverse y pausa</span></div></div>
-      <div><span class="c">03</span><div><b>Bolitas</b><span>puntaje, HUD y rondas</span></div></div>
-      <div><span class="c">04</span><div><b>Fantasmas</b><span>vidas y fin</span></div></div>
+    <div class="item j-cyc" style="left:110px; top:180px; width:1380px;">
+      <div class="box"><div class="n">01</div><b>Planificación</b><span>qué quieres</span></div>
+      <div class="a">→</div>
+      <div class="box"><div class="n">02</div><b>Sugerencias</b><span>pregunta y propone</span></div>
+      <div class="a">→</div>
+      <div class="box"><div class="n">03</div><b>Ejecución</b><span>plan y código</span></div>
+      <div class="a">→</div>
+      <div class="box"><div class="n">04</div><b>Bugs + cambios</b><span>prueba y corrige</span></div>
+      <div class="a">→</div>
+      <div class="box pink"><div class="n">05</div><b>Commit</b><span>y git push</span></div>
     </div>
-    <div class="item j-steps" style="left:580px; top:170px; width:420px;">
-      <div><span class="c">05</span><div><b>Especiales</b><span>susto y dificultad</span></div></div>
-      <div><span class="c">06</span><div><b>Contrato</b><span>top 10 de tu Leaderboard</span></div></div>
-      <div class="pink"><span class="c">07</span><div><b>Publica</b><span>compra tu .dot y publica</span></div></div>
-      <div class="pink"><span class="c">08</span><div><b>Récord</b><span>simula, firma, relee</span></div></div>
+    <div class="j-back" style="position:absolute; left:232px; top:320px; width:1136px; height:56px;" aria-hidden="true"></div>
+    <div class="item" style="left:110px; top:390px; width:1380px; text-align:center; font:20px var(--mono); color:var(--accent);">↻ repite hasta terminar</div>
+    <div class="panel" style="left:110px; top:500px; width:900px; padding:28px 40px;">
+      <div class="j-label">Publicar</div>
+      <div class="j-pub"><span>pnpm build</span><i>→</i><span>pad</span><i>→</i><span>CID</span><i>→</i><span>Resolve</span><i>→</i><span class="pink">abre tu .dot</span></div>
     </div>
-    <div class="item lead" style="left:110px; top:680px; width:890px; font-size:22px;">Pensar → Preguntar → Decidir → Pedir → Revisar → Commit</div>
-    <div class="panel" style="left:1060px; top:400px; width:430px; padding:30px 44px;">
+    <div class="panel" style="left:1060px; top:500px; width:430px; padding:30px 44px;">
       <div class="kicker">Capítulo 06</div>
       <div class="h" style="font-size:44px; margin-top:12px;">Publica tu app</div>
-      <div class="lead j-mut" style="font-size:20px; margin-top:12px;">El mismo método de la fase 7, más nombre, icono y renovación.</div>
+      <div class="lead j-mut" style="font-size:20px; margin-top:12px;">El mismo método de la fase 7, más dominio, icono y renovación.</div>
     </div>
   </section>
 

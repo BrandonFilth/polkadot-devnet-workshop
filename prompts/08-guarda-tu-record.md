@@ -5,7 +5,7 @@ Al terminar, dentro del Host conectas tu cuenta y guardas tu récord en tu contr
 
 ## Antes de pedir
 
-- Ten tu nombre `.dot` de la fase 7.
+- Ten tu dominio `.dot` de la fase 7.
 - ¿Cuándo ofreces "Guardar récord"? (p. ej. "solo si el puntaje supera mi récord").
 - ¿Qué pasa si el jugador rechaza la firma o el permiso de gas? (p. ej. "un mensaje claro y puede
   intentar otra vez").
@@ -17,8 +17,8 @@ Escribe tus respuestas en `SPEC.md`.
 ## El prompt
 
 ```text
-Lee SPEC.md y AGENTS.md. Usa la skill polkadot-products-devnet.
-Mi nombre .dot es <tu-nombre>.dot. Agrega un botón para conectar la cuenta del Host, pide
+Lee SPEC.md (y el spec de esta parte si existe) y AGENTS.md. Usa la skill
+polkadot-products-devnet. Mi dominio .dot es <tu-dominio>.dot. Agrega un botón para conectar la cuenta del Host, pide
 el permiso de gas y, en la pantalla de fin, guarda el récord en mi contrato como dice
 SPEC.md: primero simula, luego pide una sola firma y vuelve a leer el récord.
 El proyecto de muestra en ../polkadot-devnet-workshop/game ya resuelve esto: léelo para
@@ -71,7 +71,8 @@ es único. ¿Qué ve el jugador si el nombre ya está tomado? (p. ej. "Ese usern
 otro").
 
 ```text
-Lee SPEC.md y AGENTS.md. Agrega un botón para elegir username, con las reglas de mi
+Lee SPEC.md (y el spec de esta parte si existe) y AGENTS.md.
+Agrega un botón para elegir username, con las reglas de mi
 contrato. Revisa el nombre antes de pedir la firma y simula antes de enviar.
 Si te falta algún dato, pregúntame antes de escribir código. Primero dime tu plan.
 ```

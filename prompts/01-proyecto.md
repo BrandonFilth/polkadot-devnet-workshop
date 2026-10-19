@@ -18,7 +18,7 @@ Escribe tus respuestas en `SPEC.md`.
 ## El prompt
 
 ```text
-Lee SPEC.md. Usa la skill polkadot-products-devnet.
+Lee SPEC.md (y el spec de esta parte si existe). Usa la skill polkadot-products-devnet.
 Crea un proyecto Vite + TypeScript con las versiones que indica la skill.
 Crea el proyecto en esta misma carpeta, sin borrar ni reemplazar SPEC.md, .agents/ ni
 skills-lock.json.
@@ -50,8 +50,9 @@ cada uno, en lenguaje simple. No escribas código.
 Pídele que revise lo técnico con la skill:
 
 ```text
-Lee SPEC.md y AGENTS.md. Revisa con la skill polkadot-products-devnet que mi proyecto
-cumpla sus reglas (versiones, gestor de paquetes, rutas del build, archivos externos).
+Lee SPEC.md (y el spec de esta parte si existe) y AGENTS.md.
+Revisa con la skill polkadot-products-devnet que mi proyecto cumpla sus reglas
+(versiones, gestor de paquetes, rutas del build, archivos externos).
 No cambies nada; dime qué falta.
 ```
 
