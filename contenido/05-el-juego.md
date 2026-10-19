@@ -90,10 +90,10 @@ Son las decisiones de la muestra; tú tomas las tuyas en la fase 0.
 ### Prueba la muestra
 
 Abre **polka-man.dot** en la Polkadot App o en Polkadot Desktop y juega. Es la aplicación de ejemplo
-terminada; está conectada a un contrato `Leaderboard` ya desplegado en
-`0xa2625aa8e8790a3322acd045b32f67fba1808542`. Así se verá lo que vas a construir.
+terminada: así se verá lo que vas a construir. La aplicación de ejemplo está conectada a un contrato
+ya desplegado: `0x0aAf511a454c6A522b37210ca6931Cde1c400Ac9`.
 
-Puedes ver el contrato en [Blockscout](https://blockscout-testnet.polkadot.io/address/0xa2625aa8e8790a3322acd045b32f67fba1808542).
+Puedes ver el contrato en [Blockscout](https://blockscout-testnet.polkadot.io/address/0x0aAf511a454c6A522b37210ca6931Cde1c400Ac9?tab=index).
 
 Prueba:
 

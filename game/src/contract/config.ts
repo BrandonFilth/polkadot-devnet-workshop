@@ -1,6 +1,6 @@
 // Pon aquí la dirección de TU PROPIO contrato Leaderboard (el que tú desplegaste).
-// Este valor es el despliegue de prueba del proyecto de muestra.
-export const LEADERBOARD_ADDRESS = '0xa2625aa8e8790a3322acd045b32f67fba1808542' as const;
+// Este valor es el contrato de Polka-Man, el que usa polka-man.dot.
+export const LEADERBOARD_ADDRESS = '0x0aAf511a454c6A522b37210ca6931Cde1c400Ac9' as const;
 export const ETH_RPC_URL = 'https://eth-rpc-testnet.polkadot.io';
 export const CHAIN_ID = 420_420_417;
 /** Tu nombre .dot (capítulo 6). La cuenta de cada app sale de este nombre. */
