@@ -64,14 +64,14 @@ body { font-family: var(--mono); }
 /* Pie de cada diapositiva */
 .foot {
   position: absolute; z-index: 5; left: 70px; right: 70px; bottom: 34px;
-  display: flex; justify-content: flex-end; gap: 40px; align-items: center;
+  display: flex; justify-content: flex-start; gap: 40px; align-items: center;
   font-size: 15px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted);
 }
 .foot a { color: var(--muted); text-decoration: none; border-bottom: 1px solid #444; }
 .foot a:hover { color: var(--ink); }
 
-/* Logo de Polkadot abajo a la izquierda, en todas las diapositivas */
-.brand { position: absolute; z-index: 5; left: 28px; bottom: 26px; width: 52px; height: 52px; pointer-events: none; }
+/* Logo de Polkadot abajo a la derecha, en todas las diapositivas (el pie va a la izquierda) */
+.brand { position: absolute; z-index: 5; right: 28px; bottom: 26px; width: 52px; height: 52px; pointer-events: none; }
 .progress { position: absolute; z-index: 5; left: 0; bottom: 0; height: 3px; background: var(--ink); transition: width .45s ease; }
 
 /* ---------- Variantes de fondo ---------- */
