@@ -1,5 +1,5 @@
 // Revisa una presentación: guarda una captura de cada diapositiva y avisa si dos elementos
-// (paneles, cintas, etiquetas sueltas o el pie) quedan a menos de 24 px o se salen del lienzo.
+// (paneles, cintas, etiquetas sueltas, el pie o el logo) quedan a menos de 24 px o se salen del lienzo.
 // También avisa si un texto o elemento se sale de su caja (panel, terminal, ventana, tarjeta).
 // Un elemento que monta el borde a propósito lleva el atributo data-sobresale.
 //   node slides/tools/revisar.mjs slides/01-como-funciona.html [carpeta-de-capturas]
@@ -45,8 +45,8 @@ const sonda = `(() => {
   const deck = document.getElementById('deck').getBoundingClientRect();
   const k = 1600 / deck.width, pad = 24;
   const slide = document.querySelector('.slide.on');
-  const els = [...slide.querySelectorAll(':scope > .panel, :scope > .tape, :scope > .kicker, :scope > .item'), ...document.querySelectorAll('.foot > *')];
-  const caja = (e) => { const r = e.getBoundingClientRect(); return { n: e.textContent.trim().replace(/\\s+/g, ' ').slice(0, 24), x1: (r.left - deck.left) * k, y1: (r.top - deck.top) * k, x2: (r.right - deck.left) * k, y2: (r.bottom - deck.top) * k }; };
+  const els = [...slide.querySelectorAll(':scope > .panel, :scope > .tape, :scope > .kicker, :scope > .item'), ...document.querySelectorAll('.foot > *, .brand')];
+  const caja = (e) => { const r = e.getBoundingClientRect(); return { n: (e.textContent.trim() || e.alt || '').replace(/\\s+/g, ' ').slice(0, 24), x1: (r.left - deck.left) * k, y1: (r.top - deck.top) * k, x2: (r.right - deck.left) * k, y2: (r.bottom - deck.top) * k }; };
   const b = els.map(caja), avisos = [];
   for (let i = 0; i < b.length; i++) for (let j = i + 1; j < b.length; j++) {
     const p = b[i], q = b[j];

@@ -69,6 +69,9 @@ body { font-family: var(--mono); }
 }
 .foot a { color: var(--muted); text-decoration: none; border-bottom: 1px solid #444; }
 .foot a:hover { color: var(--ink); }
+
+/* Logo de Polkadot abajo a la izquierda, en todas las diapositivas */
+.brand { position: absolute; z-index: 5; left: 28px; bottom: 26px; width: 52px; height: 52px; pointer-events: none; }
 .progress { position: absolute; z-index: 5; left: 0; bottom: 0; height: 3px; background: var(--ink); transition: width .45s ease; }
 
 /* ---------- Variantes de fondo ---------- */

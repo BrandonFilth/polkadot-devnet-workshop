@@ -41,5 +41,8 @@ addEventListener('keydown', (e) => {
 addEventListener('click', (e) => { if (!e.target.closest('a')) (e.clientX > innerWidth / 3 ? next : prev)(); });
 addEventListener('resize', fit);
 
+// El logo de Polkadot va una sola vez en el lienzo y se ve en todas las diapositivas.
+deck.insertAdjacentHTML('beforeend', '<img class="brand" src="assets/polkadot-logo.svg" alt="Polkadot" width="52" height="52">');
+
 fit();
 show(location.hash === '#fin' ? slides.length - 1 : (parseInt(location.hash.slice(1), 10) || 1) - 1);
