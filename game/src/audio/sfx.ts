@@ -1,6 +1,14 @@
 // Efectos de sonido 8 bits. Las alturas y duraciones son la partitura de cada efecto (tablas con nombre);
 // los volúmenes generales y el throttle del waka viven en rules.ts.
-import { TAP_VOLUME, WAKA_MIN_INTERVAL_SECONDS } from '../engine/rules';
+import {
+  POWER_DOT_NOTE_SECONDS,
+  POWER_DOT_VOLUME,
+  SIREN_LFO_DEPTH_HZ,
+  SIREN_LFO_RATE,
+  SIREN_VOLUME,
+  TAP_VOLUME,
+  WAKA_MIN_INTERVAL_SECONDS,
+} from '../engine/rules';
 import { noteToHz } from './song';
 import type { Synth } from './synth';
 
@@ -26,9 +34,8 @@ export const WAKA = [
   { freq: 260, slideTo: 440, dur: 0.08 },
 ] as const;
 
-/** Especial: arpegio corto ascendente. */
-const POWER_ARPEGGIO = ['E5', 'G5', 'B5', 'E6'];
-const POWER_NOTE_SECONDS = 0.05;
+/** Especial: dos notas suaves que suben (triangle; volumen y duración en rules.ts). */
+export const POWER_NOTES = ['E5', 'B5'];
 
 /** Fantasma comido: barrido ascendente; cada eslabón de la cadena (200, 400, 800, 1600) sube un poco más. */
 const GHOST_EATEN = { freq: 300, perLink: 1.25, slide: 3, dur: 0.22 };
@@ -47,8 +54,8 @@ const GAME_OVER_NOTE_SECONDS = 0.22;
 /** Tap: triangle muy suave. */
 const TAP = { freq: 880, dur: 0.04 };
 
-/** Sirena del susto: square grave con vaivén. */
-export const SIREN = { freq: 150, lfoRate: 5, lfoDepth: 45, gain: 0.25 };
+/** Sirena del susto: triangle grave con un vaivén lento (volumen y vaivén en rules.ts). */
+export const SIREN = { wave: 'triangle', freq: 220 } as const;
 
 /** `now()` es el reloj del contexto, en segundos (lo usa el throttle del waka). */
 export function createSfx(synth: Synth, now: () => number): SfxPlayer {
@@ -74,7 +81,7 @@ export function createSfx(synth: Synth, now: () => number): SfxPlayer {
       synth.tone({ wave: 'square', freq: w.freq, slideTo: w.slideTo, at: t, dur: w.dur, gain: 0.5, bus: 'effects' });
     },
     onPowerDot() {
-      notes(POWER_ARPEGGIO, POWER_NOTE_SECONDS, 'square');
+      notes(POWER_NOTES, POWER_DOT_NOTE_SECONDS, 'triangle', POWER_DOT_VOLUME);
     },
     onGhostEaten(points) {
       const link = Math.max(0, Math.round(Math.log2(Math.max(1, points) / 200)));
@@ -95,7 +102,14 @@ export function createSfx(synth: Synth, now: () => number): SfxPlayer {
     },
     setFrightened(on) {
       if (on && !siren) {
-        siren = synth.loop({ wave: 'square', freq: SIREN.freq, lfoRate: SIREN.lfoRate, lfoDepth: SIREN.lfoDepth, gain: SIREN.gain, bus: 'effects' });
+        siren = synth.loop({
+          wave: SIREN.wave,
+          freq: SIREN.freq,
+          lfoRate: SIREN_LFO_RATE,
+          lfoDepth: SIREN_LFO_DEPTH_HZ,
+          gain: SIREN_VOLUME,
+          bus: 'effects',
+        });
       } else if (!on && siren) {
         siren.stop();
         siren = null;

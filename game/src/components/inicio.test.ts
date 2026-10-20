@@ -1,5 +1,35 @@
 import { describe, expect, it } from 'vitest';
-import { createInicioFlow, INICIO_FUERA, INICIO_SUGERENCIA, inicioView } from './Inicio';
+// Texto de styles.css (vite.config.js deja pasar este .css a los tests).
+import css from '../styles.css?raw';
+import { createInicioFlow, INICIO_AYUDA, INICIO_FUERA, INICIO_SUGERENCIA, inicioView } from './Inicio';
+
+/** Cuerpos (juntos) de todas las reglas cuyo selector es exactamente `selector`. */
+const rule = (selector: string) => {
+  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`(?:^|\\n)${escaped}\\s*\\{([^}]*)\\}`, 'g');
+  return [...css.replace(/\r\n/g, '\n').matchAll(re)].map((m) => m[1]).join('\n');
+};
+
+describe('inicio: textos y estilo', () => {
+  it('sugerencia corta para conectar y, fuera del Host, dónde abrir el juego; sin signos de exclamación', () => {
+    expect(INICIO_SUGERENCIA).toBe('Conéctate para guardar tu récord. Puedes jugar sin conectarte.');
+    expect(INICIO_FUERA).toBe('Para conectar abre el juego en la Polkadot App o Desktop.');
+    for (const text of [INICIO_SUGERENCIA, INICIO_FUERA, INICIO_AYUDA]) expect(text).not.toMatch(/[!¡]/);
+  });
+
+  it('POLKA-MAN no se parte en dos líneas y Jugar no lleva borde', () => {
+    const h1 = rule('.inicio h1');
+    expect(h1).toMatch(/white-space:\s*nowrap/);
+    expect(h1).toMatch(/font-size:\s*clamp\(/);
+    expect(rule('.inicio-jugar')).toMatch(/border:\s*0/);
+  });
+
+  it('la pantalla es opaca', () => {
+    const body = rule('.inicio');
+    expect(body).toMatch(/background:\s*var\(--bg\)/);
+    expect(css).not.toMatch(/background:\s*rgba\(/);
+  });
+});
 
 describe('inicio: Jugar y el aviso «sin cuenta»', () => {
   it('en el Host sin cuenta: el primer Jugar muestra el aviso, Jugar igual empieza y el segundo Jugar empieza directo', () => {

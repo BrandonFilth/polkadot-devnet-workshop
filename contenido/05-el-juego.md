@@ -100,9 +100,12 @@ ya desplegado: `0x0aAf511a454c6A522b37210ca6931Cde1c400Ac9`.
 
 Puedes ver el contrato en [Blockscout](https://blockscout-testnet.polkadot.io/address/0x0aAf511a454c6A522b37210ca6931Cde1c400Ac9?tab=index).
 
-La muestra abre en una **pantalla de inicio**: Jugar, Conectar cuenta (recomendado), Ranking y, ya
-con cuenta, tu Username. Conectar es opcional: si tocas Jugar sin cuenta, un aviso te recuerda una
-sola vez que sin cuenta no se guarda tu récord, y puedes jugar igual.
+La muestra abre en una **pantalla de inicio**: Jugar, Conectar cuenta, Ranking y, ya con cuenta, tu
+Username. Conectar es opcional: si tocas Jugar sin cuenta, un aviso te recuerda una sola vez que sin
+cuenta no se guarda tu récord, y puedes jugar igual. Arriba a la derecha están los dos botones de
+sonido: la nota es la **Música** (canción de fondo) y el altavoz son los **Efectos** (los sonidos del
+juego al comer, al comerte un fantasma y al morir). En la partida los encuentras en el botón de sonido
+del HUD.
 
 Prueba:
 

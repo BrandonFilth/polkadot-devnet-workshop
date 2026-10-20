@@ -202,7 +202,7 @@ export function startApp(root: HTMLElement): void {
     onRanking: () => openMenu('ranking'),
     onUsername: openUsername,
     onToggle: layers,
-    sonido: createSonidoToggles(prefs, tap).element,
+    sonido: createSonidoToggles(prefs, tap, 'iconos').element,
   });
 
   // Popup de estados: el último en #app, por encima de todo lo demás (salvo «Gira tu teléfono»).
@@ -265,7 +265,10 @@ export function startApp(root: HTMLElement): void {
   landscape.addEventListener('change', syncOrientation);
   syncOrientation();
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) setPaused(state, true);
+    if (!document.hidden) return;
+    setPaused(state, true);
+    // Con la pestaña oculta no hay cuadros: se apagan aquí la música y la sirena (que suena en bucle).
+    audio.sync({ phase: state.phase, frightened: state.frightTimer > 0 });
   });
   window.addEventListener('blur', () => setPaused(state, true));
 

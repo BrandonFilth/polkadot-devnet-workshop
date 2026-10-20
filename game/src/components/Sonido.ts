@@ -18,47 +18,94 @@ export function sonidoLabels(p: { music: boolean; effects: boolean }): SonidoLab
   };
 }
 
+/** Para qué es cada toggle: tooltip (title) y leyenda del popover. */
+export const SONIDO_AYUDA = {
+  music: 'Música: canción de fondo',
+  effects: 'Efectos: sonidos del juego (comer, fantasmas, morir)',
+} as const;
+
+/** Leyenda corta bajo el nombre, en el popover del HUD. */
+const SONIDO_DETALLE = {
+  music: 'Canción de fondo',
+  effects: 'Comer, fantasmas, morir',
+} as const;
+
+const SLASH = '<path d="M3 3l18 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>';
 const SPEAKER = '<path d="M4 9h4l5-4v14l-5-4H4z"/>';
-const SPEAKER_ON = `<svg viewBox="0 0 24 24" aria-hidden="true">${SPEAKER}<path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
+const SPEAKER_WAVES = '<path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>';
+const SPEAKER_ON = `<svg viewBox="0 0 24 24" aria-hidden="true">${SPEAKER}${SPEAKER_WAVES}</svg>`;
 const SPEAKER_OFF = `<svg viewBox="0 0 24 24" aria-hidden="true">${SPEAKER}<path d="M16 9l6 6M22 9l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
-const NOTE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v11.3A3 3 0 1 0 11 18V8h7V4z"/></svg>';
-const SFX_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.2 5.8L20 9l-4.6 3.8L17 19l-5-3.3L7 19l1.6-6.2L4 9l5.8-.2z"/></svg>';
+const NOTE = '<path d="M9 4v11.3A3 3 0 1 0 11 18V8h7V4z"/>';
+/** Música: nota (tachada si está apagada). Efectos: altavoz (con cruz si está apagado). */
+const ICONS = {
+  music: { on: `<svg viewBox="0 0 24 24" aria-hidden="true">${NOTE}</svg>`, off: `<svg viewBox="0 0 24 24" aria-hidden="true">${NOTE}${SLASH}</svg>` },
+  effects: { on: SPEAKER_ON, off: SPEAKER_OFF },
+} as const;
 
 export interface SonidoToggles {
   readonly element: HTMLElement;
   readonly first: HTMLButtonElement;
 }
 
-/** Dos toggles con aria-pressed. `onTap` suena al tocar (audio.tap()). */
-export function createSonidoToggles(prefs: SoundPrefs, onTap?: () => void): SonidoToggles {
+/**
+ * Dos toggles con aria-pressed. `onTap` suena al tocar (audio.tap()).
+ * - 'lista' (popover del HUD): ícono, nombre, leyenda y un interruptor que muestra el estado.
+ * - 'iconos' (pantalla de inicio): solo ícono con su nombre chico debajo; el title explica para qué es.
+ */
+export function createSonidoToggles(prefs: SoundPrefs, onTap?: () => void, variant: 'lista' | 'iconos' = 'lista'): SonidoToggles {
   const element = document.createElement('div');
-  element.className = 'sonido-toggles';
+  element.className = variant === 'iconos' ? 'sonido-toggles sonido-toggles--iconos' : 'sonido-toggles';
 
-  const make = (text: string, icon: string, toggle: () => void) => {
+  const make = (kind: 'music' | 'effects', text: string, toggle: () => void) => {
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = 'sonido-toggle';
-    b.innerHTML = `${icon}<span>${text}</span>`;
+    b.className = variant === 'iconos' ? 'sonido-toggle sonido-toggle--icono' : 'sonido-toggle';
+    b.title = SONIDO_AYUDA[kind];
+    const icon = document.createElement('span');
+    icon.className = 'sonido-icono';
+    const name = document.createElement('span');
+    name.className = 'sonido-nombre';
+    name.textContent = text;
+    if (variant === 'iconos') {
+      b.append(icon, name);
+    } else {
+      const label = document.createElement('span');
+      label.className = 'sonido-texto';
+      const detail = document.createElement('small');
+      detail.className = 'sonido-detalle';
+      detail.textContent = SONIDO_DETALLE[kind];
+      label.append(name, detail);
+      const sw = document.createElement('span');
+      sw.className = 'sonido-switch';
+      sw.setAttribute('aria-hidden', 'true');
+      b.append(icon, label, sw);
+    }
     b.addEventListener('click', () => {
       toggle();
       onTap?.();
     });
-    return b;
+    return { b, icon };
   };
-  const music = make('Música', NOTE_ICON, () => prefs.toggleMusic());
-  const effects = make('Efectos', SFX_ICON, () => prefs.toggleEffects());
-  element.append(music, effects);
+  const music = make('music', 'Música', () => prefs.toggleMusic());
+  const effects = make('effects', 'Efectos', () => prefs.toggleEffects());
+  element.append(music.b, effects.b);
 
+  let shown = '';
   const sync = () => {
+    const key = `${prefs.music},${prefs.effects}`;
+    if (key === shown) return;
+    shown = key;
     const l = sonidoLabels(prefs);
-    music.setAttribute('aria-pressed', String(prefs.music));
-    music.setAttribute('aria-label', l.music);
-    effects.setAttribute('aria-pressed', String(prefs.effects));
-    effects.setAttribute('aria-label', l.effects);
+    music.b.setAttribute('aria-pressed', String(prefs.music));
+    music.b.setAttribute('aria-label', l.music);
+    music.icon.innerHTML = prefs.music ? ICONS.music.on : ICONS.music.off;
+    effects.b.setAttribute('aria-pressed', String(prefs.effects));
+    effects.b.setAttribute('aria-label', l.effects);
+    effects.icon.innerHTML = prefs.effects ? ICONS.effects.on : ICONS.effects.off;
   };
   prefs.subscribe(sync);
   sync();
-  return { element, first: music };
+  return { element, first: music.b };
 }
 
 export interface SonidoButton {
@@ -78,6 +125,7 @@ export function createSonidoButton(prefs: SoundPrefs, onTap?: () => void): Sonid
   button.type = 'button';
   button.className = 'hud-sonido';
   button.setAttribute('aria-label', 'Sonido');
+  button.title = 'Sonido: música y efectos';
   button.setAttribute('aria-haspopup', 'true');
   button.setAttribute('aria-expanded', 'false');
 

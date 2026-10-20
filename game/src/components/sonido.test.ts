@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 // Texto de styles.css (vite.config.js deja pasar este .css a los tests).
 import css from '../styles.css?raw';
-import { sonidoLabels } from './Sonido';
+import { SONIDO_AYUDA, sonidoLabels } from './Sonido';
 
 /** Cuerpos (juntos) de todas las reglas cuyo selector es exactamente `selector`. */
 const rule = (selector: string) => {
@@ -38,5 +38,19 @@ describe('botones de sonido', () => {
     const body = rule('.sonido-toggle[aria-pressed="false"]');
     expect(body).toMatch(/color:\s*#8b8b86/);
     expect(body).toMatch(/text-decoration:\s*line-through/);
+    // El interruptor del popover también cambia: apagado sin el rosa.
+    expect(rule('.sonido-switch')).toMatch(/background:\s*var\(--accent\)/);
+    expect(rule('.sonido-toggle[aria-pressed="false"] .sonido-switch')).toMatch(/background:\s*var\(--line\)/);
+    // En el inicio: ícono rosa encendido, borde punteado apagado.
+    expect(rule('.sonido-toggle--icono[aria-pressed="true"] .sonido-icono')).toMatch(/color:\s*var\(--accent\)/);
+    expect(rule('.sonido-toggle--icono[aria-pressed="false"]')).toMatch(/border-style:\s*dashed/);
+  });
+
+  it('cada toggle explica para qué es: Música es la canción de fondo, Efectos los sonidos del juego', () => {
+    expect(SONIDO_AYUDA).toEqual({
+      music: 'Música: canción de fondo',
+      effects: 'Efectos: sonidos del juego (comer, fantasmas, morir)',
+    });
+    for (const text of Object.values(SONIDO_AYUDA)) expect(text).not.toMatch(/[!¡]/);
   });
 });

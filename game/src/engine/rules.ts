@@ -170,6 +170,15 @@ export const TAP_VOLUME = 0.08;
 /** Segundos mínimos entre dos «waka»: si llega otra bolita antes, no suena. */
 export const WAKA_MIN_INTERVAL_SECONDS = 0.1;
 
+/** Bolita especial: volumen (dentro del bus de efectos) y segundos de cada una de sus dos notas suaves. */
+export const POWER_DOT_VOLUME = 0.3;
+export const POWER_DOT_NOTE_SECONDS = 0.09;
+
+/** Sirena del susto: volumen bajo (dentro del bus de efectos) y vaivén lento y corto de la altura. */
+export const SIREN_VOLUME = 0.09;
+export const SIREN_LFO_RATE = 3;
+export const SIREN_LFO_DEPTH_HZ = 15;
+
 /** Tempo de la música, en negras por minuto. */
 export const MUSIC_BPM = 132;
 

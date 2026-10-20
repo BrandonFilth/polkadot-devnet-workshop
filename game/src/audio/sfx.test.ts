@@ -1,7 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { MASTER_VOLUME, MUSIC_VOLUME, SFX_VOLUME, WAKA_MIN_INTERVAL_SECONDS } from '../engine/rules';
+import {
+  MASTER_VOLUME,
+  MUSIC_VOLUME,
+  POWER_DOT_NOTE_SECONDS,
+  POWER_DOT_VOLUME,
+  SFX_VOLUME,
+  SIREN_LFO_DEPTH_HZ,
+  SIREN_LFO_RATE,
+  SIREN_VOLUME,
+  WAKA_MIN_INTERVAL_SECONDS,
+} from '../engine/rules';
 import { fakeContext } from './fakeContext';
-import { createSfx, SIREN, WAKA } from './sfx';
+import { createSfx, POWER_NOTES, SIREN, WAKA } from './sfx';
 import { createSynth } from './synth';
 
 const setup = () => {
@@ -84,6 +94,14 @@ describe('efectos', () => {
     // Oscilador grave + LFO.
     expect(ctx.oscillators).toHaveLength(2);
     expect(ctx.oscillators[0]!.frequency.calls[0]!.value).toBe(SIREN.freq);
+    // Suave: triangle (no square), volumen bajo y vaivén lento y corto.
+    expect(ctx.oscillators[0]!.type).toBe('triangle');
+    expect(ctx.oscillators[1]!.frequency.calls[0]!.value).toBe(SIREN_LFO_RATE);
+    const [depth, env] = ctx.gains.slice(3);
+    expect(depth!.gain.value).toBe(SIREN_LFO_DEPTH_HZ);
+    expect(env!.gain.calls.find((c) => c.fn === 'linear')?.value).toBe(SIREN_VOLUME);
+    expect(SIREN_VOLUME).toBeLessThanOrEqual(0.1);
+    expect(SIREN_LFO_DEPTH_HZ).toBeLessThanOrEqual(15);
     expect(ctx.oscillators[0]!.stopped).toBeNull();
     sfx.setFrightened(false);
     expect(sfx.sirenOn).toBe(false);
@@ -107,12 +125,28 @@ describe('efectos', () => {
     expect(f1600).toBeGreaterThan(f200);
   });
 
+  it('especial: dos notas suaves en triangle, que suben, con volumen bajo', () => {
+    const { ctx, sfx } = setup();
+    sfx.onPowerDot();
+    expect(ctx.oscillators).toHaveLength(POWER_NOTES.length);
+    expect(POWER_NOTES).toHaveLength(2);
+    expect(ctx.oscillators.map((o) => o.type)).toEqual(['triangle', 'triangle']);
+    const [a, b] = ctx.oscillators.map((o) => o.frequency.calls[0]!);
+    expect(b!.value).toBeGreaterThan(a!.value);
+    expect(b!.time - a!.time).toBeCloseTo(POWER_DOT_NOTE_SECONDS, 9);
+    // Envolventes de las dos notas (después de maestro, música y efectos).
+    for (const env of ctx.gains.slice(3)) {
+      expect(env.gain.calls.find((c) => c.fn === 'linear')?.value).toBe(POWER_DOT_VOLUME);
+    }
+    expect(POWER_DOT_VOLUME).toBeLessThanOrEqual(0.3);
+  });
+
   it('especial, ronda limpia, fin y tap suenan en el bus de efectos', () => {
     const { ctx, sfx } = setup();
     sfx.onPowerDot();
     sfx.onRoundClear();
     sfx.onGameOver();
     sfx.onTap();
-    expect(ctx.oscillators).toHaveLength(4 + 4 + 3 + 1);
+    expect(ctx.oscillators).toHaveLength(2 + 4 + 3 + 1);
   });
 });

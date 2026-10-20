@@ -1,13 +1,31 @@
-// Pantalla de inicio (fase 'titulo'): POLKA-MAN, Jugar, Conectar cuenta (recomendado), Ranking, Username y Sonido.
+// Pantalla de inicio (fase 'titulo'): Música y Efectos arriba a la derecha; Polka-Man y dos fantasmas, POLKA-MAN,
+// Jugar, Conectar cuenta con su sugerencia, Ranking y Username; los controles en una línea al pie.
 // Opaca y a pantalla completa. Jugar sin cuenta muestra una sola vez el aviso «Sin cuenta no se guardará tu récord».
 import { start, type GameState } from '../engine/game';
+import { PERSONALITIES } from '../engine/ghosts';
 import type { HostPhase, Hub } from '../hub/hub';
 import type { Mine } from './FinDePartida';
 
-export const INICIO_SUGERENCIA = 'Conecta tu cuenta para guardar tu récord. Puedes jugar sin conectarte.';
-export const INICIO_FUERA = 'Conectar necesita la Polkadot App o Polkadot Desktop. Puedes jugar y ver el ranking.';
+export const INICIO_SUGERENCIA = 'Conéctate para guardar tu récord. Puedes jugar sin conectarte.';
+export const INICIO_FUERA = 'Para conectar abre el juego en la Polkadot App o Desktop.';
 export const AVISO_SIN_CUENTA = 'Sin cuenta no se guardará tu récord';
-export const INICIO_AYUDA = 'Flechas o WASD en la PC. Desliza o usa el joystick en el celular.';
+export const INICIO_AYUDA = 'PC: flechas o WASD · Celular: joystick o desliza';
+
+/** Fantasma de la portada (cuerpo con 3 picos y ojos), en una caja de 100×100. */
+const ghostArt = (x: number, color: string) =>
+  `<g transform="translate(${x} 4) scale(0.88)">` +
+  `<path d="M10 95V45a40 40 0 0 1 80 0v50L76 82 63 95 50 82 37 95 24 82z" fill="${color}"/>` +
+  '<circle cx="36" cy="45" r="10" fill="#fff"/><circle cx="64" cy="45" r="10" fill="#fff"/>' +
+  '<circle cx="39" cy="47" r="5" fill="#1a1a2e"/><circle cx="67" cy="47" r="5" fill="#1a1a2e"/></g>';
+
+/** Portada como en las diapositivas: Polka-Man, dos bolitas y dos fantasmas con los colores del juego. */
+const INICIO_ARTE =
+  '<svg viewBox="0 0 340 96" focusable="false">' +
+  '<path d="M48 48L86.1 26A44 44 0 1 0 86.1 70z" fill="#ff2867"/>' +
+  '<circle cx="118" cy="48" r="7" fill="#f2f2ef"/><circle cx="146" cy="48" r="7" fill="#f2f2ef"/>' +
+  ghostArt(170, PERSONALITIES[0]!.color) +
+  ghostArt(250, PERSONALITIES[1]!.color) +
+  '</svg>';
 
 export type ConnectAction = 'conectar' | 'reintentar' | 'esperar';
 
@@ -106,7 +124,7 @@ export function createInicio(
     onUsername(): void;
     /** Al abrir o cerrar el aviso, antes de mover el foco (app.ts reajusta las capas). */
     onToggle?: () => void;
-    /** Toggles de Música y Efectos; van al final de la caja. */
+    /** Toggles de Música y Efectos (variante 'iconos'); van arriba a la derecha. */
     sonido?: HTMLElement;
   },
 ): Inicio {
@@ -118,8 +136,16 @@ export function createInicio(
   element.setAttribute('aria-labelledby', 'inicio-title');
   element.hidden = true;
 
+  const top = document.createElement('div');
+  top.className = 'inicio-top';
+  if (opts.sonido) top.append(opts.sonido);
+
   const box = document.createElement('div');
   box.className = 'inicio-box';
+  const art = document.createElement('div');
+  art.className = 'inicio-arte';
+  art.setAttribute('aria-hidden', 'true');
+  art.innerHTML = INICIO_ARTE;
   const title = document.createElement('h1');
   title.id = 'inicio-title';
   title.textContent = 'POLKA-MAN';
@@ -132,6 +158,10 @@ export function createInicio(
   jugar.className = 'overlay-action inicio-jugar';
   jugar.textContent = 'Jugar';
 
+  const acciones = document.createElement('div');
+  acciones.className = 'inicio-acciones';
+  const cuenta = document.createElement('div');
+  cuenta.className = 'inicio-cuenta';
   const suggestion = document.createElement('p');
   suggestion.className = 'inicio-sugerencia';
   const connect = document.createElement('button');
@@ -142,7 +172,7 @@ export function createInicio(
   status.setAttribute('role', 'status');
 
   const row = document.createElement('div');
-  row.className = 'overlay-row';
+  row.className = 'overlay-row inicio-fila';
   const ranking = document.createElement('button');
   ranking.type = 'button';
   ranking.className = 'overlay-secondary';
@@ -154,9 +184,11 @@ export function createInicio(
   username.addEventListener('click', () => opts.onUsername());
   row.append(ranking, username);
 
-  box.append(title, help, jugar, suggestion, connect, status, row);
-  if (opts.sonido) box.append(opts.sonido);
-  element.append(box);
+  // Conectar con la sugerencia debajo; el estado (fuera del Host, sin conexión o conectada) en el mismo bloque.
+  cuenta.append(connect, suggestion, status);
+  acciones.append(jugar, cuenta, row);
+  box.append(art, title, acciones);
+  element.append(top, box, help);
 
   // Aviso «sin cuenta»: diálogo opaco encima de la pantalla de inicio.
   const aviso = document.createElement('div');
@@ -262,7 +294,8 @@ export function createInicio(
       wasVisible = true;
       shownKey = '';
       const active = document.activeElement;
-      if (!active?.closest?.('.menu, .modal, .tx')) jugar.focus({ preventScroll: true });
+      // Foco en Jugar para Enter/Espacio, sin el anillo de foco (se veía como un doble borde); con Tab sí aparece.
+      if (!active?.closest?.('.menu, .modal, .tx')) jugar.focus({ preventScroll: true, focusVisible: false } as FocusOptions);
     }
     const s = hub.getState();
     const view = inicioView({ host: s.host, connected: s.account !== null, mine: opts.mine(), busy: s.busy });
@@ -272,7 +305,7 @@ export function createInicio(
     connectAction = view.connect?.action ?? null;
     connect.hidden = view.connect === null;
     if (view.connect) {
-      connect.textContent = view.connect.recommended ? `${view.connect.label} (recomendado)` : view.connect.label;
+      connect.textContent = view.connect.label;
       connect.disabled = view.connect.disabled;
       connect.classList.toggle('inicio-conectar--recomendado', view.connect.recommended);
     }
@@ -280,7 +313,6 @@ export function createInicio(
     suggestion.textContent = view.suggestion ?? '';
     status.hidden = view.status === null;
     status.textContent = view.status ?? '';
-    status.classList.toggle('inicio-status--aviso', s.host === 'fuera');
     username.hidden = view.username === null;
     if (view.username) {
       username.textContent = view.username.label;
