@@ -10,7 +10,9 @@ hay un menú con pestañas para tu username y el ranking. 25 a 35 minutos.
 - ¿Qué pasa si tocan Jugar sin cuenta? (p. ej. "un aviso, una sola vez, de que sin cuenta no se
   guarda el récord; se juega igual").
 - ¿Qué tiene el menú de arriba? (p. ej. "dos pestañas, Username y Ranking; abrirlo pausa la
-  partida").
+  partida"). La pestaña Username necesita el reto de username de la
+  [fase 8](./08-guarda-tu-record.md#si-te-sobra-tiempo-username); si no lo hiciste, haz el reto
+  primero o deja solo la pestaña Ranking.
 - ¿Cómo se ven las pantallas, el menú y los popups? (p. ej. "con fondo opaco, sin que se vea el
   juego detrás").
 
@@ -23,7 +25,7 @@ Lee SPEC.md (y el spec de esta parte si existe) y AGENTS.md.
 Agrega la pantalla de inicio que dice SPEC.md, para que la partida no empiece sola.
 Conectar cuenta es una sugerencia que se puede omitir: sin cuenta se juega igual, pero el
 récord no se guarda.
-Arriba agrega un menú con las pestañas Username y Ranking. El ranking vive en su propia
+Arriba agrega un menú con las pestañas que dice SPEC.md. El ranking vive en su propia
 pestaña y se desplaza si no cabe.
 Las pantallas, el menú y los popups tienen fondo opaco.
 Si te falta algún dato o hay que decidir algo que no está en SPEC.md, pregúntame antes de

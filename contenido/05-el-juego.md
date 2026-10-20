@@ -551,7 +551,8 @@ prueban en el navegador; Conectar desde la pantalla de inicio se prueba en el Ho
 
 La pantalla de inicio con Jugar, Conectar cuenta y Ranking, y un menú arriba con las pestañas
 Username y Ranking ([prompt](../prompts/09-pantalla-de-inicio.md)). Conectar es una sugerencia:
-sin cuenta se juega igual, pero el récord no se guarda. Piensa: ¿qué pasa si alguien toca Jugar
+sin cuenta se juega igual, pero el récord no se guarda. La pestaña Username usa el reto de username
+de la fase 8; si no lo hiciste, el menú puede llevar solo Ranking. Piensa: ¿qué pasa si alguien toca Jugar
 sin cuenta dos veces seguidas, o abre el menú en plena partida? Error típico: el juego arranca solo
 detrás de la pantalla de inicio, el aviso sin cuenta sale en cada partida, o el menú es
 transparente y se ve el laberinto a través de él.
