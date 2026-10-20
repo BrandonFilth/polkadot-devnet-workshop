@@ -311,4 +311,19 @@ describe('ojos', () => {
       expect({ x: Math.round(g.pos.x), y: Math.round(g.pos.y) }).toEqual(maze.exit);
     }
   });
+
+  it('con houseCooldown en el world se quedan en casa en el centro con su espera', () => {
+    const center = houseCenter(maze);
+    const g = ghostAt(0, { x: 1, y: 15 }, 'ojos', 'izquierda');
+    const w: GhostWorld = { ...world({ x: 9, y: 15 }), houseCooldown: 3 };
+    for (let i = 0; i < 20 / DT && g.mode === 'ojos'; i++) updateGhost(g, w, maze, DT);
+    expect(g.mode).toBe('casa');
+    expect(g.houseTimer).toBe(3);
+    expect(g.pos).toEqual(center);
+    // En casa no se mueve; la espera la descuenta la partida, no updateGhost.
+    for (let i = 0; i < 100; i++) updateGhost(g, w, maze, DT);
+    expect(g.mode).toBe('casa');
+    expect(g.pos).toEqual(center);
+    expect(g.houseTimer).toBe(3);
+  });
 });

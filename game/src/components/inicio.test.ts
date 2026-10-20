@@ -28,6 +28,16 @@ describe('inicio: Jugar y el aviso «sin cuenta»', () => {
     expect(flow.jugar({ host: 'fuera', connected: false })).toBe('empezar');
     expect(flow.avisoVisto).toBe(false);
   });
+
+  it('buscando, conectando o con error: empieza sin gastar el aviso; con el Host listo el primer Jugar lo muestra', () => {
+    const flow = createInicioFlow();
+    for (const host of ['buscando', 'conectando', 'error'] as const) {
+      expect(flow.jugar({ host, connected: false })).toBe('empezar');
+      expect(flow.avisoVisto).toBe(false);
+    }
+    expect(flow.jugar({ host: 'listo', connected: false })).toBe('aviso');
+    expect(flow.avisoVisto).toBe(true);
+  });
 });
 
 describe('inicio: vista', () => {

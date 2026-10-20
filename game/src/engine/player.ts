@@ -13,10 +13,19 @@ export interface Player {
   altDir: Dir | null;
   /** Fase de la boca, de 0 a 1. Avanza solo mientras se mueve. */
   mouth: number;
+  /** Se movió en el último updatePlayer (false = quieto contra la pared o sin dirección). */
+  moving: boolean;
 }
 
 export function createPlayer(maze: Maze): Player {
-  return { pos: { x: maze.start.x, y: maze.start.y }, dir: 'izquierda', nextDir: null, altDir: null, mouth: 0 };
+  return {
+    pos: { x: maze.start.x, y: maze.start.y },
+    dir: 'izquierda',
+    nextDir: null,
+    altDir: null,
+    mouth: 0,
+    moving: false,
+  };
 }
 
 /**
@@ -78,5 +87,6 @@ export function updatePlayer(player: Player, maze: Maze, dt: number): void {
 
   // Lo recorrido (al cruzar el túnel la posición salta, por eso se limita a `distance`).
   const moved = Math.min(distance, Math.abs(player.pos.x - before.x) + Math.abs(player.pos.y - before.y));
+  player.moving = moved > 0;
   if (moved > 0) player.mouth = (player.mouth + moved) % 1;
 }

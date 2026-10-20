@@ -45,3 +45,13 @@ export type ActivePhase = 'listo' | 'jugando' | 'muriendo' | 'rondaLimpia';
 
 /** Modos de un fantasma (design §4.4). */
 export type GhostMode = 'casa' | 'saliendo' | 'normal' | 'asustado' | 'ojos';
+
+/** Lo que pasó en la partida; el motor lo anota en GameState.events y drainEvents() lo vacía. */
+export type GameEvent =
+  | { type: 'orbe'; tile: number } // bolita comida (índice de casilla)
+  | { type: 'especial'; tile: number } // bolita especial comida
+  | { type: 'fantasmaComido'; ghostId: number; points: number; pos: Vec }
+  | { type: 'muerte'; pos: Vec } // al pasar a 'muriendo'
+  | { type: 'rondaLimpia'; round: number } // al pasar a 'rondaLimpia'
+  | { type: 'finPartida'; score: number } // al pasar de 'muriendo' a 'fin'
+  | { type: 'inicio' }; // start()

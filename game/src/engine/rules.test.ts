@@ -15,6 +15,11 @@ import {
   GHOST_SPEED_GROWTH,
   ghostCount,
   ghostSpeed,
+  HOUSE_COOLDOWN_BASE_SECONDS,
+  HOUSE_COOLDOWN_MIN_SECONDS,
+  HOUSE_COOLDOWN_STEP_SECONDS,
+  houseCooldownSeconds,
+  MAX_EVENTS,
   CONTROLS_HEIGHT_PX,
   HUD_HEIGHT_PX,
   JOYSTICK_DEAD_ZONE,
@@ -92,6 +97,15 @@ describe('rules: dificultad', () => {
     // El joystick y la pausa caben en la zona de controles.
     expect(JOYSTICK_RADIUS_PX * 2).toBeLessThan(CONTROLS_HEIGHT_PX);
     expect(PAUSE_BUTTON_PX).toBeLessThan(CONTROLS_HEIGHT_PX);
+  });
+
+  it('espera en la casa: 5 s en la ronda 1, 0.5 s menos cada ronda, mínimo 2 s', () => {
+    expect(HOUSE_COOLDOWN_BASE_SECONDS).toBe(5);
+    expect(HOUSE_COOLDOWN_STEP_SECONDS).toBe(0.5);
+    expect(HOUSE_COOLDOWN_MIN_SECONDS).toBe(2);
+    expect(MAX_EVENTS).toBe(64);
+    const rounds = [1, 2, 4, 7, 10];
+    expect(rounds.map(houseCooldownSeconds)).toEqual([5, 4.5, 3.5, 2, 2]);
   });
 
   it('el tope de velocidad se alcanza en la ronda 9', () => {

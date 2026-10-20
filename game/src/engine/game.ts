@@ -9,16 +9,18 @@ import {
   ghostCount,
   ghostSpeed,
   HITBOX,
+  houseCooldownSeconds,
   LAG_SAMPLE_SECONDS,
   LAG_SAMPLES,
   LIVES,
+  MAX_EVENTS,
   ORB_POINTS,
   POWER_POINTS,
   READY_SECONDS,
   RELEASE_INTERVAL,
   ROUND_CLEAR_SECONDS,
 } from './rules';
-import type { ActivePhase, Dir, Phase, Vec } from './types';
+import type { ActivePhase, Dir, GameEvent, Phase, Vec } from './types';
 
 const maze = parseMaze(MAZE);
 
@@ -52,6 +54,21 @@ export interface GameState {
   frightTimer: number;
   /** Fantasmas comidos en el susto actual (índice en GHOST_CHAIN_POINTS). */
   frightChain: number;
+  /** Eventos sin leer, del más viejo al más nuevo (máximo MAX_EVENTS). drainEvents() los vacía. */
+  events: GameEvent[];
+}
+
+/** Anota un evento; si ya hay MAX_EVENTS se descarta el más viejo. */
+function emit(state: GameState, event: GameEvent): void {
+  state.events.push(event);
+  if (state.events.length > MAX_EVENTS) state.events.splice(0, state.events.length - MAX_EVENTS);
+}
+
+/** Devuelve los eventos sin leer y los vacía. */
+export function drainEvents(state: GameState): GameEvent[] {
+  const events = state.events;
+  state.events = [];
+  return events;
 }
 
 const ACTIVE: readonly Phase[] = ['listo', 'jugando', 'muriendo', 'rondaLimpia'];
@@ -115,6 +132,7 @@ export function createGame(seed: number): GameState {
     lagClock: 0,
     frightTimer: 0,
     frightChain: 0,
+    events: [],
   };
 }
 
@@ -129,6 +147,7 @@ export function start(state: GameState): void {
   state.resumePhase = null;
   state.phase = 'listo';
   state.phaseTimer = READY_SECONDS;
+  emit(state, { type: 'inicio' });
 }
 
 /** Pide una dirección principal y, en diagonal, una secundaria. Solo cuenta en 'listo' y 'jugando'. */
@@ -153,6 +172,7 @@ export function goToTitle(state: GameState): void {
   state.resumePhase = null;
   state.phaseTimer = 0;
   state.phase = 'titulo';
+  state.events = [];
 }
 
 /** Pausa (true) o reanuda (false). Idempotente: repetir la llamada no cambia nada. */
@@ -176,10 +196,13 @@ export function togglePause(state: GameState): void {
 /** Come lo que haya en la casilla redondeada de Polka-Man. */
 function eat(state: GameState): void {
   const i = tileIndex(maze, Math.round(state.player.pos.x), Math.round(state.player.pos.y));
-  if (state.orbs.delete(i)) state.score += ORB_POINTS;
-  else if (state.power.delete(i)) {
+  if (state.orbs.delete(i)) {
+    state.score += ORB_POINTS;
+    emit(state, { type: 'orbe', tile: i });
+  } else if (state.power.delete(i)) {
     state.score += POWER_POINTS;
     startFright(state);
+    emit(state, { type: 'especial', tile: i });
   }
 }
 
@@ -198,6 +221,7 @@ function moveGhosts(state: GameState, dt: number): void {
     lagSamples: state.lagSamples,
     rng: state,
     speed: ghostSpeed(state.round),
+    houseCooldown: houseCooldownSeconds(state.round),
   };
   for (const ghost of state.ghosts) updateGhost(ghost, world, maze, dt);
 }
@@ -217,10 +241,12 @@ function eatGhosts(state: GameState): void {
   for (const ghost of state.ghosts) {
     if (ghost.mode !== 'asustado' || !touches(state, ghost)) continue;
     const k = Math.min(state.frightChain, GHOST_CHAIN_POINTS.length - 1);
-    state.score += GHOST_CHAIN_POINTS[k]!;
+    const points = GHOST_CHAIN_POINTS[k]!;
+    state.score += points;
     state.frightChain += 1;
     ghost.mode = 'ojos';
     ghost.lastTile = -1;
+    emit(state, { type: 'fantasmaComido', ghostId: ghost.id, points, pos: { x: ghost.pos.x, y: ghost.pos.y } });
   }
 }
 
@@ -229,10 +255,19 @@ function hitByGhost(state: GameState): boolean {
   return state.ghosts.some((g) => (g.mode === 'normal' || g.mode === 'saliendo') && touches(state, g));
 }
 
-/** Salida escalonada y muestras de Lag. */
+/** Espera de los comidos en la casa, salida escalonada y muestras de Lag. */
 function tickTimers(state: GameState, dt: number): void {
   state.releaseClock += dt;
   for (const ghost of state.ghosts) {
+    if (ghost.mode === 'casa' && ghost.houseTimer > 0) {
+      // Comido: espera su tiempo, sin importar la salida escalonada.
+      ghost.houseTimer = Math.max(0, ghost.houseTimer - dt);
+      if (ghost.houseTimer <= EPS) {
+        ghost.houseTimer = 0;
+        ghost.mode = 'saliendo';
+      }
+      continue;
+    }
     if (ghost.mode === 'casa' && state.releaseClock >= ghost.id * RELEASE_INTERVAL - EPS) {
       ghost.mode = 'saliendo';
     }
@@ -259,6 +294,7 @@ export function update(state: GameState, dt: number): void {
         endFright(state);
         state.phase = 'rondaLimpia';
         state.phaseTimer = ROUND_CLEAR_SECONDS;
+        emit(state, { type: 'rondaLimpia', round: state.round });
         break;
       }
       moveGhosts(state, dt);
@@ -268,6 +304,7 @@ export function update(state: GameState, dt: number): void {
         state.lives -= 1;
         state.phase = 'muriendo';
         state.phaseTimer = DEATH_SECONDS;
+        emit(state, { type: 'muerte', pos: { x: state.player.pos.x, y: state.player.pos.y } });
         break;
       }
       tickTimers(state, dt);
@@ -281,6 +318,7 @@ export function update(state: GameState, dt: number): void {
           state.phaseTimer = READY_SECONDS;
         } else {
           state.phase = 'fin';
+          emit(state, { type: 'finPartida', score: state.score });
         }
       }
       break;

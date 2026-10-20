@@ -122,6 +122,20 @@ describe('Polka-Man', () => {
     updatePlayer(p, maze, 0.05);
     expect(p.mouth).toBeGreaterThan(0);
   });
+
+  it('moving: false contra la pared, true al avanzar', () => {
+    const p = createPlayer(maze);
+    expect(p.moving).toBe(false);
+    p.pos = { x: 1, y: 19 };
+    updatePlayer(p, maze, 0.05); // mirando a la izquierda contra la pared
+    expect(p.moving).toBe(false);
+    requestDirection(p, 'derecha');
+    updatePlayer(p, maze, 0.05);
+    expect(p.moving).toBe(true);
+    requestDirection(p, 'izquierda');
+    for (let i = 0; i < 10; i++) updatePlayer(p, maze, 0.05);
+    expect(p.moving).toBe(false);
+  });
 });
 
 describe('Polka-Man: diagonales (dos direcciones pedidas)', () => {

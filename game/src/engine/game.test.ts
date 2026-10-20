@@ -1,5 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { createGame, goToTitle, setDirection, setDirections, setPaused, start, togglePause, update, type GameState } from './game';
+import {
+  createGame,
+  drainEvents,
+  goToTitle,
+  setDirection,
+  setDirections,
+  setPaused,
+  start,
+  togglePause,
+  update,
+  type GameState,
+} from './game';
 import { createGhost } from './ghosts';
 import { MAZE, parseMaze } from './maze';
 import {
@@ -11,7 +22,9 @@ import {
   ghostCount,
   ghostSpeed,
   HITBOX,
+  houseCooldownSeconds,
   LIVES,
+  MAX_EVENTS,
   ORB_POINTS,
   POWER_POINTS,
   READY_SECONDS,
@@ -504,7 +517,7 @@ describe('orbes especiales y susto', () => {
       update(s, DT);
       if (modes[modes.length - 1] !== g.mode) modes.push(g.mode);
     }
-    expect(modes).toEqual(['ojos', 'saliendo', 'normal']);
+    expect(modes).toEqual(['ojos', 'casa', 'saliendo', 'normal']);
     expect({ x: Math.round(g.pos.x), y: Math.round(g.pos.y) }).toEqual(maze.exit);
   });
 
@@ -597,5 +610,201 @@ describe('orbes especiales y susto', () => {
     expect(s.phase).toBe('rondaLimpia');
     expect(s.frightTimer).toBe(0);
     expect(s.frightChain).toBe(0);
+  });
+});
+
+describe('espera en la casa tras ser comido', () => {
+  const maze = parseMaze(MAZE);
+
+  function playing(round = 1) {
+    const s = createGame(1);
+    start(s);
+    update(s, READY_SECONDS);
+    s.round = round;
+    s.ghosts = [];
+    return s;
+  }
+
+  /** Fantasma 0 asustado en `pos`, mirando a la derecha. */
+  function scaredAt(pos: Vec) {
+    const g = createGhost(maze, 0);
+    g.pos = { ...pos };
+    g.mode = 'asustado';
+    g.dir = 'derecha';
+    return g;
+  }
+
+  /** Come al fantasma 0 con un especial y avanza hasta que los ojos llegan a la casa. */
+  function eatenToHouse(s: GameState) {
+    s.player.pos = { x: 2, y: 15 };
+    s.player.dir = 'izquierda';
+    update(s, 0.1); // come el especial (1, 15)
+    const g = scaredAt(s.player.pos);
+    s.ghosts = [g];
+    update(s, DT);
+    expect(g.mode).toBe('ojos');
+    for (let i = 0; i < 20 / DT && g.mode === 'ojos'; i++) update(s, DT);
+    expect(g.mode).toBe('casa');
+    return g;
+  }
+
+  /** Segundos en 'casa' hasta pasar a 'saliendo', contando el paso en que llegó (pasos de DT). */
+  function secondsInHouse(s: GameState, g: ReturnType<typeof createGhost>) {
+    let t = DT;
+    while (g.mode === 'casa' && t < 20) {
+      update(s, DT);
+      t += DT;
+    }
+    expect(g.mode).toBe('saliendo');
+    return t;
+  }
+
+  it('ronda 1: espera houseCooldownSeconds(1) = 5 s en la casa y después sale', () => {
+    const s = playing(1);
+    const g = eatenToHouse(s);
+    expect(g.pos).toEqual({ x: 9, y: 9 });
+    const t = secondsInHouse(s, g);
+    expect(t).toBeGreaterThanOrEqual(houseCooldownSeconds(1) - DT);
+    expect(t).toBeLessThanOrEqual(houseCooldownSeconds(1) + DT);
+    expect(g.houseTimer).toBe(0);
+  });
+
+  it('ronda 7: espera 2 s', () => {
+    const s = playing(7);
+    const g = eatenToHouse(s);
+    const t = secondsInHouse(s, g);
+    expect(houseCooldownSeconds(7)).toBe(2);
+    expect(t).toBeGreaterThanOrEqual(2 - DT);
+    expect(t).toBeLessThanOrEqual(2 + DT);
+  });
+
+  it('la pausa congela la espera', () => {
+    const s = playing(1);
+    const g = eatenToHouse(s);
+    update(s, 0.5);
+    const timer = g.houseTimer;
+    expect(timer).toBeGreaterThan(0);
+    setPaused(s, true);
+    update(s, 10);
+    expect(g.houseTimer).toBe(timer);
+    expect(g.mode).toBe('casa');
+    setPaused(s, false);
+    expect(g.houseTimer).toBe(timer);
+    expect(g.mode).toBe('casa');
+  });
+
+  it('no depende de la salida escalonada: con releaseClock enorme igual espera', () => {
+    const s = playing(1);
+    const g = eatenToHouse(s);
+    s.releaseClock = 1e6;
+    const t = secondsInHouse(s, g);
+    expect(t).toBeGreaterThanOrEqual(houseCooldownSeconds(1) - DT);
+  });
+});
+
+describe('eventos del motor', () => {
+  const maze = parseMaze(MAZE);
+  const W = maze.width;
+
+  function playing() {
+    const s = createGame(1);
+    start(s);
+    update(s, READY_SECONDS);
+    s.ghosts = [];
+    return s;
+  }
+
+  it('start anota inicio y drainEvents devuelve y vacía', () => {
+    const s = createGame(1);
+    expect(s.events).toEqual([]);
+    start(s);
+    expect(drainEvents(s)).toEqual([{ type: 'inicio' }]);
+    expect(drainEvents(s)).toEqual([]);
+    expect(s.events).toEqual([]);
+  });
+
+  it('comer una bolita anota orbe con su casilla', () => {
+    const s = playing();
+    drainEvents(s);
+    update(s, 0.1); // come (8, 15)
+    expect(drainEvents(s)).toEqual([{ type: 'orbe', tile: 15 * W + 8 }]);
+  });
+
+  it('comer una especial anota especial', () => {
+    const s = playing();
+    drainEvents(s);
+    s.player.pos = { x: 2, y: 15 };
+    update(s, 0.1);
+    expect(drainEvents(s)).toEqual([{ type: 'especial', tile: 15 * W + 1 }]);
+  });
+
+  it('comer dos asustados anota fantasmaComido con 200 y luego 400, con la posición copiada', () => {
+    const s = playing();
+    s.player.pos = { x: 2, y: 15 };
+    update(s, 0.1);
+    drainEvents(s);
+    const a = createGhost(maze, 0);
+    const b = createGhost(maze, 1);
+    for (const g of [a, b]) {
+      g.pos = { ...s.player.pos };
+      g.mode = 'asustado';
+      g.dir = 'arriba';
+    }
+    s.ghosts = [a, b];
+    update(s, DT);
+    const ev = drainEvents(s).filter((e) => e.type === 'fantasmaComido');
+    expect(ev.map((e) => (e.type === 'fantasmaComido' ? [e.ghostId, e.points] : null))).toEqual([
+      [0, 200],
+      [1, 400],
+    ]);
+    const first = ev[0]!;
+    if (first.type !== 'fantasmaComido') throw new Error('tipo');
+    expect(first.pos).not.toBe(a.pos);
+  });
+
+  it('chocar anota muerte; la última vida anota finPartida con el puntaje', () => {
+    const s = playing();
+    drainEvents(s);
+    s.lives = 1;
+    s.score = 1230;
+    const g = createGhost(maze, 0);
+    g.mode = 'normal';
+    g.pos = { ...s.player.pos };
+    s.ghosts = [g];
+    update(s, 0.01);
+    const pos = { ...s.player.pos };
+    expect(drainEvents(s)).toEqual([{ type: 'muerte', pos }]);
+    update(s, DEATH_SECONDS);
+    expect(s.phase).toBe('fin');
+    expect(drainEvents(s)).toEqual([{ type: 'finPartida', score: 1230 }]);
+  });
+
+  it('vaciar el laberinto anota rondaLimpia con la ronda', () => {
+    const s = playing();
+    drainEvents(s);
+    s.orbs = new Set([15 * W + 8]);
+    s.power = new Set();
+    update(s, 0.1);
+    expect(drainEvents(s)).toEqual([{ type: 'orbe', tile: 15 * W + 8 }, { type: 'rondaLimpia', round: 1 }]);
+  });
+
+  it('sin consumidor la lista no pasa de MAX_EVENTS y se descarta el más viejo', () => {
+    const s = playing();
+    expect(s.events).toEqual([{ type: 'inicio' }]);
+    s.player.dir = null;
+    for (let i = 0; i < MAX_EVENTS + 36; i++) {
+      s.player.pos = { x: 8, y: 15 };
+      s.orbs.add(15 * W + 8);
+      update(s, DT);
+    }
+    expect(s.events.length).toBe(MAX_EVENTS);
+    expect(s.events.every((e) => e.type === 'orbe')).toBe(true);
+  });
+
+  it('goToTitle vacía los eventos', () => {
+    const s = playing();
+    s.phase = 'fin';
+    goToTitle(s);
+    expect(s.events).toEqual([]);
   });
 });

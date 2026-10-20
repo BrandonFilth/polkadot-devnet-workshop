@@ -87,6 +87,7 @@ Son las decisiones de la muestra; tú tomas las tuyas en la fase 0.
 | Ronda | Termina al vaciar el laberinto; las bolitas vuelven y empieza la siguiente |
 | Velocidad de los fantasmas | +5 % cada ronda, con tope por debajo de la del jugador |
 | Número de fantasmas | Empieza en 2 y sale uno más cada 3 rondas, hasta 6 |
+| Fantasma comido | Vuelve a la casa como ojos y espera 5 s antes de salir; 0.5 s menos cada ronda, mínimo 2 s |
 | Marcador | El mejor puntaje se guarda en el contrato `Leaderboard` |
 
 ### Prueba la muestra

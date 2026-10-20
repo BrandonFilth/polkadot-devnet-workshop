@@ -42,6 +42,8 @@ export interface Ghost {
   corner: number;
   /** Casilla (índice) donde decidió por última vez; evita decidir dos veces en el mismo centro. */
   lastTile: number;
+  /** Segundos que le quedan de espera en la casa tras ser comido (0 = sin espera). */
+  houseTimer: number;
 }
 
 /** Lo que un fantasma necesita saber de la partida. */
@@ -53,12 +55,14 @@ export interface GhostWorld {
   rng: { seed: number };
   /** Casillas por segundo. */
   speed: number;
+  /** Segundos de espera en la casa al llegar como ojos. Sin él (o 0) salen enseguida. */
+  houseCooldown?: number;
 }
 
 /** Fantasma i esperando en la casilla G número i % 3. */
 export function createGhost(maze: Maze, id: number): Ghost {
   const home = maze.house[id % maze.house.length]!;
-  return { id, pos: { x: home.x, y: home.y }, dir: 'arriba', mode: 'casa', corner: 0, lastTile: -1 };
+  return { id, pos: { x: home.x, y: home.y }, dir: 'arriba', mode: 'casa', corner: 0, lastTile: -1, houseTimer: 0 };
 }
 
 export function createGhosts(maze: Maze, count: number): Ghost[] {
@@ -200,7 +204,16 @@ export function updateGhost(ghost: Ghost, world: GhostWorld, maze: Maze, dt: num
           return;
         }
         if (c === center.x && r === center.y) {
-          // Llegó al centro: vuelve a salir como siempre.
+          const cooldown = world.houseCooldown ?? 0;
+          if (cooldown > 0) {
+            // Llegó al centro: espera en la casa. Debajo hay pared, así que 'abajo' lo deja quieto.
+            ghost.mode = 'casa';
+            ghost.houseTimer = cooldown;
+            ghost.dir = 'abajo';
+            ghost.lastTile = -1;
+            return;
+          }
+          // Sin espera: vuelve a salir como siempre.
           ghost.mode = 'saliendo';
           ghost.lastTile = -1;
         }

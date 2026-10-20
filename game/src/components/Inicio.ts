@@ -74,8 +74,9 @@ export function createInicioFlow(): InicioFlow {
   let avisoVisto = false;
   return {
     jugar(i) {
-      // Fuera del Host no se puede conectar: el aviso no ayuda.
-      if (i.connected || i.host === 'fuera' || avisoVisto) return 'empezar';
+      // Solo con el Host listo se puede conectar: fuera, buscando, conectando o con error el aviso no ayuda
+      // y no se gasta.
+      if (i.connected || i.host !== 'listo' || avisoVisto) return 'empezar';
       avisoVisto = true;
       return 'aviso';
     },

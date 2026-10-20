@@ -97,6 +97,24 @@ export const FRIGHT_BLINK_PERIOD = 0.2;
 /** Puntos por cada fantasma comido en un mismo susto, en orden. */
 export const GHOST_CHAIN_POINTS: readonly number[] = [200, 400, 800, 1600];
 
+/** Segundos que un fantasma comido espera en la casa en la ronda 1. */
+export const HOUSE_COOLDOWN_BASE_SECONDS = 5;
+
+/** Segundos de espera en la casa que se pierden en cada ronda. */
+export const HOUSE_COOLDOWN_STEP_SECONDS = 0.5;
+
+/** Mínimo de segundos de espera en la casa. */
+export const HOUSE_COOLDOWN_MIN_SECONDS = 2;
+
+/** En el último segundo de la espera el fantasma parpadea. */
+export const HOUSE_BLINK_SECONDS = 1;
+
+/** Segundos entre dos cambios del parpadeo de la casa. */
+export const HOUSE_BLINK_PERIOD = 0.15;
+
+/** Máximo de eventos guardados en GameState.events; al pasarse se descarta el más viejo. */
+export const MAX_EVENTS = 64;
+
 /* ------------------------------------------------ pantalla y controles */
 
 /** Casillas del anillo exterior de pared que no se dibujan en cada lado (solo dibujo; el laberinto no cambia). */
@@ -152,4 +170,9 @@ export function ghostSpeed(round: number): number {
 /** Segundos de susto en la ronda `round`. */
 export function frightenedSeconds(round: number): number {
   return Math.max(FRIGHT_MIN_SECONDS, FRIGHT_BASE_SECONDS - FRIGHT_STEP_SECONDS * (round - 1));
+}
+
+/** Segundos que un fantasma comido espera en la casa en la ronda `round`. */
+export function houseCooldownSeconds(round: number): number {
+  return Math.max(HOUSE_COOLDOWN_MIN_SECONDS, HOUSE_COOLDOWN_BASE_SECONDS - HOUSE_COOLDOWN_STEP_SECONDS * (round - 1));
 }
