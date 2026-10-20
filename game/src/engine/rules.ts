@@ -153,6 +153,32 @@ export const REDUCED_MOTION_BURST_FACTOR = 0.4;
 /** Opacidad del cuerpo del fantasma en casa cuando parpadea antes de salir. */
 export const HOUSE_BLINK_ALPHA = 0.35;
 
+/* ------------------------------------------------ sonido (Web Audio, sin archivos) */
+
+/** Volumen general (bus maestro), de 0 a 1. */
+export const MASTER_VOLUME = 0.6;
+
+/** Volumen del bus de música: bajo, para que no tape los efectos. */
+export const MUSIC_VOLUME = 0.12;
+
+/** Volumen del bus de efectos. */
+export const SFX_VOLUME = 0.3;
+
+/** Volumen del toque suave de los botones de sonido (dentro del bus de efectos). */
+export const TAP_VOLUME = 0.08;
+
+/** Segundos mínimos entre dos «waka»: si llega otra bolita antes, no suena. */
+export const WAKA_MIN_INTERVAL_SECONDS = 0.1;
+
+/** Tempo de la música, en negras por minuto. */
+export const MUSIC_BPM = 132;
+
+/** Tempo de la música durante el susto. */
+export const MUSIC_FRIGHT_BPM = 168;
+
+/** Segundos hacia adelante que se agendan las notas en cada cuadro. */
+export const MUSIC_LOOKAHEAD_SECONDS = 0.15;
+
 /* ------------------------------------------------ pantalla y controles */
 
 /** Casillas del anillo exterior de pared que no se dibujan en cada lado (solo dibujo; el laberinto no cambia). */

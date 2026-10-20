@@ -1,4 +1,4 @@
-// HUD en DOM: puntaje, ronda, récord, vidas, botón de pausa (escritorio) y botón Menú. Solo toca el DOM cuando cambia un valor.
+// HUD en DOM: puntaje, ronda, récord, vidas, botón de pausa (escritorio), botón Sonido y botón Menú. Solo toca el DOM cuando cambia un valor.
 import { togglePause, type GameState } from '../engine/game';
 
 export interface Hud {
@@ -14,7 +14,14 @@ const PAUSE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3v
 const PLAY_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5 L19 12 L8 19 Z"/></svg>';
 
 /** `record()` da el récord del jugador, o null sin cuenta, mientras se lee o si falló la lectura. */
-export function createHud(header: HTMLElement, state: GameState, record: () => bigint | null, onMenu: () => void): Hud {
+/** `sonido` (opcional) es el botón Sonido con su popover; va antes del botón Menú. */
+export function createHud(
+  header: HTMLElement,
+  state: GameState,
+  record: () => bigint | null,
+  onMenu: () => void,
+  sonido?: HTMLElement,
+): Hud {
   const stats = document.createElement('p');
   stats.className = 'hud-stats';
   const score = document.createElement('span');
@@ -45,7 +52,7 @@ export function createHud(header: HTMLElement, state: GameState, record: () => b
   menu.innerHTML = `${MENU_ICON}<span>Menú</span>`;
   menu.addEventListener('click', () => onMenu());
 
-  header.replaceChildren(info, lives, pause, menu);
+  header.replaceChildren(info, lives, pause, ...(sonido ? [sonido] : []), menu);
 
   let shownBest: string | null = null;
   let shownScore: number | null = null;

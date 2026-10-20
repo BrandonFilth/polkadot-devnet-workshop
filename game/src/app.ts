@@ -1,4 +1,6 @@
 // Arma el DOM y conecta motor, dibujo, controles y componentes.
+import { createAudio } from './audio/audio';
+import { createSoundPrefs, safeStorage } from './audio/prefs';
 import { capas, type Capa } from './components/capas';
 import { createControles } from './components/Controles';
 import { createFinDePartida, type Mine } from './components/FinDePartida';
@@ -6,10 +8,11 @@ import { createHud } from './components/Hud';
 import { createInicio } from './components/Inicio';
 import { createMenu, pauseForMenu, type MenuTab } from './components/Menu';
 import { createOverlay } from './components/Overlay';
+import { createSonidoButton, createSonidoToggles } from './components/Sonido';
 import { attachTeclado } from './components/teclado';
 import { createTxEstado } from './components/TxEstado';
 import { createUsername } from './components/Username';
-import { withDebug } from './dev/debug';
+import { attachAudioDebug, withDebug } from './dev/debug';
 import { createHub } from './hub/hub';
 import { createGame, drainEvents, goToTitle, setPaused, update } from './engine/game';
 import { MAZE, parseMaze } from './engine/maze';
@@ -95,6 +98,15 @@ export function startApp(root: HTMLElement): void {
   void hub.start();
   const busy = () => hub.getState().busy;
 
+  // Sonido: el AudioContext se crea (o se reanuda) en cada gesto. Los listeners de captura en document corren
+  // antes que el handler de Jugar, así el contexto ya existe cuando empieza la partida.
+  const prefs = createSoundPrefs(safeStorage());
+  const audio = createAudio({ prefs });
+  const unlockAudio = () => audio.unlock();
+  for (const type of ['click', 'keydown', 'touchend', 'pointerup']) document.addEventListener(type, unlockAudio, true);
+  if (import.meta.env.DEV) attachAudioDebug(audio);
+  const tap = () => audio.tap();
+
   // Récord del jugador: app.ts es el único dueño de este valor.
   let mine: Mine = null;
   let mineSeq = 0;
@@ -155,6 +167,7 @@ export function startApp(root: HTMLElement): void {
     menuOpener = document.activeElement instanceof HTMLElement && document.activeElement !== document.body ? document.activeElement : null;
     menu.open(tab);
   };
+  const sonidoHud = createSonidoButton(prefs, tap);
   const hud = createHud(
     header,
     state,
@@ -164,6 +177,7 @@ export function startApp(root: HTMLElement): void {
       menuOpener = null;
       menu.open();
     },
+    sonidoHud.element,
   );
   hud.sync();
 
@@ -188,6 +202,7 @@ export function startApp(root: HTMLElement): void {
     onRanking: () => openMenu('ranking'),
     onUsername: openUsername,
     onToggle: layers,
+    sonido: createSonidoToggles(prefs, tap).element,
   });
 
   // Popup de estados: el último en #app, por encima de todo lo demás (salvo «Gira tu teléfono»).
@@ -279,6 +294,9 @@ export function startApp(root: HTMLElement): void {
       const events = drainEvents(state);
       addFromEvents(effects, events, maze, timeMs);
       prune(effects, timeMs);
+      // Efectos de sonido con los mismos eventos; música y sirena según la fase y el susto.
+      audio.handle(events);
+      audio.sync({ phase: state.phase, frightened: state.frightTimer > 0 });
       // La muerte se dibuja desde el phaseTimer de 'muriendo': en pausa queda congelada.
       const dying = state.phase === 'muriendo' || (state.phase === 'pausa' && state.resumePhase === 'muriendo');
       scene.death = dying ? state.phaseTimer : null;
@@ -289,6 +307,8 @@ export function startApp(root: HTMLElement): void {
       scene.frightTimer = state.frightTimer;
       overlay.sync();
       inicio.sync();
+      // La pantalla de inicio tapa el HUD: el popover de Sonido no queda abierto encima.
+      if (state.phase === 'titulo' && sonidoHud.isOpen) sonidoHud.close();
       if (state.phase === 'fin') fin.sync();
       if (menu.isOpen) menu.sync();
       applyLayers();

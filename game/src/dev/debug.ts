@@ -1,7 +1,11 @@
 // SOLO DESARROLLO. Ganchos para capturas sin teléfono: `pnpm dev` + `?debug` en la URL.
 // app.ts lo usa detrás de `import.meta.env.DEV`; en `pnpm build` esa rama es falsa y Vite la quita
 // (ver la verificación del bundle). Nunca firma ni llama al Host: solo cambia lo que ven las pantallas.
+import type { AudioDebugState, GameAudio } from '../audio/audio';
 import type { GameState } from '../engine/game';
+import { houseCenter } from '../engine/ghosts';
+import { MAZE, parseMaze, tileIndex } from '../engine/maze';
+import { houseCooldownSeconds } from '../engine/rules';
 import type { Hub, HubState, RankingRow } from '../hub/hub';
 import { advance, begin, finish, STEPS, type ProgressOp, type ProgressStep } from '../hub/progress';
 import type { TxErrorKind } from '../lib/txErrors';
@@ -23,6 +27,25 @@ export interface PolkaDebug {
   terminar(ok: boolean, kind?: TxErrorKind): void;
   /** Quita todo lo falso. */
   limpiar(): void;
+  /** En 'jugando': pone un fantasma 'normal' encima de Polka-Man (muere en el siguiente paso). */
+  morir(): void;
+  /** Manda al fantasma 0 a la casa a esperar `segundos` (por defecto houseCooldownSeconds de la ronda). */
+  casa(segundos?: number): void;
+  /** Cambia la ronda actual. */
+  ronda(n: number): void;
+  /** Pone una bolita especial bajo Polka-Man: el susto llega por el camino real (eat). */
+  susto(): void;
+  /** En susto: pone un fantasma asustado encima de Polka-Man (se lo come en el siguiente paso). */
+  comer(): void;
+  /** Lectura para las comprobaciones: fase, ronda, susto y modo de cada fantasma. */
+  estado(): { phase: string; round: number; lives: number; frightTimer: number; ghosts: Array<{ mode: string; houseTimer: number }> };
+  /** Estado del sonido (lo agrega attachAudioDebug). */
+  sonido?(): AudioDebugState;
+}
+
+/** Agrega `sonido()` a window.__polka (solo existe con `?debug`). */
+export function attachAudioDebug(audio: GameAudio): void {
+  if (window.__polka) window.__polka.sonido = () => audio.debugState();
 }
 
 declare global {
@@ -34,6 +57,7 @@ declare global {
 /** Envuelve el Hub. Sin `?debug` en la URL devuelve el mismo Hub, sin tocar nada. */
 export function withDebug(hub: Hub, state: GameState): Hub {
   if (!new URLSearchParams(location.search).has('debug')) return hub;
+  const maze = parseMaze(MAZE);
 
   let over: Partial<HubState> = {};
   let rows: RankingRow[] | null = null;
@@ -99,6 +123,48 @@ export function withDebug(hub: Hub, state: GameState): Hub {
       rows = null;
       mine = null;
       notify();
+    },
+    morir() {
+      if (state.phase !== 'jugando') return;
+      const g = state.ghosts[0];
+      if (!g) return;
+      g.mode = 'normal';
+      g.houseTimer = 0;
+      g.pos = { x: state.player.pos.x, y: state.player.pos.y };
+    },
+    casa(segundos) {
+      const g = state.ghosts[0];
+      if (!g) return;
+      g.mode = 'casa';
+      g.houseTimer = segundos ?? houseCooldownSeconds(state.round);
+      g.pos = houseCenter(maze);
+      g.dir = 'abajo';
+      g.lastTile = -1;
+    },
+    ronda(n) {
+      state.round = n;
+    },
+    susto() {
+      const i = tileIndex(maze, Math.round(state.player.pos.x), Math.round(state.player.pos.y));
+      state.orbs.delete(i);
+      state.power.add(i);
+    },
+    comer() {
+      if (state.phase !== 'jugando' || state.frightTimer <= 0) return;
+      const g = state.ghosts.find((x) => x.mode !== 'ojos') ?? state.ghosts[0];
+      if (!g) return;
+      g.mode = 'asustado';
+      g.houseTimer = 0;
+      g.pos = { x: state.player.pos.x, y: state.player.pos.y };
+    },
+    estado() {
+      return {
+        phase: state.phase,
+        round: state.round,
+        lives: state.lives,
+        frightTimer: state.frightTimer,
+        ghosts: state.ghosts.map((g) => ({ mode: g.mode, houseTimer: g.houseTimer })),
+      };
     },
   };
 

@@ -1,4 +1,4 @@
-// Pantalla de inicio (fase 'titulo'): POLKA-MAN, Jugar, Conectar cuenta (recomendado), Ranking y Username.
+// Pantalla de inicio (fase 'titulo'): POLKA-MAN, Jugar, Conectar cuenta (recomendado), Ranking, Username y Sonido.
 // Opaca y a pantalla completa. Jugar sin cuenta muestra una sola vez el aviso «Sin cuenta no se guardará tu récord».
 import { start, type GameState } from '../engine/game';
 import type { HostPhase, Hub } from '../hub/hub';
@@ -106,6 +106,8 @@ export function createInicio(
     onUsername(): void;
     /** Al abrir o cerrar el aviso, antes de mover el foco (app.ts reajusta las capas). */
     onToggle?: () => void;
+    /** Toggles de Música y Efectos; van al final de la caja. */
+    sonido?: HTMLElement;
   },
 ): Inicio {
   const { state, hub } = opts;
@@ -153,6 +155,7 @@ export function createInicio(
   row.append(ranking, username);
 
   box.append(title, help, jugar, suggestion, connect, status, row);
+  if (opts.sonido) box.append(opts.sonido);
   element.append(box);
 
   // Aviso «sin cuenta»: diálogo opaco encima de la pantalla de inicio.
