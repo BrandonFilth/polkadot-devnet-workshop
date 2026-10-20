@@ -72,7 +72,9 @@ export function createOverlay(parent: HTMLElement, state: GameState, parts: Over
     element.scrollTop = 0;
     if (label !== null) {
       button.textContent = label;
-      button.focus({ preventScroll: true });
+      // No le quita el foco al menú ni al modal de username (cerraría el teclado del celular).
+      const inDialog = document.activeElement?.closest?.('.menu, .modal');
+      if (!inDialog) button.focus({ preventScroll: true });
     }
   };
 
@@ -91,7 +93,7 @@ export function createOverlay(parent: HTMLElement, state: GameState, parts: Over
         case 'titulo':
           show(
             'POLKA-MAN',
-            'Flechas o WASD en la PC. Desliza o usa el D-pad en el celular.',
+            'Flechas o WASD en la PC. Desliza o usa el joystick en el celular.',
             'JUGAR',
             () => start(state),
             false,

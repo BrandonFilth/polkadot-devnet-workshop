@@ -1,6 +1,7 @@
 // Estado del Host y de la cuenta: Conectar, Reintentar o el aviso de fuera del Host.
 import type { Hub, HubState } from '../hub/hub';
 import { OUTSIDE_NOTICE } from './FinDePartida';
+import { createProgreso } from './Progreso';
 
 export interface Conexion {
   readonly element: HTMLElement;
@@ -20,7 +21,9 @@ export function createConexion(hub: Hub): Conexion {
   const result = document.createElement('p');
   result.className = 'conexion-result';
   result.hidden = true;
-  element.append(status, button, result);
+  // Conectando tu cuenta… → Esperando el permiso de gas… → Listo (o el error).
+  const progreso = createProgreso(hub, ['conectar']);
+  element.append(status, button, progreso.element, result);
 
   let connecting = false;
   let action: 'conectar' | 'reintentar' | null = null;
@@ -48,8 +51,10 @@ export function createConexion(hub: Hub): Conexion {
     render(hub.getState());
     try {
       const r = await hub.connect();
+      // Si el progreso ya muestra este resultado, no se repite abajo.
+      const p = hub.getState().progress;
       result.textContent = r.message;
-      result.hidden = false;
+      result.hidden = p?.op === 'conectar' && p.message === r.message;
     } finally {
       connecting = false;
       render(hub.getState());

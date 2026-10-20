@@ -1,30 +1,39 @@
 // Arma el DOM y conecta motor, dibujo, controles y componentes.
 import { createConexion } from './components/Conexion';
+import { createControles } from './components/Controles';
 import { createFinDePartida, type Mine } from './components/FinDePartida';
 import { createHud } from './components/Hud';
+import { createMenu, pauseForMenu } from './components/Menu';
 import { createOverlay } from './components/Overlay';
 import { createRanking } from './components/Ranking';
+import { attachTeclado } from './components/teclado';
 import { createUsername } from './components/Username';
 import { createHub } from './hub/hub';
 import { createGame, setPaused, update } from './engine/game';
 import { MAZE, parseMaze } from './engine/maze';
-import type { Dir } from './engine/types';
+import {
+  CONTROLS_HEIGHT_PX,
+  HUD_HEIGHT_PX,
+  JOYSTICK_KNOB_RADIUS_PX,
+  JOYSTICK_RADIUS_PX,
+  PAUSE_BUTTON_PX,
+} from './engine/rules';
 import { attachControls } from './input/controls';
 import { startLoop } from './loop';
 import { createRenderer } from './render/draw';
-
-const DPAD: Array<{ dir: Dir; label: string; path: string }> = [
-  { dir: 'arriba', label: 'Arriba', path: 'M12 5 L20 17 L4 17 Z' },
-  { dir: 'izquierda', label: 'Izquierda', path: 'M5 12 L17 4 L17 20 Z' },
-  { dir: 'abajo', label: 'Abajo', path: 'M12 19 L4 7 L20 7 Z' },
-  { dir: 'derecha', label: 'Derecha', path: 'M19 12 L7 20 L7 4 Z' },
-];
 
 const LANDSCAPE_PHONE = '(orientation: landscape) and (pointer: coarse)';
 
 export function startApp(root: HTMLElement): void {
   const maze = parseMaze(MAZE);
   const state = createGame(Date.now());
+
+  // Las medidas de la pantalla viven en rules.ts; el CSS las lee de aquí.
+  root.style.setProperty('--hud-h', `${HUD_HEIGHT_PX}px`);
+  root.style.setProperty('--controls-h', `${CONTROLS_HEIGHT_PX}px`);
+  root.style.setProperty('--joy-r', `${JOYSTICK_RADIUS_PX}px`);
+  root.style.setProperty('--knob-r', `${JOYSTICK_KNOB_RADIUS_PX}px`);
+  root.style.setProperty('--pause-size', `${PAUSE_BUTTON_PX}px`);
 
   const header = document.createElement('header');
   header.className = 'hud';
@@ -36,17 +45,8 @@ export function startApp(root: HTMLElement): void {
   canvas.setAttribute('aria-label', 'Tablero de Polka-Man');
   stage.append(canvas);
 
-  const dpad = document.createElement('nav');
-  dpad.className = 'dpad';
-  dpad.setAttribute('aria-label', 'Controles');
-  for (const { dir, label, path } of DPAD) {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.dataset.dir = dir;
-    button.setAttribute('aria-label', label);
-    button.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${path}"/></svg>`;
-    dpad.append(button);
-  }
+  // Joystick y botón de pausa estilo Atari (solo en pantallas táctiles, ver styles.css).
+  const controles = createControles(state);
 
   // Aviso de giro: fuera del escenario, a pantalla completa y por encima de todo.
   const rotate = document.createElement('div');
@@ -55,7 +55,7 @@ export function startApp(root: HTMLElement): void {
   rotate.innerHTML = '<p>Gira tu teléfono</p><p class="rotate-hint">Polka-Man se juega en vertical.</p>';
   rotate.hidden = true;
 
-  root.replaceChildren(header, stage, dpad, rotate);
+  root.replaceChildren(header, stage, controles.element, rotate);
 
   // Un solo Hub para toda la sesión. El juego no espera al Host.
   const hub = createHub();
@@ -80,10 +80,15 @@ export function startApp(root: HTMLElement): void {
 
   const ranking = createRanking(hub);
   const conexion = createConexion(hub);
-  const username = createUsername(stage, hub, () => {
+  // Modal y menú van en #app (no en el escenario) para que su overflow no los recorte.
+  const username = createUsername(root, hub, () => {
     refreshMine();
     ranking.load();
   });
+  const openUsername = () => {
+    pauseForMenu(state);
+    username.open(typeof mine === 'object' && mine ? mine.username : '');
+  };
   const fin = createFinDePartida({
     hub,
     score: () => state.score,
@@ -92,7 +97,7 @@ export function startApp(root: HTMLElement): void {
       refreshMine();
       ranking.load();
     },
-    openUsername: () => username.open(typeof mine === 'object' && mine ? mine.username : ''),
+    openUsername,
   });
 
   // Botón Username del título: solo con cuenta conectada.
@@ -100,7 +105,7 @@ export function startApp(root: HTMLElement): void {
   nameButton.type = 'button';
   nameButton.className = 'overlay-secondary';
   nameButton.hidden = true;
-  nameButton.addEventListener('click', () => username.open(typeof mine === 'object' && mine ? mine.username : ''));
+  nameButton.addEventListener('click', openUsername);
   let shownName: string | null = null;
   const syncNameButton = () => {
     const label =
@@ -124,8 +129,19 @@ export function startApp(root: HTMLElement): void {
     hadAccount = has;
   });
 
-  const hud = createHud(header, state, () =>
-    hub.getState().account !== null && typeof mine === 'object' && mine ? mine.best : null,
+  const menu = createMenu({
+    parent: root,
+    state,
+    hub,
+    mine: () => mine,
+    openUsername,
+    trigger: () => hud.menuButton,
+  });
+  const hud = createHud(
+    header,
+    state,
+    () => (hub.getState().account !== null && typeof mine === 'object' && mine ? mine.best : null),
+    () => (menu.isOpen ? menu.close() : menu.open()),
   );
   hud.sync();
   const overlay = createOverlay(stage, state, {
@@ -145,7 +161,8 @@ export function startApp(root: HTMLElement): void {
   });
   syncNameButton();
   overlay.sync();
-  attachControls(state, stage, dpad, busy);
+  attachControls(state, stage, busy);
+  attachTeclado(root);
 
   // Pausa automática: siempre setPaused(true). Nada reanuda solo.
   const landscape = window.matchMedia(LANDSCAPE_PHONE);
@@ -185,7 +202,9 @@ export function startApp(root: HTMLElement): void {
       overlay.sync();
       if (state.phase === 'fin') fin.sync();
       if (state.phase === 'titulo') syncNameButton();
+      if (menu.isOpen) menu.sync();
       hud.sync();
+      controles.sync();
       renderer.draw(scene, timeMs);
     },
   });

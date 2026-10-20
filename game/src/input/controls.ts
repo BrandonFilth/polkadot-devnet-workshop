@@ -1,4 +1,4 @@
-// Teclado, swipe sobre el escenario y D-pad. Solo traduce eventos a llamadas del motor.
+// Teclado y swipe sobre el escenario. El joystick vive en components/Controles.ts. Solo traduce eventos a llamadas del motor.
 import { setDirection, start, togglePause, type GameState } from '../engine/game';
 import type { Dir } from '../engine/types';
 import { swipeDirection } from './swipe';
@@ -14,19 +14,11 @@ const KEYS: Record<string, Dir> = {
   d: 'derecha',
 };
 
-const DIRS: readonly string[] = ['arriba', 'izquierda', 'abajo', 'derecha'];
-
-function isDir(value: string | undefined): value is Dir {
-  return value !== undefined && DIRS.includes(value);
-}
+/** Botones que se activan solos con Enter o Espacio: no deben empezar ni reiniciar la partida. */
+const OWN_BUTTONS = '.overlay button:not(.overlay-action), .hud button, .menu button, .controles button, .modal button';
 
 /** Conecta los controles. `busy()` = hay una firma en curso. Devuelve la función que los desconecta. */
-export function attachControls(
-  state: GameState,
-  stage: HTMLElement,
-  dpad: HTMLElement,
-  busy: () => boolean,
-): () => void {
+export function attachControls(state: GameState, stage: HTMLElement, busy: () => boolean): () => void {
   const onKey = (e: KeyboardEvent) => {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     const key = e.key.toLowerCase();
@@ -36,9 +28,9 @@ export function attachControls(
         e.preventDefault();
         return;
       }
-      // Un botón del overlay con foco (Guardar récord, Conectar…) se activa solo; no reinicia la partida.
+      // Un botón con foco (Guardar récord, Conectar, Menú…) se activa solo; no reinicia la partida.
       const target = e.target as Element | null;
-      if (target?.closest?.('.overlay button:not(.overlay-action)')) return;
+      if (target?.closest?.(OWN_BUTTONS)) return;
     }
     const dir = KEYS[key];
     if (dir) {
@@ -69,31 +61,11 @@ export function attachControls(
     if (origin && e.pointerId === origin.id) origin = null;
   };
 
-  // D-pad: reacciona al tocar (pointerdown); el clic sin puntero (teclado) también cuenta.
-  const dirOf = (e: Event): Dir | null => {
-    const button = (e.target as Element | null)?.closest<HTMLButtonElement>('button[data-dir]');
-    const dir = button?.dataset.dir;
-    return isDir(dir) ? dir : null;
-  };
-  const onPad = (e: PointerEvent) => {
-    const dir = dirOf(e);
-    if (!dir) return;
-    e.preventDefault();
-    setDirection(state, dir);
-  };
-  const onPadClick = (e: MouseEvent) => {
-    if (e.detail !== 0) return;
-    const dir = dirOf(e);
-    if (dir) setDirection(state, dir);
-  };
-
   window.addEventListener('keydown', onKey);
   stage.addEventListener('pointerdown', onDown);
   stage.addEventListener('pointermove', onMove);
   stage.addEventListener('pointerup', onUp);
   stage.addEventListener('pointercancel', onUp);
-  dpad.addEventListener('pointerdown', onPad);
-  dpad.addEventListener('click', onPadClick);
 
   return () => {
     window.removeEventListener('keydown', onKey);
@@ -101,7 +73,5 @@ export function attachControls(
     stage.removeEventListener('pointermove', onMove);
     stage.removeEventListener('pointerup', onUp);
     stage.removeEventListener('pointercancel', onUp);
-    dpad.removeEventListener('pointerdown', onPad);
-    dpad.removeEventListener('click', onPadClick);
   };
 }

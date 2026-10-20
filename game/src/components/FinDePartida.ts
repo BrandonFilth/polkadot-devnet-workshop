@@ -1,5 +1,6 @@
 // Bloque de 'fin': puntaje, récord, el botón que decide saveOptions() y el mensaje del último Result.
-import type { HostPhase, Hub } from '../hub/hub';
+import type { HostPhase, Hub, Result } from '../hub/hub';
+import { createProgreso } from './Progreso';
 
 export type SaveOption = 'fuera' | 'conectar' | 'cero' | 'cargando' | 'guardar' | 'no-supera';
 
@@ -67,21 +68,29 @@ export function createFinDePartida(opts: {
   nameLink.className = 'link-button';
   nameLink.textContent = 'Ponle nombre a tu récord';
   nameLink.addEventListener('click', () => opts.openUsername());
-  element.append(summary, notice, button, message, nameLink);
+  // Simulando… → Esperando tu firma en el teléfono… → … → Listo (o el error con su motivo).
+  const progreso = createProgreso(hub, ['guardar', 'conectar']);
+  element.append(summary, notice, button, progreso.element, message, nameLink);
 
   let lastMessage = '';
   let savedOk = false;
   let option: SaveOption = 'cero';
   let shownKey = '';
 
+  // Si el progreso ya muestra el resultado, no se repite en el mensaje.
+  const shown = (r: Result) => {
+    const p = hub.getState().progress;
+    return p !== null && (p.step === 'listo' || p.step === 'error') && p.message === r.message ? '' : r.message;
+  };
+
   button.addEventListener('click', async () => {
     if (hub.getState().busy) return;
     if (option === 'conectar') {
       const r = await hub.connect();
-      lastMessage = r.message;
+      lastMessage = shown(r);
     } else if (option === 'guardar') {
       const r = await hub.saveScore(opts.score());
-      lastMessage = r.message;
+      lastMessage = shown(r);
       if (r.ok) {
         savedOk = true;
         opts.onSaved();
@@ -121,6 +130,7 @@ export function createFinDePartida(opts: {
     enter() {
       lastMessage = '';
       savedOk = false;
+      progreso.reset();
       shownKey = '';
       sync();
     },

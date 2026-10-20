@@ -1,4 +1,6 @@
-/* Polka-Man: paleta, safe areas, layout, D-pad y overlays. Nada se carga de internet. */
+/* Polka-Man: paleta, safe areas, layout, joystick, menú y overlays. Nada se carga de internet.
+   Las medidas (--hud-h, --controls-h, --joy-r, --knob-r, --pause-size) las pone app.ts desde rules.ts;
+   los valores de aquí son solo respaldo. */
 :root {
   --bg: #050505;
   --ink: #f2f2ef;
@@ -7,6 +9,11 @@
   --accent: #ff2867;
   --mono: 'JetBrains Mono', Consolas, monospace;
   --display: 'Space Mono', 'JetBrains Mono', monospace;
+  --hud-h: 44px;
+  --controls-h: 132px;
+  --joy-r: 56px;
+  --knob-r: 26px;
+  --pause-size: 72px;
   color-scheme: dark;
 }
 
@@ -16,12 +23,12 @@
   box-sizing: border-box;
 }
 
-/* Reglas exactas de design §4.6: solo el área de juego y el D-pad bloquean gestos. */
+/* Reglas exactas de design §4.6: solo el área de juego y los controles bloquean gestos. */
 html, body { height: 100%; margin: 0; overflow: hidden; overscroll-behavior: none; }
 #app { position: fixed; inset: 0;
        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
-.stage, .dpad { touch-action: none; }
-.dpad button, .hud button { touch-action: manipulation; }
+.stage, .controles, .joystick { touch-action: none; }
+.controles button, .hud button { touch-action: manipulation; }
 .overlay { overflow-y: auto; touch-action: pan-y; overscroll-behavior: contain; }
 
 body {
@@ -36,7 +43,7 @@ body {
 /* Rejilla: HUD, escenario, controles. */
 #app {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-rows: var(--hud-h) minmax(0, 1fr) auto;
   background: var(--bg);
 }
 
@@ -44,13 +51,13 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  min-height: 48px;
-  padding: 8px 12px;
+  gap: 8px;
+  height: var(--hud-h);
+  padding: 0 4px 0 10px;
   border-bottom: 1px solid var(--line);
   font-family: var(--mono);
   font-weight: 500;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .hud-info {
@@ -67,8 +74,13 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+.hud-stats {
+  line-height: 1.2;
+}
+
 .hud-best {
-  font-size: 0.8em;
+  font-size: 11px;
+  line-height: 1.2;
   font-weight: 400;
   color: var(--muted);
 }
@@ -100,14 +112,48 @@ body {
   cursor: pointer;
 }
 
-.hud-pause svg {
+.hud-pause svg,
+.hud-menu svg {
   width: 20px;
   height: 20px;
   fill: currentColor;
 }
 
+/* Menú: siempre a la mano, arriba a la derecha. */
+.hud-menu {
+  flex: none;
+  min-width: 44px;
+  height: 40px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #0d0d0d;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.hud-menu[aria-expanded='true'] {
+  border-color: var(--accent);
+}
+
+/* En táctil la pausa es el botón rojo de abajo. */
+@media (pointer: coarse) {
+  .hud-pause { display: none; }
+}
+
+@media (max-width: 399px) {
+  .hud-menu span { display: none; }
+  .hud-menu { padding: 0; justify-content: center; width: 44px; }
+}
+
 @media (max-width: 360px) {
-  .hud { font-size: 14px; gap: 8px; }
+  .hud { font-size: 13px; gap: 6px; }
   .hud-life { width: 10px; height: 10px; }
 }
 
@@ -124,54 +170,116 @@ body {
   display: block;
 }
 
-/* D-pad: solo en pantallas táctiles. */
-.dpad {
+/* Controles estilo Atari: joystick a la izquierda, botón rojo de pausa a la derecha. Solo en táctil. */
+.controles {
   display: none;
-  grid-template-columns: repeat(3, 64px);
-  grid-template-rows: repeat(3, 64px);
-  grid-template-areas:
-    '. arriba .'
-    'izquierda . derecha'
-    '. abajo .';
-  gap: 4px;
-  justify-content: center;
-  padding: 8px 0 12px;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--controls-h);
+  padding: 0 24px;
+  border-top: 1px solid var(--line);
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 @media (pointer: coarse) {
-  .dpad {
-    display: grid;
+  .controles {
+    display: flex;
   }
 }
 
-.dpad button {
-  width: 64px;
-  height: 64px;
+/* Mientras escribes (teclado del celular abierto) los controles se esconden. */
+#app.teclado .controles {
+  display: none;
+}
+
+.joystick {
+  position: relative;
+  flex: none;
+  width: calc(var(--joy-r) * 2);
+  height: calc(var(--joy-r) * 2);
+  border: 2px solid var(--line);
+  border-radius: 50%;
+  background: radial-gradient(circle, #151515 0 55%, #0d0d0d 56% 100%);
+  cursor: grab;
+}
+
+/* Cruz de guía: las 4 direcciones del laberinto. */
+.joystick::before,
+.joystick::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: #2a2a2a;
+  transform: translate(-50%, -50%);
+}
+
+.joystick::before {
+  width: 2px;
+  height: 80%;
+}
+
+.joystick::after {
+  width: 80%;
+  height: 2px;
+}
+
+.joystick-knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 1;
+  width: calc(var(--knob-r) * 2);
+  height: calc(var(--knob-r) * 2);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffffff, var(--ink) 45%, #bdbdb8 100%);
+  box-shadow: 0 4px 0 #6b6b67, 0 0 0 1px #050505;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.joystick--activo {
+  border-color: var(--muted);
+  cursor: grabbing;
+}
+
+.joystick--activo .joystick-knob {
+  box-shadow: 0 2px 0 #6b6b67, 0 0 0 2px var(--accent);
+}
+
+/* Botón rojo redondo sobre una base negra, como el del joystick del Atari 2600. */
+.atari-pause {
+  flex: none;
+  width: var(--pause-size);
+  height: var(--pause-size);
+  margin-bottom: 6px;
   padding: 0;
   display: grid;
   place-items: center;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #0d0d0d;
-  color: var(--ink);
+  border: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ff6f98, var(--accent) 50%, #c81a4d 100%);
+  color: var(--bg);
+  box-shadow: 0 6px 0 #8f1035, 0 0 0 6px #111111, 0 0 0 7px var(--line);
   cursor: pointer;
 }
 
-.dpad button:active {
-  background: #1a1a1a;
-  border-color: var(--muted);
+.atari-pause:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #8f1035, 0 0 0 6px #111111, 0 0 0 7px var(--line);
 }
 
-.dpad button svg {
-  width: 24px;
-  height: 24px;
+.atari-pause svg {
+  width: 28px;
+  height: 28px;
   fill: currentColor;
 }
 
-.dpad [data-dir='arriba'] { grid-area: arriba; }
-.dpad [data-dir='izquierda'] { grid-area: izquierda; }
-.dpad [data-dir='abajo'] { grid-area: abajo; }
-.dpad [data-dir='derecha'] { grid-area: derecha; }
+.atari-pause:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 8px;
+}
 
 /* Overlays sobre el escenario. */
 .overlay {
@@ -258,7 +366,7 @@ button {
   outline-offset: 4px;
 }
 
-/* «Gira tu teléfono»: tapa toda la pantalla (HUD, escenario y D-pad). */
+/* «Gira tu teléfono»: tapa toda la pantalla (HUD, escenario y controles). */
 .rotate {
   position: fixed;
   inset: 0;
@@ -455,24 +563,37 @@ button:focus-visible {
   gap: 8px;
 }
 
+/* Modal de username: fijo al área visible (visualViewport, ver components/teclado.ts). */
 .modal {
-  position: absolute;
-  inset: 0;
-  z-index: 10;
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: var(--vv-top, 0px);
+  height: var(--vv-h, 100%);
+  z-index: 30;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 24px 16px;
+  padding: max(16px, env(safe-area-inset-top)) 16px 16px;
   overflow-y: auto;
   touch-action: pan-y;
   overscroll-behavior: contain;
-  background: rgba(5, 5, 5, 0.9);
+  background: rgba(5, 5, 5, 0.92);
 }
 
 .modal::before,
 .modal::after {
   content: '';
   flex: 1 0 0;
+}
+
+/* Con el teclado abierto: pegado arriba del área visible, sin espacio arriba. */
+#app.teclado .modal {
+  padding-top: 12px;
+}
+
+#app.teclado .modal::before {
+  display: none;
 }
 
 .modal[hidden] {
@@ -482,6 +603,7 @@ button:focus-visible {
 .modal-box {
   display: flex;
   flex-direction: column;
+  flex: none;
   gap: 12px;
   width: 100%;
   max-width: 360px;
@@ -489,6 +611,11 @@ button:focus-visible {
   border: 1px solid var(--line);
   border-radius: 12px;
   background: var(--bg);
+}
+
+#app.teclado .modal-box {
+  gap: 8px;
+  padding: 14px 16px;
 }
 
 .modal label {
@@ -528,4 +655,196 @@ button:focus-visible {
 
 .modal-actions button {
   min-width: 120px;
+}
+
+.modal-message:empty {
+  display: none;
+}
+
+/* Menú superior: hoja fija debajo del HUD, por encima del escenario y de los controles. */
+.menu {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  padding: calc(env(safe-area-inset-top) + var(--hud-h)) env(safe-area-inset-right) 0 env(safe-area-inset-left);
+  background: rgba(5, 5, 5, 0.6);
+  touch-action: pan-y;
+}
+
+.menu[hidden],
+.menu [hidden],
+.progreso[hidden] {
+  display: none;
+}
+
+.menu-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 480px;
+  max-height: calc(var(--vv-h, 100dvh) - env(safe-area-inset-top) - var(--hud-h) - 12px);
+  margin: 0 auto;
+  padding: 8px 16px 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--line);
+  border-top: 0;
+  border-radius: 0 0 12px 12px;
+  background: var(--bg);
+}
+
+.menu-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.menu-tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.menu-tab,
+.menu-close {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.menu-tab[aria-selected='true'] {
+  color: var(--ink);
+  box-shadow: inset 0 -3px 0 var(--accent);
+}
+
+.menu-close {
+  font-family: var(--mono);
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.menu-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.menu-text {
+  margin: 0;
+  font-size: 16px;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.menu-text--aviso {
+  max-width: 36ch;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.menu-hint {
+  margin: 0;
+  max-width: 36ch;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+/* Pasos de una firma: hecho (claro), actual (rojo, late) y pendiente (gris). */
+.progreso {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+  max-width: 320px;
+  text-align: left;
+}
+
+.progreso-pasos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.progreso-paso {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+}
+
+.progreso-paso::before {
+  content: '';
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--muted);
+  border-radius: 50%;
+}
+
+.progreso-paso--hecho {
+  color: var(--ink);
+}
+
+.progreso-paso--hecho::before {
+  border-color: var(--ink);
+  background: var(--ink);
+}
+
+.progreso-paso--actual {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.progreso-paso--actual::before {
+  border-color: var(--accent);
+  background: var(--accent);
+  animation: latido 1s ease-in-out infinite;
+}
+
+.progreso-paso--fallo {
+  color: var(--accent);
+  text-decoration: line-through;
+}
+
+.progreso-paso--fallo::before {
+  border-color: var(--accent);
+}
+
+@keyframes latido {
+  50% { opacity: 0.25; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progreso-paso--actual::before { animation: none; }
+}
+
+.progreso-linea,
+.overlay .progreso-linea {
+  margin: 0;
+  max-width: none;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--ink);
+}
+
+.progreso[data-tone='error'] .progreso-linea {
+  color: var(--accent);
 }

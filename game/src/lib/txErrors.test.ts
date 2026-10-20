@@ -55,6 +55,26 @@ describe('clasificación de errores de transacción', () => {
     expect(autoReconnect('connection')).toBe(true);
   });
 
+  // Textos exactos de @parity/product-sdk-tx 0.4.7 (no es dependencia directa: se arman Error con el mismo name/message).
+  const sdkError = (name: string, message: string) => Object.assign(new Error(message), { name });
+
+  it('errores reales del SDK: rechazada, sin respuesta y sin gas', () => {
+    expect(classify(sdkError('TxSigningRejectedError', 'Transaction signing was rejected.'), ONE).kind).toBe('rejected');
+    const timeout = sdkError('TxTimeoutError', 'Transaction timed out after 300s. The transaction may still be processing on-chain.');
+    expect(classify(timeout, ONE).kind).toBe('timeout');
+    expect(classify(sdkError('TxValidityError', 'Transaction failed before inclusion: Invalid.Payment'), 0n).kind).toBe('no-gas');
+    expect(classify(new Error('Conexión de firma: sin respuesta en 60 s'), ONE).kind).toBe('timeout');
+  });
+
+  it('rechazada, sin respuesta y otro dan mensajes distintos', () => {
+    const messages = [
+      classify(sdkError('TxSigningRejectedError', 'Transaction signing was rejected.'), ONE).message,
+      classify(sdkError('TxTimeoutError', 'Transaction timed out after 300s. The transaction may still be processing on-chain.'), ONE).message,
+      classify(new Error('algo raro'), ONE).message,
+    ];
+    expect(new Set(messages).size).toBe(3);
+  });
+
   it('cualquier otro error conserva el texto crudo para los detalles', () => {
     const p = classify({ type: 'Module', value: { type: 'Revive' } }, ONE);
     expect(p.kind).toBe('other');

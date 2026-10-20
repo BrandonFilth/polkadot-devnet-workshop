@@ -1,6 +1,21 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { LeaderboardContract } from '../contract/leaderboard';
-import { createHub, type HubDeps, type SignerAccount } from './hub';
+import type { LeaderboardContract, TxOptions } from '../contract/leaderboard';
+import { createHub, type Hub, type HubDeps, type SignerAccount } from './hub';
+import type { ProgressStep } from './progress';
+
+const sdkEvents = (opts?: TxOptions) => {
+  for (const status of ['signing', 'broadcasting', 'in-block']) opts?.onStatus?.(status);
+};
+
+/** Pasos visibles que pasan por el Hub, sin repetir los consecutivos. */
+function recordSteps(hub: Hub) {
+  const steps: ProgressStep[] = [];
+  hub.subscribe((s) => {
+    const step = s.progress?.step;
+    if (step && steps[steps.length - 1] !== step) steps.push(step);
+  });
+  return steps;
+}
 
 // Dobles sin red: el contrato vive en memoria, el reloj es instantáneo y el log es un espía.
 
@@ -21,11 +36,14 @@ function makeWorld() {
     submitScore: { query: vi.fn(async (..._a: unknown[]): Promise<{ success: boolean; value: unknown }> => ok<unknown>(undefined)) },
     setUsername: { query: vi.fn(async (..._a: unknown[]): Promise<{ success: boolean; value: unknown }> => ok<unknown>(undefined)) },
   };
-  const tx = vi.fn(async (arg: unknown, _opts?: unknown): Promise<{ ok: true; value: object } | { ok: false; error: unknown }> => {
+  // Como submitAndWatch de product-sdk-tx 0.4.7: signed → broadcasted → in-block y luego resuelve.
+  const tx = vi.fn(async (arg: unknown, opts?: TxOptions): Promise<{ ok: true; value: object } | { ok: false; error: unknown }> => {
+    sdkEvents(opts);
     store.best = arg as bigint;
     return { ok: true, value: {} };
   });
-  const usernameTx = vi.fn(async (name: unknown, _opts?: unknown): Promise<{ ok: true; value: object } | { ok: false; error: unknown }> => {
+  const usernameTx = vi.fn(async (name: unknown, opts?: TxOptions): Promise<{ ok: true; value: object } | { ok: false; error: unknown }> => {
+    sdkEvents(opts);
     store.username = name as string;
     return { ok: true, value: {} };
   });
@@ -199,5 +217,90 @@ describe('hub (sin red, con dobles)', () => {
     const { hub, world } = await connectedHub();
     world.reader.bestScore.query.mockRejectedValue(new Error('RPC caído'));
     await expect(hub.readMine()).rejects.toThrow('No se pudo leer tu récord');
+  });
+});
+
+// Textos exactos de product-sdk-tx 0.4.7.
+const sdkError = (name: string, message: string) => Object.assign(new Error(message), { name });
+const REJECTED = () => sdkError('TxSigningRejectedError', 'Transaction signing was rejected.');
+const TIMEOUT = () => sdkError('TxTimeoutError', 'Transaction timed out after 300s. The transaction may still be processing on-chain.');
+
+describe('hub: estados visibles de cada firma', () => {
+  it('11. guardar recorre simulando → firma → enviando → confirmando → actualizando → listo', async () => {
+    const { hub } = await connectedHub();
+    const steps = recordSteps(hub);
+    const r = await hub.saveScore(500);
+    expect(r.ok).toBe(true);
+    expect(steps).toEqual(['simulando', 'firma', 'enviando', 'confirmando', 'actualizando', 'listo']);
+    expect(hub.getState().progress).toMatchObject({ op: 'guardar', step: 'listo', message: 'Récord guardado: 500.' });
+  });
+
+  it('12. si la simulación revierte: simulando → error, sin firma', async () => {
+    const { hub, world } = await connectedHub();
+    world.reader.submitScore.query.mockResolvedValue({ success: false, value: { error: 'ScoreNotHigher', args: [300n, 200n] } });
+    const steps = recordSteps(hub);
+    await hub.saveScore(200);
+    expect(steps).toEqual(['simulando', 'error']);
+    expect(world.tx).not.toHaveBeenCalled();
+  });
+
+  it('13. firma rechazada sin eventos del SDK: firma → error «rejected», nunca «enviando»', async () => {
+    const { hub, world } = await connectedHub();
+    world.tx.mockResolvedValue({ ok: false, error: REJECTED() });
+    const steps = recordSteps(hub);
+    const r = await hub.saveScore(500);
+    expect(r).toMatchObject({ ok: false, kind: 'rejected' });
+    expect(steps).toEqual(['simulando', 'firma', 'error']);
+    expect(steps).not.toContain('enviando');
+    expect(hub.getState().progress).toMatchObject({ step: 'error', kind: 'rejected' });
+  });
+
+  it('14. sin respuesta y sin récord en la cadena: error «timeout», distinto de rechazada', async () => {
+    const { hub, world } = await connectedHub();
+    world.tx.mockResolvedValueOnce({ ok: false, error: TIMEOUT() });
+    const timeout = await hub.saveScore(500);
+    expect(timeout).toMatchObject({ ok: false, kind: 'timeout' });
+    expect(timeout.message).toMatch(/no respondió a tiempo/);
+    world.tx.mockResolvedValueOnce({ ok: false, error: REJECTED() });
+    const rejected = await hub.saveScore(500);
+    expect(rejected).toMatchObject({ ok: false, kind: 'rejected' });
+    expect(rejected.message).not.toBe(timeout.message);
+  });
+
+  it('15. sin gas: firma → permiso-gas → firma → … → listo', async () => {
+    const { hub, world } = await connectedHub({ readPgas: vi.fn(async () => 0n) });
+    world.tx.mockResolvedValueOnce({ ok: false, error: new Error('Transaction failed before inclusion: Invalid.Payment') });
+    const steps = recordSteps(hub);
+    const r = await hub.saveScore(500);
+    expect(r.ok).toBe(true);
+    expect(steps).toEqual(['simulando', 'firma', 'permiso-gas', 'firma', 'enviando', 'confirmando', 'actualizando', 'listo']);
+  });
+
+  it('16. conectar: conectando → permiso-gas → listo, ocupado mientras dura', async () => {
+    let allow: (v: 'Allocated') => void = () => undefined;
+    const deps = fakeDeps({ requestAllowance: vi.fn(() => new Promise<'Allocated'>((resolve) => (allow = resolve))) });
+    const hub = createHub(deps);
+    await hub.start();
+    const steps = recordSteps(hub);
+    const pending = hub.connect();
+    expect(hub.getState().busy).toBe(true);
+    await vi.waitFor(() => expect(deps.requestAllowance).toHaveBeenCalledTimes(1));
+    expect(await hub.connect()).toEqual({ ok: false, message: 'Espera a que termine la firma en curso.' });
+    expect(await hub.saveScore(100)).toEqual({ ok: false, message: 'Espera a que termine la firma en curso.' });
+    allow('Allocated');
+    expect(await pending).toEqual({ ok: true, message: 'Cuenta conectada.' });
+    expect(hub.getState().busy).toBe(false);
+    expect(steps).toEqual(['conectando', 'permiso-gas', 'listo']);
+  });
+
+  it('17. username sin récord guardado: se guarda sin tocar submitScore', async () => {
+    const { hub, world } = await connectedHub();
+    expect(world.store.best).toBe(0n);
+    const r = await hub.setUsername('ana_01');
+    expect(r).toEqual({ ok: true, message: 'Username guardado: ana_01.' });
+    expect(world.reader.submitScore.query).not.toHaveBeenCalled();
+    expect(world.tx).not.toHaveBeenCalled();
+    expect(world.usernameTx).toHaveBeenCalledTimes(1);
+    expect(hub.getState().progress).toMatchObject({ op: 'username', step: 'listo' });
   });
 });

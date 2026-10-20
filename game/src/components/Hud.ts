@@ -1,16 +1,20 @@
-// HUD en DOM: puntaje, ronda, récord, vidas y botón de pausa. Solo toca el DOM cuando cambia un valor.
+// HUD en DOM: puntaje, ronda, récord, vidas, botón de pausa (escritorio) y botón Menú. Solo toca el DOM cuando cambia un valor.
 import { togglePause, type GameState } from '../engine/game';
 
 export interface Hud {
   /** Ajusta el HUD al estado actual. */
   sync(): void;
+  /** Botón Menú (recibe el foco al cerrar el menú). */
+  readonly menuButton: HTMLButtonElement;
 }
+
+const MENU_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v2H4zM4 11h16v2H4zM4 16h16v2H4z"/></svg>';
 
 const PAUSE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3v14H7zM14 5h3v14h-3z"/></svg>';
 const PLAY_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5 L19 12 L8 19 Z"/></svg>';
 
 /** `record()` da el récord del jugador, o null sin cuenta, mientras se lee o si falló la lectura. */
-export function createHud(header: HTMLElement, state: GameState, record: () => bigint | null): Hud {
+export function createHud(header: HTMLElement, state: GameState, record: () => bigint | null, onMenu: () => void): Hud {
   const stats = document.createElement('p');
   stats.className = 'hud-stats';
   const score = document.createElement('span');
@@ -32,7 +36,16 @@ export function createHud(header: HTMLElement, state: GameState, record: () => b
   pause.className = 'hud-pause';
   pause.addEventListener('click', () => togglePause(state));
 
-  header.replaceChildren(info, lives, pause);
+  // Menú: Username y Ranking. En táctil la pausa vive en el botón rojo de abajo (styles.css oculta esta).
+  const menu = document.createElement('button');
+  menu.type = 'button';
+  menu.className = 'hud-menu';
+  menu.setAttribute('aria-label', 'Menú: username y ranking');
+  menu.setAttribute('aria-haspopup', 'dialog');
+  menu.innerHTML = `${MENU_ICON}<span>Menú</span>`;
+  menu.addEventListener('click', () => onMenu());
+
+  header.replaceChildren(info, lives, pause, menu);
 
   let shownBest: string | null = null;
   let shownScore: number | null = null;
@@ -41,6 +54,7 @@ export function createHud(header: HTMLElement, state: GameState, record: () => b
   let shownPaused: boolean | null = null;
 
   return {
+    menuButton: menu,
     sync() {
       const r = record();
       const bestText = `Récord: ${r === null ? '—' : r.toString()}`;

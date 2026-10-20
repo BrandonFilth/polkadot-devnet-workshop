@@ -11,7 +11,7 @@ vas a pedirle cada parte a tu agente con prompts cortos, una fase a la vez.
 
 ## 1. Qué vas a construir
 
-<img src="../img/cap5/polka-man-movil.png" alt="Polka-Man en el celular: HUD arriba, laberinto y D-pad" width="220" align="right">
+<img src="../img/cap5/polka-man-movil.png" alt="Polka-Man en el celular: menú y HUD arriba, laberinto grande, joystick y botón de pausa abajo" width="220" align="right">
 
 Una app y un smart contract dentro de Polkadot, construidos con IA, en tu propio dominio `.dot`.
 La app es un juego tipo Pac-Man para el celular, a tu manera.
@@ -49,8 +49,8 @@ polkadot-devnet-workshop/
     └── src/
         ├── engine/         lógica del juego sin pantalla: laberinto, reglas, fantasmas
         ├── render/         dibuja en el canvas
-        ├── input/          teclado, swipe y D-pad
-        ├── components/     HUD, ranking, fin de partida y username
+        ├── input/          teclado, swipe y joystick
+        ├── components/     HUD, menú, ranking, fin de partida, username y estados de firma
         ├── contract/       dirección, ABI y lecturas del contrato
         ├── hub/            conexión con el Host: cuenta, gas y firmas
         └── lib/            mensajes de error y formato
@@ -101,12 +101,14 @@ Puedes ver el contrato en [Blockscout](https://blockscout-testnet.polkadot.io/ad
 
 Prueba:
 
-- Moverte con swipe y D-pad.
+- Moverte con swipe o con el joystick.
 - Comer bolitas y bolitas especiales, y comerte a los fantasmas asustados.
 - Chocar con un fantasma y perder vidas hasta el fin de la partida.
 - Vaciar el laberinto y ver que cada ronda se pone más difícil.
 - Conectar tu cuenta.
 - Guardar un récord con una firma y verlo en el ranking.
+- Elegir tu username desde el menú, aunque todavía no tengas récord.
+- Ver el ranking desde el menú.
 
 Juega 5 minutos y anota 3 cosas que harías distinto. Después armas la tuya con los prompts, fase por
 fase ([sección 3](#3-cómo-vas-a-trabajar)).
@@ -476,6 +478,12 @@ Fase 8 ([prompt](../prompts/08-guarda-tu-record.md)). Esto es lo que tu app debe
    una firma a la vez.
 3. **Releer.** Vuelve a leer el récord del contrato, unas cuantas veces si hace falta, porque la red
    puede ir un poco atrás.
+
+Mientras tanto, la muestra dice en qué paso va: Simulando → Esperando tu firma en el teléfono →
+Enviando a la blockchain → Confirmando en la blockchain → Actualizando ranking → Listo, o el error con
+su motivo (firma rechazada, sin respuesta a tiempo, sin gas). Cada paso sale de un evento real del SDK
+(`onStatus` de `.tx()`) o de un paso propio de la app (la simulación y la relectura); ninguno se
+muestra si no pasó.
 
 El gas se paga en PGAS. Al conectar, tu app pide al Host un permiso de gas
 ([skill, `app-sdk.md`](https://github.com/BrandonFilth/polkadot-products-devnet/blob/main/skills/polkadot-products-devnet/references/app-sdk.md)).

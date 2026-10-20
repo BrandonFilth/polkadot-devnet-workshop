@@ -24,13 +24,14 @@ import {
   SIGN_TIMEOUT_MS,
 } from '../contract/config';
 import { revertMessage, INVALID_USERNAME_MESSAGE } from '../contract/errors';
-import { decodeScores, leaderboardAbi, toScoreArg, type LeaderboardContract, type QueryResult, type TxResult } from '../contract/leaderboard';
+import { decodeScores, leaderboardAbi, toScoreArg, type LeaderboardContract, type QueryResult, type TxOptions, type TxResult } from '../contract/leaderboard';
 import { formatPgas, PGAS_LOW, readPgas as readPgasRpc } from '../contract/pgas';
 import { topScores } from '../contract/ranking';
 import { createRpcContract, withHostFallback } from '../contract/rpcReader';
 import { describeError, withTimeout } from '../lib/format';
-import { autoReconnect, classifyTxError, type TxProblem } from '../lib/txErrors';
+import { autoReconnect, classifyTxError, type TxErrorKind, type TxProblem } from '../lib/txErrors';
 import { isValidUsername } from '../lib/username';
+import { advance, begin, finish, stepForSdkStatus, type Progress, type ProgressOp, type ProgressStep } from './progress';
 
 /* -------------------------------------------------------------------- API */
 
@@ -41,10 +42,14 @@ export interface HubState {
   message: string; // texto para el aviso de estado
   account: { h160: `0x${string}`; ss58: string } | null;
   allowance: 'Allocated' | 'Rejected' | 'NotAvailable' | null;
-  busy: boolean; // hay una firma en curso
+  busy: boolean; // hay una firma (o una solicitud del Host) en curso
+  /** Paso visible de la última interacción con el Host (hub/progress.ts). null = ninguna todavía. */
+  progress: Progress | null;
 }
 
-export type Result = { ok: true; message: string } | { ok: false; message: string; details?: string };
+export type Result =
+  | { ok: true; message: string }
+  | { ok: false; message: string; details?: string; kind?: TxErrorKind };
 
 export interface RankingRow {
   address: `0x${string}`;
@@ -152,6 +157,7 @@ export function createHub(deps?: HubDeps): Hub {
     account: null,
     allowance: null,
     busy: false,
+    progress: null,
   };
 
   let productId: string | null = null;
@@ -164,6 +170,22 @@ export function createHub(deps?: HubDeps): Hub {
   const set = (patch: Partial<HubState>) => {
     state = { ...state, ...patch };
     for (const listener of listeners) listener(state);
+  };
+
+  /** Pasa al siguiente paso visible. Solo hay progreso mientras dura una operación (busy). */
+  const step = (next: ProgressStep | null) => {
+    if (!next || !state.progress || !state.busy) return;
+    const progress = advance(state.progress, next);
+    if (progress !== state.progress) set({ progress });
+  };
+
+  /** Empieza una operación con el Host: busy + primer paso. */
+  const beginOp = (op: ProgressOp) => set({ busy: true, progress: begin(op) });
+
+  /** Termina la operación: último paso (Listo o el error) y busy en false, en un solo aviso. */
+  const endOp = (result: Result): Result => {
+    set({ busy: false, progress: state.progress ? finish(state.progress, result) : null });
+    return result;
   };
 
   /** (Re)abre la conexión del Host con la cadena, la que se usa para firmar. */
@@ -202,6 +224,7 @@ export function createHub(deps?: HubDeps): Hub {
 
   /** Nueva conexión con la cadena, nueva sesión de firma y la cuenta otra vez. Sin pedir gas. */
   const reconnect = async (): Promise<boolean> => {
+    step('conectando');
     await openChain();
     if (!chain) return false;
     try {
@@ -215,6 +238,7 @@ export function createHub(deps?: HubDeps): Hub {
 
   const askAllowance = async (): Promise<'Allocated' | 'Rejected' | 'NotAvailable'> => {
     let outcome: 'Allocated' | 'Rejected' | 'NotAvailable';
+    step('permiso-gas');
     try {
       outcome = await withTimeout(d.requestAllowance(), ALLOWANCE_TIMEOUT_MS, 'Permiso de gas');
     } catch (error) {
@@ -236,6 +260,8 @@ export function createHub(deps?: HubDeps): Hub {
     const run = async (): Promise<TxOutcome> => {
       const contract = writer;
       if (!contract) return { ok: false, error: new Error('Host provider is not connected') };
+      // Inferido: el SDK no avisa cuando el teléfono muestra la solicitud (ver hub/progress.ts).
+      step('firma');
       try {
         return await attempt(contract);
       } catch (error) {
@@ -279,8 +305,9 @@ export function createHub(deps?: HubDeps): Hub {
   };
 
   interface WriteSpec {
+    op: Extract<ProgressOp, 'guardar' | 'username'>;
     simulate: (who: SignerAccount) => Promise<QueryResult<unknown>>;
-    send: (c: LeaderboardContract) => Promise<TxOutcome>;
+    send: (c: LeaderboardContract, opts: TxOptions) => Promise<TxOutcome>;
     landed: (who: SignerAccount) => Promise<boolean>;
     rejected: string;
     saved: string;
@@ -291,37 +318,50 @@ export function createHub(deps?: HubDeps): Hub {
   /** Simular → firmar (con recuperación) → releer. Nunca dos a la vez. */
   const write = async (spec: WriteSpec): Promise<Result> => {
     const who = account;
-    set({ busy: true });
+    beginOp(spec.op); // empieza en «Simulando…»
+    // Los estados del SDK (signing, broadcasting, in-block) llegan por onStatus.
+    const opts: TxOptions = { ...txOptions, onStatus: (status) => step(stepForSdkStatus(status)) };
+    let result: Result;
     try {
       const preview = await spec.simulate(who!);
       if (!preview.success) {
         const message = revertMessage(preview.value) ?? spec.rejected;
         d.log.info('simulación revirtió', message);
-        return { ok: false, message };
-      }
-      const signed = await signWithRecovery(spec.send);
-      if (signed.ok) {
-        if (await reread(() => spec.landed(who!))) {
-          d.log.info(spec.saved);
-          return { ok: true, message: spec.saved };
+        result = { ok: false, message };
+      } else {
+        const signed = await signWithRecovery((c) => spec.send(c, opts));
+        if (signed.ok) {
+          step('actualizando');
+          if (await reread(() => spec.landed(who!))) {
+            d.log.info(spec.saved);
+            result = { ok: true, message: spec.saved };
+          } else {
+            d.log.warn('la relectura todavía no muestra el cambio');
+            result = { ok: true, message: spec.sent };
+          }
+        } else {
+          const { problem } = signed;
+          if (problem.kind === 'timeout') step('actualizando');
+          if (problem.kind === 'timeout' && (await reread(() => spec.landed(who!), 1))) {
+            d.log.warn('tx sin respuesta, pero ya está en la cadena');
+            result = { ok: true, message: spec.savedAfterTimeout };
+          } else {
+            result = { ok: false, message: problem.message, details: problem.raw, kind: problem.kind };
+          }
         }
-        d.log.warn('la relectura todavía no muestra el cambio');
-        return { ok: true, message: spec.sent };
       }
-      const { problem } = signed;
-      if (problem.kind === 'timeout' && (await reread(() => spec.landed(who!), 1))) {
-        d.log.warn('tx sin respuesta, pero ya está en la cadena');
-        return { ok: true, message: spec.savedAfterTimeout };
-      }
-      return { ok: false, message: problem.message, details: problem.raw };
     } catch (error) {
       d.log.warn('escritura', describeError(error));
-      return { ok: false, message: describeError(error) };
-    } finally {
-      set({ busy: false });
+      result = { ok: false, message: describeError(error) };
     }
+    return endOp(result);
   };
 
+  /*
+   * waitFor 'best' (igual que la app de referencia). En product-sdk-tx 0.4.7 la promesa solo se
+   * resuelve antes de finalizar con 'best-block'; con 'best' se resuelve al finalizar. Por eso, después
+   * de in-block, la pantalla sigue en «Confirmando en la blockchain…» hasta que .tx() termina.
+   */
   const txOptions = { waitFor: 'best' as const, timeoutMs: SIGN_TIMEOUT_MS };
 
   return {
@@ -371,29 +411,41 @@ export function createHub(deps?: HubDeps): Hub {
       if (state.host === 'fuera') return { ok: false, message: OUTSIDE };
       if (state.host !== 'listo' || !productId) return { ok: false, message: 'Todavía no hay conexión con la Polkadot App. Reintenta.' };
       if (state.busy) return { ok: false, message: BUSY };
-      if (chainReady) await chainReady;
-      if (!chain) await openChain();
-      if (!chain) {
-        d.log.error('connect sin cadena');
-        return { ok: false, message: NO_CHAIN };
-      }
+      // Conectar y el permiso de gas son solicitudes del Host: también una a la vez.
+      beginOp('conectar');
+      const run = async (): Promise<Result> => {
+        if (chainReady) await chainReady;
+        if (!chain) await openChain();
+        if (!chain) {
+          d.log.error('connect sin cadena');
+          return { ok: false, message: NO_CHAIN };
+        }
+        try {
+          await connectAccount();
+        } catch (error) {
+          d.log.warn('connect', describeError(error));
+          return { ok: false, message: `No se pudo conectar tu cuenta: ${describeError(error)}` };
+        }
+        const outcome = await askAllowance();
+        if (outcome === 'Rejected') {
+          d.log.warn('permiso de gas rechazado');
+          return { ok: false, message: 'Rechazaste el permiso de gas. Sin él no puedes guardar; toca Conectar otra vez.' };
+        }
+        if (outcome === 'NotAvailable') {
+          d.log.warn('permiso de gas no disponible ahora');
+          return { ok: true, message: 'Cuenta conectada. El gas se pedirá al guardar.' };
+        }
+        d.log.info('cuenta conectada');
+        return { ok: true, message: 'Cuenta conectada.' };
+      };
+      let result: Result;
       try {
-        await connectAccount();
+        result = await run();
       } catch (error) {
         d.log.warn('connect', describeError(error));
-        return { ok: false, message: `No se pudo conectar tu cuenta: ${describeError(error)}` };
+        result = { ok: false, message: `No se pudo conectar tu cuenta: ${describeError(error)}` };
       }
-      const outcome = await askAllowance();
-      if (outcome === 'Rejected') {
-        d.log.warn('permiso de gas rechazado');
-        return { ok: false, message: 'Rechazaste el permiso de gas. Sin él no puedes guardar; toca Conectar otra vez.' };
-      }
-      if (outcome === 'NotAvailable') {
-        d.log.warn('permiso de gas no disponible ahora');
-        return { ok: true, message: 'Cuenta conectada. El gas se pedirá al guardar.' };
-      }
-      d.log.info('cuenta conectada');
-      return { ok: true, message: 'Cuenta conectada.' };
+      return endOp(result);
     },
 
     async readTop(limit = 10) {
@@ -438,8 +490,9 @@ export function createHub(deps?: HubDeps): Hub {
         return { ok: false, message: 'Ese puntaje no se puede guardar.' };
       }
       return write({
+        op: 'guardar',
         simulate: (who) => d.reader.submitScore.query(arg, { from: who.h160Address, origin: who.address }),
-        send: (c) => c.submitScore.tx(arg, txOptions),
+        send: (c, opts) => c.submitScore.tx(arg, opts),
         landed: async (who) => (await readBest(who.h160Address)) >= arg,
         rejected: 'El contrato rechazó el puntaje.',
         saved: `Récord guardado: ${score}.`,
@@ -453,8 +506,9 @@ export function createHub(deps?: HubDeps): Hub {
       if (state.busy) return { ok: false, message: BUSY };
       if (!account || !writer) return { ok: false, message: NO_ACCOUNT };
       return write({
+        op: 'username',
         simulate: (who) => d.reader.setUsername.query(name, { from: who.h160Address, origin: who.address }),
-        send: (c) => c.setUsername.tx(name, txOptions),
+        send: (c, opts) => c.setUsername.tx(name, opts),
         landed: async (who) => (await readUsername(who.h160Address)) === name,
         rejected: 'El contrato rechazó el username.',
         saved: `Username guardado: ${name}.`,

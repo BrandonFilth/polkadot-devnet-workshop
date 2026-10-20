@@ -97,6 +97,38 @@ export const FRIGHT_BLINK_PERIOD = 0.2;
 /** Puntos por cada fantasma comido en un mismo susto, en orden. */
 export const GHOST_CHAIN_POINTS: readonly number[] = [200, 400, 800, 1600];
 
+/* ------------------------------------------------ pantalla y controles */
+
+/** Casillas del anillo exterior de pared que no se dibujan en cada lado (solo dibujo; el laberinto no cambia). */
+export const VIEW_CROP_TILES = 0.5;
+
+/** Tamaño mínimo de casilla, en px CSS. */
+export const MIN_TILE_PX = 8;
+
+/** Alto de la barra superior (HUD + menú), en px CSS. */
+export const HUD_HEIGHT_PX = 44;
+
+/** Alto de la zona de controles táctiles (joystick y pausa), en px CSS. */
+export const CONTROLS_HEIGHT_PX = 132;
+
+/** Radio de la base del joystick, en px CSS. */
+export const JOYSTICK_RADIUS_PX = 56;
+
+/** Radio de la perilla del joystick, en px CSS. */
+export const JOYSTICK_KNOB_RADIUS_PX = 26;
+
+/** Zona muerta del joystick, como fracción del radio: más cerca del centro no cambia la dirección. */
+export const JOYSTICK_DEAD_ZONE = 0.3;
+
+/** Diámetro del botón de pausa estilo Atari, en px CSS. */
+export const PAUSE_BUTTON_PX = 72;
+
+/** Diferencia mínima de alto, en px CSS, para decir que el teclado del celular está abierto. */
+export const KEYBOARD_MIN_PX = 120;
+
+/** Milisegundos que el modal de username deja ver «Listo» antes de cerrarse. */
+export const DONE_VISIBLE_MS = 1200;
+
 /** Fantasmas en la ronda `round`. */
 export function ghostCount(round: number): number {
   return Math.min(GHOST_MAX, GHOST_START + Math.floor((round - 1) / GHOST_EVERY_ROUNDS));

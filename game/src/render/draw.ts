@@ -2,8 +2,9 @@
 import { PERSONALITIES } from '../engine/ghosts';
 import { tileAt } from '../engine/maze';
 import { DIR_VECTORS } from '../engine/movement';
-import { FRIGHT_BLINK_PERIOD, FRIGHT_BLINK_SECONDS } from '../engine/rules';
+import { FRIGHT_BLINK_PERIOD, FRIGHT_BLINK_SECONDS, MIN_TILE_PX } from '../engine/rules';
 import type { Dir, GhostMode, Maze, Vec } from '../engine/types';
+import { mazeLayout } from './layout';
 
 const BG = '#050505';
 const WALL_FILL = '#111111';
@@ -13,7 +14,6 @@ const ORB = '#f2f2ef';
 const POWER = '#ff2867';
 const DOOR = '#8b8b86';
 const MAX_DPR = 3;
-const MIN_TILE = 8;
 
 const PLAYER = '#ff2867';
 const PLAYER_RADIUS = 0.45;
@@ -65,27 +65,25 @@ export interface Renderer {
   destroy(): void;
 }
 
-/** Tamaño de casilla para un escenario de w × h px CSS. */
-export function tileSize(maze: Maze, w: number, h: number): number {
-  return Math.max(MIN_TILE, Math.floor(Math.min(w / maze.width, h / maze.height)));
-}
-
 /** Crea el dibujante. Escucha el tamaño de `stage` con ResizeObserver. */
 export function createRenderer(stage: HTMLElement, canvas: HTMLCanvasElement, maze: Maze): Renderer {
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('El navegador no permite dibujar en canvas 2D.');
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-  let tile = MIN_TILE;
+  let tile = MIN_TILE_PX;
+  let offset = 0; // px CSS del anillo exterior recortado (render/layout.ts)
   let dpr = 1;
   let walls: HTMLCanvasElement | null = null;
 
   const resize = () => {
     const rect = stage.getBoundingClientRect();
-    tile = tileSize(maze, rect.width, rect.height);
+    const layout = mazeLayout(maze.width, maze.height, rect.width, rect.height);
+    tile = layout.tile;
+    offset = layout.offset;
     dpr = Math.min(MAX_DPR, window.devicePixelRatio || 1);
-    const w = maze.width * tile;
-    const h = maze.height * tile;
+    const w = layout.cssWidth;
+    const h = layout.cssHeight;
     canvas.style.width = `${w}px`;
     canvas.style.height = `${h}px`;
     canvas.width = Math.round(w * dpr);
@@ -105,8 +103,10 @@ export function createRenderer(stage: HTMLElement, canvas: HTMLCanvasElement, ma
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.fillStyle = BG;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      if (walls) ctx.drawImage(walls, 0, 0);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      // Todo se dibuja en coordenadas del laberinto completo, corrido por el recorte del borde.
+      const shift = -offset * dpr;
+      if (walls) ctx.drawImage(walls, shift, shift);
+      ctx.setTransform(dpr, 0, 0, dpr, shift, shift);
       drawOrbs(ctx, maze, tile, scene, motion.matches ? null : timeMs);
       if (scene.player) drawPlayer(ctx, maze, tile, scene.player);
       if (scene.ghosts) {

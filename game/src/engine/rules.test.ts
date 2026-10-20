@@ -15,7 +15,16 @@ import {
   GHOST_SPEED_GROWTH,
   ghostCount,
   ghostSpeed,
+  CONTROLS_HEIGHT_PX,
+  HUD_HEIGHT_PX,
+  JOYSTICK_DEAD_ZONE,
+  JOYSTICK_KNOB_RADIUS_PX,
+  JOYSTICK_RADIUS_PX,
+  KEYBOARD_MIN_PX,
+  MIN_TILE_PX,
+  PAUSE_BUTTON_PX,
   PLAYER_SPEED,
+  VIEW_CROP_TILES,
 } from './rules';
 
 const round3 = (v: number) => Math.round(v * 1000) / 1000;
@@ -59,6 +68,21 @@ describe('rules: dificultad', () => {
     expect(ghostCount(r)).toBe(count);
     expect(round3(ghostSpeed(r))).toBe(speed);
     expect(round3(frightenedSeconds(r))).toBe(fright);
+  });
+
+  it('pantalla y controles con los valores pedidos', () => {
+    expect(VIEW_CROP_TILES).toBe(0.5);
+    expect(MIN_TILE_PX).toBe(8);
+    expect(HUD_HEIGHT_PX).toBe(44);
+    expect(CONTROLS_HEIGHT_PX).toBe(132);
+    expect(JOYSTICK_RADIUS_PX).toBe(56);
+    expect(JOYSTICK_KNOB_RADIUS_PX).toBe(26);
+    expect(JOYSTICK_DEAD_ZONE).toBe(0.3);
+    expect(PAUSE_BUTTON_PX).toBe(72);
+    expect(KEYBOARD_MIN_PX).toBe(120);
+    // El joystick y la pausa caben en la zona de controles.
+    expect(JOYSTICK_RADIUS_PX * 2).toBeLessThan(CONTROLS_HEIGHT_PX);
+    expect(PAUSE_BUTTON_PX).toBeLessThan(CONTROLS_HEIGHT_PX);
   });
 
   it('el tope de velocidad se alcanza en la ronda 9', () => {

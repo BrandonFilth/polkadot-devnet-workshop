@@ -2,6 +2,8 @@
 import { INVALID_USERNAME_MESSAGE } from '../contract/errors';
 import type { Hub } from '../hub/hub';
 import { isValidUsername } from '../lib/username';
+import { DONE_VISIBLE_MS } from '../engine/rules';
+import { createProgreso } from './Progreso';
 
 export interface Username {
   /** Abre el modal con el username actual. */
@@ -53,7 +55,9 @@ export function createUsername(parent: HTMLElement, hub: Hub, onSaved: () => voi
   cancel.textContent = 'Cancelar';
   actions.append(submit, cancel);
 
-  dialog.append(title, label, input, message, actions);
+  const progreso = createProgreso(hub, ['username']);
+
+  dialog.append(title, label, input, message, progreso.element, actions);
   backdrop.append(dialog);
   parent.append(backdrop);
 
@@ -61,7 +65,7 @@ export function createUsername(parent: HTMLElement, hub: Hub, onSaved: () => voi
   let sending = false;
 
   const close = () => {
-    if (backdrop.hidden) return;
+    if (backdrop.hidden || sending) return;
     backdrop.hidden = true;
     returnFocus?.focus({ preventScroll: true });
     returnFocus = null;
@@ -85,21 +89,35 @@ export function createUsername(parent: HTMLElement, hub: Hub, onSaved: () => voi
       input.focus();
       return;
     }
+    // Mientras se firma no se puede cancelar ni enviar otra vez; el progreso dice en qué paso va.
     sending = true;
     submit.disabled = true;
-    message.textContent = 'Firma en tu teléfono…';
+    cancel.disabled = true;
+    input.readOnly = true;
+    message.textContent = '';
+    progreso.reset();
+    let saved = false;
     try {
       const r = await hub.setUsername(name);
       if (r.ok) {
-        message.textContent = '';
-        close();
-        onSaved();
+        saved = true;
+        // Deja ver «Listo» un momento antes de cerrar.
+        await new Promise((resolve) => setTimeout(resolve, DONE_VISIBLE_MS));
       } else {
-        message.textContent = r.message;
+        // El progreso ya muestra el error con su motivo (rechazada, sin respuesta…); aquí solo lo que no pasó por él.
+        const p = hub.getState().progress;
+        const covered = p?.op === 'username' && p.step === 'error' && p.message === r.message;
+        message.textContent = covered ? '' : r.message;
       }
     } finally {
       sending = false;
       submit.disabled = false;
+      cancel.disabled = false;
+      input.readOnly = false;
+    }
+    if (saved) {
+      close();
+      onSaved();
     }
   });
 
@@ -110,7 +128,7 @@ export function createUsername(parent: HTMLElement, hub: Hub, onSaved: () => voi
     e.stopPropagation();
     if (e.key === 'Escape') {
       e.preventDefault();
-      close();
+      close(); // no cierra mientras se firma
       return;
     }
     if (e.key !== 'Tab') return;
@@ -133,6 +151,7 @@ export function createUsername(parent: HTMLElement, hub: Hub, onSaved: () => voi
       returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
       input.value = current;
       message.textContent = '';
+      progreso.reset();
       backdrop.hidden = false;
       input.focus();
       input.select();
