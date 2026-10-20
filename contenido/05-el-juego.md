@@ -11,7 +11,7 @@ vas a pedirle cada parte a tu agente con prompts cortos, una fase a la vez.
 
 ## 1. Qué vas a construir
 
-<img src="../img/cap5/polka-man-movil.png" alt="Polka-Man en el celular: menú y HUD arriba, laberinto grande, joystick y botón de pausa abajo" width="220" align="right">
+<img src="../img/cap5/polka-man-movil.png" alt="Polka-Man en el celular: menú y HUD arriba, laberinto grande, joystick flotante bajo el dedo y botón de pausa abajo" width="220" align="right">
 
 Una app y un smart contract dentro de Polkadot, construidos con IA, en tu propio dominio `.dot`.
 La app es un juego tipo Pac-Man para el celular, a tu manera.
@@ -93,7 +93,7 @@ Son las decisiones de la muestra; tú tomas las tuyas en la fase 0.
 | Susto | Huyen al azar a media velocidad; 6 s en la ronda 1, 0.5 s menos cada ronda, mínimo 2 s |
 | Salida de la casa | Uno cada 3 s |
 | Fantasma comido | Vuelve a la casa como ojos y espera 5 s antes de salir; 0.5 s menos cada ronda, mínimo 2 s |
-| Controles | Joystick tipo Atari con diagonales y botón redondo de pausa; swipe; flechas o WASD |
+| Controles | Joystick flotante con diagonales (aparece donde tocas abajo y sigue al dedo; al soltar se desvanece y sigues recto; vibra un poco al cambiar de dirección si el teléfono puede) y botón redondo de pausa; swipe; flechas o WASD |
 | Sonido | Efectos 8 bits y música original hechos en código (Web Audio, sin archivos); empiezan con el primer toque; Música y Efectos se silencian por separado y se recuerdan en el dispositivo |
 | Marcador | El mejor puntaje se guarda en el contrato `Leaderboard` |
 
@@ -119,8 +119,9 @@ del HUD.
 Prueba:
 
 - Conectar tu cuenta desde la pantalla de inicio.
-- Moverte con el joystick (también en diagonal: si lo inclinas arriba y a la derecha, gira a la
-  derecha en el primer cruce donde se pueda), con swipe o con las flechas.
+- Moverte con el joystick: toca en la zona de abajo y arrastra. Aparece bajo tu dedo y lo sigue
+  si te alejas; también en diagonal (arriba y a la derecha gira a la derecha en el primer cruce
+  donde se pueda). Al soltar, Polka-Man sigue hasta la pared. También con swipe o con las flechas.
 - Comer bolitas y bolitas especiales, y comerte a los fantasmas asustados.
 - Chocar con un fantasma y perder vidas hasta el fin de la partida.
 - Vaciar el laberinto y ver que cada ronda se pone más difícil.
@@ -288,7 +289,7 @@ Así se reparte este juego en fases. Cada fase es una vuelta del ciclo de la
 |---|---|---|---|---|
 | 0 | [Define tu juego](../prompts/00-define-tu-juego.md) | `SPEC.md` sin huecos | — | 15–20 min |
 | 1 | [Tu proyecto](../prompts/01-proyecto.md) | Proyecto que arranca, `AGENTS.md`, un canvas y un test | Navegador | 20–25 min |
-| 2 | [Laberinto y movimiento](../prompts/02-laberinto.md) | Laberinto y personaje con teclado, swipe y joystick con diagonales, con pausa | Navegador | 30–35 min |
+| 2 | [Laberinto y movimiento](../prompts/02-laberinto.md) | Laberinto y personaje con teclado, swipe y joystick flotante con diagonales, con pausa | Navegador | 30–35 min |
 | 3 | [Bolitas, puntaje y rondas](../prompts/03-puntos.md) | Comer bolitas, HUD y nueva ronda al vaciar | Navegador | 20–25 min |
 | 4 | [Fantasmas y vidas](../prompts/04-fantasmas.md) | Fantasmas por color con una sola regla, vidas y pantalla de fin | Navegador | 30–40 min |
 | 5 | [Bolitas especiales y dificultad](../prompts/05-poder-y-dificultad.md) | Fantasmas asustados, espera en la casa y dificultad por ronda con tope | Navegador | 25–35 min |
@@ -311,11 +312,13 @@ el agente la "limpia"? Error típico: crea el proyecto encima y borra lo que ya 
 
 ### Fase 2 · Laberinto y movimiento
 
-El laberinto en el canvas y el personaje que se mueve con teclado, swipe y un joystick tipo Atari
-que entiende diagonales, con un botón redondo de pausa ([prompt](../prompts/02-laberinto.md)).
-Piensa: ¿qué pasa si el jugador pide girar justo antes del cruce, o inclina el joystick casi arriba
-y un poco a la derecha? Error típico: el joystick solo entiende arriba, abajo, izquierda y derecha,
-o la pausa se quita sola al volver a la pestaña.
+El laberinto en el canvas y el personaje que se mueve con teclado, swipe y un joystick flotante:
+aparece donde pones el pulgar, lo sigue si te alejas y entiende diagonales; si el teléfono puede,
+vibra un poco al cambiar de dirección. Con un botón redondo de pausa
+([prompt](../prompts/02-laberinto.md)). Piensa: ¿qué pasa si el jugador pide girar justo antes del
+cruce, o arrastra casi arriba y un poco a la derecha? Error típico: el joystick queda fijo y el
+pulgar se sale de él, al soltar el personaje se detiene, la página se mueve al arrastrar o la
+pausa se quita sola al volver a la pestaña.
 
 ### Fase 3 · Bolitas, puntaje y rondas
 
