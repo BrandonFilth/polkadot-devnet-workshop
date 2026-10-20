@@ -115,6 +115,44 @@ export const HOUSE_BLINK_PERIOD = 0.15;
 /** Máximo de eventos guardados en GameState.events; al pasarse se descarta el más viejo. */
 export const MAX_EVENTS = 64;
 
+/* ------------------------------------------------ animaciones (solo dibujo) */
+
+/** Apertura de la boca (0 cerrada, 1 abierta) cuando Polka-Man está quieto. */
+export const MOUTH_STOPPED_OPEN = 0.5;
+
+/** Segundos del inicio de «muriendo» en que Polka-Man queda congelado antes de colapsar. */
+export const DEATH_HOLD_SECONDS = 0.2;
+
+/** Duración del destello al comer una bolita, en segundos. */
+export const DOT_BURST_SECONDS = 0.18;
+
+/** Radio final del destello de una bolita, en casillas. */
+export const DOT_BURST_RADIUS = 0.35;
+
+/** Duración del destello al comer una bolita especial, en segundos. */
+export const POWER_BURST_SECONDS = 0.32;
+
+/** Radio final del destello de una bolita especial, en casillas. */
+export const POWER_BURST_RADIUS = 0.9;
+
+/** Grosor del anillo del destello especial, en casillas. */
+export const POWER_BURST_RING = 0.12;
+
+/** Segundos que se ven los puntos flotantes al comer un fantasma. */
+export const GHOST_POINTS_SECONDS = 0.7;
+
+/** Casillas que suben los puntos flotantes. */
+export const GHOST_POINTS_RISE = 0.6;
+
+/** Alto del texto de los puntos flotantes, en casillas. */
+export const GHOST_POINTS_FONT = 0.6;
+
+/** Con prefers-reduced-motion los destellos no crecen: quedan fijos en esta fracción del radio. */
+export const REDUCED_MOTION_BURST_FACTOR = 0.4;
+
+/** Opacidad del cuerpo del fantasma en casa cuando parpadea antes de salir. */
+export const HOUSE_BLINK_ALPHA = 0.35;
+
 /* ------------------------------------------------ pantalla y controles */
 
 /** Casillas del anillo exterior de pared que no se dibujan en cada lado (solo dibujo; el laberinto no cambia). */

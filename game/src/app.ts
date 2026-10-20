@@ -11,7 +11,7 @@ import { createTxEstado } from './components/TxEstado';
 import { createUsername } from './components/Username';
 import { withDebug } from './dev/debug';
 import { createHub } from './hub/hub';
-import { createGame, goToTitle, setPaused, update } from './engine/game';
+import { createGame, drainEvents, goToTitle, setPaused, update } from './engine/game';
 import { MAZE, parseMaze } from './engine/maze';
 import {
   CONTROLS_HEIGHT_PX,
@@ -23,7 +23,8 @@ import {
 } from './engine/rules';
 import { attachControls } from './input/controls';
 import { startLoop } from './loop';
-import { createRenderer } from './render/draw';
+import { createRenderer, type Scene } from './render/draw';
+import { addFromEvents, prune, type Effect } from './render/effects';
 import { portraitSplit } from './render/layout';
 
 const LANDSCAPE_PHONE = '(orientation: landscape) and (pointer: coarse)';
@@ -254,13 +255,17 @@ export function startApp(root: HTMLElement): void {
   window.addEventListener('blur', () => setPaused(state, true));
 
   const renderer = createRenderer(stage, canvas, maze);
+  // Destellos y puntos flotantes en curso (decorativos: usan el tiempo del cuadro).
+  const effects: Effect[] = [];
   // El dibujo usa los orbes que quedan en el estado; start() y cada ronda los reemplazan.
-  const scene = {
+  const scene: Scene = {
     orbs: state.orbs,
     power: state.power,
     player: state.player,
     ghosts: state.ghosts,
     frightTimer: state.frightTimer,
+    death: null,
+    effects,
   };
 
   startLoop({
@@ -270,6 +275,13 @@ export function startApp(root: HTMLElement): void {
       update(state, dt);
     },
     render(timeMs) {
+      // Un solo drainEvents por cuadro: estos mismos eventos son los que consume el audio.
+      const events = drainEvents(state);
+      addFromEvents(effects, events, maze, timeMs);
+      prune(effects, timeMs);
+      // La muerte se dibuja desde el phaseTimer de 'muriendo': en pausa queda congelada.
+      const dying = state.phase === 'muriendo' || (state.phase === 'pausa' && state.resumePhase === 'muriendo');
+      scene.death = dying ? state.phaseTimer : null;
       scene.orbs = state.orbs;
       scene.power = state.power;
       scene.player = state.player;

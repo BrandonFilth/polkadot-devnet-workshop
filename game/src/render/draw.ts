@@ -2,8 +2,17 @@
 import { PERSONALITIES } from '../engine/ghosts';
 import { tileAt } from '../engine/maze';
 import { DIR_VECTORS } from '../engine/movement';
-import { FRIGHT_BLINK_PERIOD, FRIGHT_BLINK_SECONDS, MIN_TILE_PX } from '../engine/rules';
+import {
+  FRIGHT_BLINK_PERIOD,
+  FRIGHT_BLINK_SECONDS,
+  GHOST_POINTS_FONT,
+  HOUSE_BLINK_ALPHA,
+  MIN_TILE_PX,
+  POWER_BURST_RING,
+} from '../engine/rules';
 import type { Dir, GhostMode, Maze, Vec } from '../engine/types';
+import { deathFrame, houseBlink, mouthHalf, mouthOpen } from './anim';
+import { effectFrame, type Effect } from './effects';
 import { mazeLayout } from './layout';
 
 const BG = '#050505';
@@ -17,9 +26,10 @@ const MAX_DPR = 3;
 
 const PLAYER = '#ff2867';
 const PLAYER_RADIUS = 0.45;
-/** Media apertura de la boca, en fracciones de π: cerrada y abierta. */
-const MOUTH_MIN = 0.04;
-const MOUTH_MAX = 0.26;
+
+const BURST_ORB = '#f2f2ef';
+const BURST_POWER = '#ff2867';
+const POINTS_TEXT = '#f2f2ef';
 
 const GHOST_EYE = '#ffffff';
 const GHOST_PUPIL = '#1a1a2e';
@@ -51,10 +61,15 @@ export interface Scene {
   orbs: ReadonlySet<number>;
   /** Especiales que quedan en el estado de la partida. */
   power: ReadonlySet<number>;
-  player?: { pos: Vec; dir: Dir | null; mouth: number };
-  ghosts?: ReadonlyArray<{ id: number; pos: Vec; dir: Dir; mode: GhostMode }>;
+  player?: { pos: Vec; dir: Dir | null; mouth: number; moving: boolean };
+  /** houseTimer: segundos de espera en la casa (parpadeo en el último segundo). */
+  ghosts?: ReadonlyArray<{ id: number; pos: Vec; dir: Dir; mode: GhostMode; houseTimer?: number }>;
   /** Segundos de susto que quedan (para el parpadeo). */
   frightTimer?: number;
+  /** phaseTimer de 'muriendo' (también en pausa desde 'muriendo'); null si no está muriendo. */
+  death?: number | null;
+  /** Destellos y puntos flotantes en curso. */
+  effects?: readonly Effect[];
 }
 
 export interface Renderer {
@@ -108,13 +123,16 @@ export function createRenderer(stage: HTMLElement, canvas: HTMLCanvasElement, ma
       if (walls) ctx.drawImage(walls, shift, shift);
       ctx.setTransform(dpr, 0, 0, dpr, shift, shift);
       drawOrbs(ctx, maze, tile, scene, motion.matches ? null : timeMs);
-      if (scene.player) drawPlayer(ctx, maze, tile, scene.player);
-      if (scene.ghosts) {
+      const death = scene.death ?? null;
+      if (scene.player) drawPlayer(ctx, maze, tile, scene.player, death);
+      // Al morir solo queda Polka-Man en el tablero.
+      if (scene.ghosts && death === null) {
         const blink = frightBlink(scene.frightTimer ?? 0);
         for (const ghost of scene.ghosts) {
           drawGhost(ctx, maze, tile, ghost, motion.matches ? null : timeMs, blink);
         }
       }
+      if (scene.effects) drawEffects(ctx, tile, scene.effects, timeMs, motion.matches);
     },
     destroy() {
       observer.disconnect();
@@ -173,12 +191,22 @@ function line(g: CanvasRenderingContext2D, x0: number, y0: number, x1: number, y
   g.lineTo(x1, y1);
 }
 
-/** Polka-Man: círculo rosa con boca que abre y cierra, mirando a su dirección. */
-function drawPlayer(ctx: CanvasRenderingContext2D, maze: Maze, tile: number, player: NonNullable<Scene['player']>) {
-  const open = Math.abs(1 - 2 * player.mouth);
-  const half = Math.PI * (MOUTH_MIN + (MOUTH_MAX - MOUTH_MIN) * open);
+/**
+ * Polka-Man: círculo rosa con boca que abre y cierra, mirando a su dirección.
+ * Con `death` (phaseTimer de 'muriendo') la boca se abre del todo y el cuerpo se encoge.
+ */
+function drawPlayer(
+  ctx: CanvasRenderingContext2D,
+  maze: Maze,
+  tile: number,
+  player: NonNullable<Scene['player']>,
+  death: number | null,
+) {
+  const frame = death === null ? { half: mouthHalf(mouthOpen(player)), scale: 1 } : deathFrame(death);
+  if (frame.scale <= 0) return;
+  const half = frame.half;
   const facing = FACING[player.dir ?? 'derecha'];
-  const radius = tile * PLAYER_RADIUS;
+  const radius = tile * PLAYER_RADIUS * frame.scale;
 
   // Cerca de un borde (túnel) también se dibuja del otro lado; el canvas recorta lo que sale.
   const xs = [player.pos.x];
@@ -226,6 +254,8 @@ function drawGhost(
 
     // Cúpula + cuerpo + 3 picos. Los ojos (fantasma comido) no llevan cuerpo.
     if (!eyesOnly) {
+      // En casa, el último segundo de la espera el cuerpo parpadea (los ojos no).
+      if (ghost.mode === 'casa' && houseBlink(ghost.houseTimer ?? 0)) ctx.globalAlpha = HOUSE_BLINK_ALPHA;
       ctx.fillStyle = color;
       ctx.beginPath();
       ctx.arc(cx, top, half, Math.PI, 0);
@@ -238,6 +268,7 @@ function drawGhost(
       }
       ctx.closePath();
       ctx.fill();
+      ctx.globalAlpha = 1;
     }
 
     const eyeR = half * 0.3;
@@ -269,6 +300,37 @@ function drawGhost(
       ctx.fill();
     }
   }
+}
+
+/** Destellos al comer (blanco la bolita, anillo rosa la especial) y puntos flotantes al comer un fantasma. */
+function drawEffects(ctx: CanvasRenderingContext2D, tile: number, effects: readonly Effect[], timeMs: number, reduced: boolean) {
+  for (const e of effects) {
+    const f = effectFrame(e, timeMs, reduced);
+    if (f.alpha <= 0) continue;
+    const cx = (e.x + 0.5) * tile;
+    const cy = (e.y + 0.5 - f.rise) * tile;
+    ctx.globalAlpha = f.alpha;
+    if (e.kind === 'orbe') {
+      ctx.fillStyle = BURST_ORB;
+      ctx.beginPath();
+      ctx.arc(cx, cy, f.radius * tile, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (e.kind === 'especial') {
+      ctx.strokeStyle = BURST_POWER;
+      ctx.lineWidth = POWER_BURST_RING * tile;
+      ctx.beginPath();
+      ctx.arc(cx, cy, f.radius * tile, 0, Math.PI * 2);
+      ctx.stroke();
+    } else if (e.text) {
+      // Misma fuente mono que el resto del juego (empaquetada por @fontsource en main.ts).
+      ctx.fillStyle = POINTS_TEXT;
+      ctx.font = `500 ${Math.round(GHOST_POINTS_FONT * tile)}px 'JetBrains Mono', monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(e.text, cx, cy);
+    }
+  }
+  ctx.globalAlpha = 1;
 }
 
 function drawOrbs(ctx: CanvasRenderingContext2D, maze: Maze, tile: number, scene: Scene, timeMs: number | null) {
