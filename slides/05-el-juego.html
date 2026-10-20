@@ -204,7 +204,7 @@
     <div class="item" style="left:110px; top:70px;"><div class="h">Qué vas a construir</div></div>
     <div class="item" style="left:110px; top:170px; width:940px; font:700 34px/1.3 var(--display);">Una app y un <span class="j-pink">smart contract</span> dentro de Polkadot, construidos con IA, en tu propio dominio <span class="j-pink">.dot</span>.</div>
     <div class="item j-rows" style="left:110px; top:360px; width:920px;">
-      <div style="grid-template-columns:240px 1fr;"><span class="k">Tu app</span><span>un juego tipo Pac-Man para el celular</span></div>
+      <div style="grid-template-columns:240px 1fr;"><span class="k">Tu app</span><span>un juego tipo Pac-Man para el celular, con joystick, música y sonido 8 bits</span></div>
       <div style="grid-template-columns:240px 1fr;"><span class="k">Tu contrato</span><span>guarda el mejor puntaje; lo despliegas tú</span></div>
       <div style="grid-template-columns:240px 1fr;"><span class="k">Con IA</span><span>lo construyes fase por fase</span></div>
       <div style="grid-template-columns:240px 1fr;"><span class="k">Tu .dot</span><span>lo publicas en <span class="j-pink">tu propio dominio</span></span></div>
@@ -231,7 +231,8 @@
         ├── engine/       <span class="cm">lógica pura, sin DOM</span>
         ├── render/       <span class="cm">canvas</span>
         ├── input/        <span class="cm">teclado, swipe, joystick</span>
-        ├── components/   <span class="cm">HUD, ranking, fin</span>
+        ├── audio/        <span class="cm">música y efectos, Web Audio</span>
+        ├── components/   <span class="cm">inicio, menú, HUD, ranking</span>
         ├── <span class="kw">contract/</span>     <span class="cm">dirección y ABI</span>
         ├── <span class="kw">hub/</span>          <span class="cm">Host, gas, firmas</span>
         └── <span class="kw">lib/</span>          <span class="cm">errores y formato</span></div>
@@ -251,10 +252,10 @@
       <div class="lead" style="font-size:22px; margin-top:12px;">Abre <span class="j-code j-pink">polka-man.dot</span> en la Polkadot App o Desktop. Es la aplicación de ejemplo terminada: así se verá lo que vas a construir.</div>
     </div>
     <div class="panel j-checks" style="left:110px; top:320px; width:960px; padding:18px 44px;">
-      <div><span class="j-box"></span><span>Conectar tu cuenta en la pantalla de inicio</span></div>
+      <div><span class="j-box"></span><span>Empezar en la pantalla de inicio y conectar tu cuenta</span></div>
       <div><span class="j-box"></span><span>Moverte con el joystick, también en diagonal</span></div>
-      <div><span class="j-box"></span><span>Comer bolitas, fantasmas y vidas</span></div>
-      <div><span class="j-box"></span><span>Rondas cada vez más difíciles</span></div>
+      <div><span class="j-box"></span><span>Comer bolitas y fantasmas; cada ronda más difícil</span></div>
+      <div><span class="j-box"></span><span>Música y efectos 8 bits, cada uno con su botón</span></div>
       <div><span class="j-box"></span><span>Guardar tu récord: los pasos salen en un popup</span></div>
       <div style="border-bottom:0;"><span class="j-box"></span><span>Ver el ranking en su propia pestaña</span></div>
     </div>
@@ -264,7 +265,25 @@
     </div>
   </section>
 
-  <!-- 5 · Tu repo -->
+  <!-- 5 · Lo que tiene la muestra -->
+  <section class="slide grid" data-title="Lo que tiene la muestra">
+    <div class="item" style="left:110px; top:70px;"><div class="h">Lo que tiene la muestra</div></div>
+    <div class="item" style="left:110px; top:170px; width:300px;">
+      <div class="j-phone"><img src="../img/cap5/polka-man-inicio.png" alt="Pantalla de inicio de Polka-Man: Jugar, Conectar cuenta con su sugerencia, Ranking y los botones Música y Efectos"></div>
+    </div>
+    <div class="item j-rows" style="left:500px; top:180px; width:990px;">
+      <div style="grid-template-columns:250px 1fr;"><span class="k">Inicio</span><span>Jugar, Conectar cuenta, Ranking y Username</span></div>
+      <div style="grid-template-columns:250px 1fr;"><span class="k">Menú</span><span>pestañas Username y Ranking, fondos opacos</span></div>
+      <div style="grid-template-columns:250px 1fr;"><span class="k">Controles</span><span>joystick con diagonales y pausa redonda</span></div>
+      <div style="grid-template-columns:250px 1fr;"><span class="k">Fantasmas</span><span>por color, todos con la misma regla; a veces eligen al azar</span></div>
+      <div style="grid-template-columns:250px 1fr;"><span class="k">Sonido</span><span>efectos 8 bits y música original, sin archivos</span></div>
+      <div style="grid-template-columns:250px 1fr;"><span class="k">Música y Efectos</span><span>se silencian por separado</span></div>
+      <div style="grid-template-columns:250px 1fr;"><span class="k">Firma</span><span>los pasos en un popup encima del fin</span></div>
+    </div>
+    <div class="item lead j-mut" style="left:500px; top:740px; width:990px; font-size:20px;">Es la referencia. Tus reglas las decides tú en la fase 0.</div>
+  </section>
+
+  <!-- 6 · Tu repo -->
   <section class="slide plain" data-title="Tu repo">
     <div class="item" style="left:110px; top:70px;"><div class="h">Tu repo</div></div>
     <div class="item term" style="left:110px; top:170px; width:960px;">
@@ -285,7 +304,7 @@
     </div>
   </section>
 
-  <!-- 6 · Tres frases -->
+  <!-- 7 · Tres frases -->
   <section class="slide grid" data-title="Tres frases en cada prompt">
     <div class="item" style="left:110px; top:70px;"><div class="h">Tres frases en cada prompt</div></div>
     <div class="item j-chat" style="left:110px; top:170px; width:1380px;">
@@ -298,7 +317,7 @@
     </div>
   </section>
 
-  <!-- 7 · Define tu juego -->
+  <!-- 8 · Define tu juego -->
   <section class="slide" data-title="Define tu juego" style="--bgpos: 80% 20%;">
     <div class="panel" style="left:110px; top:50px; width:1380px; padding:30px 52px 34px;">
       <div class="h">Define tu juego</div>
@@ -320,7 +339,7 @@
     </div>
   </section>
 
-  <!-- 8 · Si no sabes, pide opciones -->
+  <!-- 9 · Si no sabes, pide opciones -->
   <section class="slide plain" data-title="Si no sabes, pide opciones">
     <div class="item" style="left:110px; top:70px;"><div class="h">Si no sabes, pide opciones</div></div>
     <div class="item j-cc big" style="left:110px; top:170px; width:1380px;">
@@ -336,7 +355,7 @@
     </div>
   </section>
 
-  <!-- 9 · Un archivo de fase -->
+  <!-- 10 · Un archivo de fase -->
   <section class="slide grid" data-title="Un archivo de fase">
     <div class="item" style="left:110px; top:70px;"><div class="h">Un archivo de fase</div></div>
     <div class="item lead j-mut" style="left:110px; top:160px; width:1380px; font-size:22px;">prompts/04-fantasmas.md · las mismas cuatro partes en todas las fases</div>
@@ -348,7 +367,7 @@
     </div>
   </section>
 
-  <!-- 10 · El ciclo de trabajo -->
+  <!-- 11 · El ciclo de trabajo -->
   <section class="slide flat" data-title="El ciclo de trabajo">
     <div class="item" style="left:110px; top:70px;"><div class="h">El ciclo de trabajo</div></div>
     <div class="item lead" style="left:110px; top:160px; width:1380px; font-size:22px;">Sirve para este juego y para tu app del hackatón.</div>
@@ -370,20 +389,21 @@
       <div class="j-node pink" style="left:25px; top:170px;"><i>05</i><b>Commit</b></div>
       <div class="j-mid"><div>↻</div><span>repite hasta terminar</span></div>
     </div>
-    <div class="panel" style="left:1010px; top:250px; width:480px; padding:28px 36px;">
+    <div class="panel" style="left:1000px; top:250px; width:490px; padding:28px 30px;">
       <div class="j-label">Ejemplo: así se reparte este juego en fases</div>
-      <div class="j-mini">
-        <span>00 Define tu juego</span><span>05 Especiales</span>
-        <span>01 Proyecto</span><span>06 Contrato</span>
-        <span>02 Laberinto</span><span class="j-pink">07 Publica</span>
-        <span>03 Bolitas</span><span class="j-pink">08 Récord</span>
-        <span>04 Fantasmas</span>
+      <div class="j-mini" style="font-size:18px;">
+        <span>00 Define tu juego</span><span>06 Contrato</span>
+        <span>01 Proyecto</span><span class="j-pink">07 Publica</span>
+        <span>02 Laberinto</span><span class="j-pink">08 Récord</span>
+        <span>03 Bolitas</span><span>09 Inicio y menú</span>
+        <span>04 Fantasmas</span><span>10 Sonido y música</span>
+        <span>05 Especiales</span><span></span>
       </div>
       <div class="j-mut" style="font:18px/1.45 var(--mono); margin-top:18px;">Cada fase, una vuelta del ciclo. Archivos en prompts/.</div>
     </div>
   </section>
 
-  <!-- 11 · Despliega tu contrato -->
+  <!-- 12 · Despliega tu contrato -->
   <section class="slide grid" data-title="Tu contrato">
     <div class="item" style="left:110px; top:70px;"><div class="h">Tu contrato y el ranking</div></div>
     <div class="item j-flow" style="left:110px; top:180px; width:1380px;">
@@ -407,7 +427,7 @@
     </div>
   </section>
 
-  <!-- 12 · Compra tu dominio -->
+  <!-- 13 · Compra tu dominio -->
   <section class="slide" data-title="Compra tu dominio .dot" style="--bgpos: 70% 30%;">
     <div class="panel" style="left:110px; top:50px; width:1380px; padding:30px 52px 34px;">
       <div class="h">Compra tu dominio .dot</div>
@@ -430,7 +450,7 @@
     </div>
   </section>
 
-  <!-- 13 · El ciclo de publicar -->
+  <!-- 14 · El ciclo de publicar -->
   <section class="slide plain" data-title="El ciclo de publicar">
     <div class="item" style="left:110px; top:60px;"><div class="h">El ciclo de publicar</div></div>
     <div class="item lead" style="left:110px; top:150px; width:1380px; font-size:22px;">Repítelo cuando quieras probar la conexión o cualquier función, en el taller y en el hackatón. Cada build da un CID nuevo.</div>
@@ -455,7 +475,7 @@
     </div>
   </section>
 
-  <!-- 14 · Guardar -->
+  <!-- 15 · Guardar -->
   <section class="slide grid" data-title="Guardar: simula, firma, relee">
     <div class="item" style="left:110px; top:60px;"><div class="h">Guardar: simula, firma, relee</div></div>
     <div class="item" style="left:110px; top:160px; width:300px;">
@@ -488,10 +508,10 @@
         <div><span>3</span><span>0x3f…a1</span><span>2 750</span></div>
       </div>
     </div>
-    <div class="item lead j-mut" style="left:110px; top:740px; width:1380px; font-size:20px;">Se prueba con el ciclo de publicar.</div>
+    <div class="item lead j-mut" style="left:110px; top:720px; width:1380px; font-size:20px;">Los pasos salen en un popup: Simulando → Firma en tu teléfono → Enviando → Confirmando → Actualizando → Listo. Se prueba con el ciclo de publicar.</div>
   </section>
 
-  <!-- 15 · Si te atoras -->
+  <!-- 16 · Si te atoras -->
   <section class="slide" data-title="Si te atoras" style="--bgpos: 55% 45%;">
     <div class="panel" style="left:110px; top:50px; width:900px; padding:34px 52px 38px;"><div class="h">Si te atoras</div></div>
     <div class="panel j-steps" style="left:110px; top:240px; width:760px; padding:20px 40px;">
@@ -512,7 +532,7 @@
     </div>
   </section>
 
-  <!-- 16 · Lo que sigue -->
+  <!-- 17 · Lo que sigue -->
   <section class="slide plain" data-title="Repaso y lo que sigue">
     <div class="item" style="left:110px; top:70px;"><div class="h">Repaso y lo que sigue</div></div>
     <div class="item j-cyc" style="left:110px; top:180px; width:1380px;">
@@ -542,7 +562,7 @@
   <div class="progress" id="progress"></div>
   <footer class="foot">
     <a href="../contenido/05-el-juego.md">Guía: contenido/05-el-juego.md</a>
-    <span><span id="count">01 / 16</span></span>
+    <span><span id="count">01 / 17</span></span>
   </footer>
 </main>
 <script src="assets/deck.js"></script>

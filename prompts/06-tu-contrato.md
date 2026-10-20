@@ -1,7 +1,7 @@
 # Fase 6 · Tu contrato y el ranking
 
-Al terminar tu juego muestra el top 10 de **tu** contrato `Leaderboard`, leído de la red, con
-estado vacío y error con "Reintentar". 25 a 30 minutos (5 más si despliegas otra vez).
+Al terminar tu juego muestra, en su propia pestaña, el top 10 de **tu** contrato `Leaderboard`,
+leído de la red, con estado vacío y error con "Reintentar". 25 a 30 minutos (5 más si despliegas otra vez).
 
 ## Antes de pedir
 
@@ -10,6 +10,7 @@ estado vacío y error con "Reintentar". 25 a 30 minutos (5 más si despliegas ot
 - ¿Qué muestra cada fila del ranking? (p. ej. "posición, username o dirección corta, y puntaje").
 - ¿Qué se ve si el ranking está vacío o si no hay red? (p. ej. "Todavía no hay récords" y un botón
   "Reintentar").
+- ¿Dónde se ve el ranking? (p. ej. "en su propia pestaña, con scroll si no cabe").
 
 Escribe tus respuestas en `SPEC.md`.
 
@@ -30,8 +31,9 @@ Lee SPEC.md (y el spec de esta parte si existe) y AGENTS.md.
 Usa la skill polkadot-products-devnet.
 Mi contrato Leaderboard está en la dirección <tu-dirección> y su ABI está en
 src/contract/leaderboard.abi.json.
-En la pantalla de título muestra el top 10 leyendo mi contrato por la red, como dice
+Muestra el top 10 de mi contrato en su propia pestaña, leyendo por la red, como dice
 SPEC.md, con su estado vacío y un error con "Reintentar" si no hay red.
+Si no cabe, la lista se desplaza dentro de su pestaña.
 La dirección debe vivir en un solo archivo.
 Si te falta algún dato o hay que decidir algo que no está en SPEC.md, pregúntame antes de
 escribir código.
@@ -51,6 +53,7 @@ para un celular, recomiéndame una y no escribas código.
 - Con un contrato nuevo se ve el estado vacío.
 - Sin red (desconecta el wifi) aparece el error con "Reintentar", y al volver la red funciona.
 - La dirección de tu contrato aparece en un solo archivo (búscala en el proyecto).
+- Con muchas filas, la lista se desplaza dentro de su pestaña y no empuja los botones.
 
 ```text
 Escribe tests para estos casos: ranking vacío, ranking con 3 filas en orden y error de red

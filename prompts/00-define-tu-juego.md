@@ -41,10 +41,10 @@ solo: el agente pregunta, propone y escribe; tú revisas y corriges.
 
 ```text
 Quiero hacer un juego tipo Pac-Man para celular que corra en la Polkadot App. Lo voy a
-construir en estas fases: proyecto, laberinto y movimiento, bolitas y puntaje,
-fantasmas y vidas, bolitas especiales y dificultad, ranking con mi contrato, publicar
-y guardar récord. El mejor puntaje se guarda en mi propio contrato Leaderboard.
-Usa la skill polkadot-products-devnet.
+construir en estas fases: proyecto, laberinto y movimiento, bolitas y puntaje, fantasmas y
+vidas, bolitas especiales y dificultad, ranking con mi contrato, publicar, guardar récord,
+pantalla de inicio y menú, y sonido, música y animaciones. El mejor puntaje se guarda en mi
+propio contrato Leaderboard. Usa la skill polkadot-products-devnet.
 Antes de escribir código, pregúntame cualquier duda que tengas, de pocas en pocas, para no
 dejar puntos vacíos ni decisiones arbitrarias.
 Si te digo "no sé", dame opciones concretas y recomiéndame una.

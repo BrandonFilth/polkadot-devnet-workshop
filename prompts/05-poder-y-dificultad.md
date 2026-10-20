@@ -9,6 +9,8 @@ ronda, con un tope. 25 a 35 minutos.
 - ¿Cuánto vale comerse un fantasma asustado? (p. ej. "200, y el doble por cada uno seguido").
 - ¿Cómo sube la dificultad y dónde se detiene? (p. ej. "fantasmas 5 % más rápidos cada ronda,
   hasta la ronda 9; siempre más lentos que el jugador").
+- ¿Cuánto espera en la casa un fantasma comido? (p. ej. "5 s en la ronda 1, medio segundo menos
+  cada ronda, mínimo 2 s").
 
 Escribe tus respuestas en `SPEC.md`.
 
@@ -17,7 +19,8 @@ Escribe tus respuestas en `SPEC.md`.
 ```text
 Lee SPEC.md (y el spec de esta parte si existe) y AGENTS.md.
 Agrega las bolitas especiales. Al comer una, los fantasmas se asustan por un tiempo: huyen
-y el personaje se los puede comer. Un fantasma comido regresa a su casa y vuelve a salir.
+y el personaje se los puede comer. Un fantasma comido regresa a su casa, espera lo que dice
+SPEC.md y vuelve a salir.
 Haz que la dificultad suba en cada ronda como dice SPEC.md, con su tope.
 Si te falta algún dato o hay que decidir algo que no está en SPEC.md, pregúntame antes de
 escribir código.
@@ -37,6 +40,8 @@ contra para un juego de celular. Recomiéndame una y no escribas código.
 - Comer una segunda bolita especial no hace cosas raras a los fantasmas que ya estaban asustados.
 - En la ronda que dice `SPEC.md`, sale un fantasma más.
 - Tocar a un fantasma que ya fue comido (regresando a su casa) no quita vida.
+- Los fantasmas comidos esperan en la casa antes de volver a salir, y esperan menos en rondas más
+  altas.
 - Después de muchas rondas, los fantasmas siguen siendo más lentos que tú.
 
 ```text

@@ -50,7 +50,8 @@ polkadot-devnet-workshop/
         ├── engine/         lógica del juego sin pantalla: laberinto, reglas, fantasmas
         ├── render/         dibuja en el canvas
         ├── input/          teclado, swipe y joystick
-        ├── components/     HUD, menú, ranking, fin de partida, username y estados de firma
+        ├── audio/          música y efectos con Web Audio, sin archivos
+        ├── components/     inicio, HUD, menú, ranking, fin de partida, username y estados de firma
         ├── contract/       dirección, ABI y lecturas del contrato
         ├── hub/            conexión con el Host: cuenta, gas y firmas
         └── lib/            mensajes de error y formato
@@ -87,7 +88,13 @@ Son las decisiones de la muestra; tú tomas las tuyas en la fase 0.
 | Ronda | Termina al vaciar el laberinto; las bolitas vuelven y empieza la siguiente |
 | Velocidad de los fantasmas | +5 % cada ronda, con tope por debajo de la del jugador |
 | Número de fantasmas | Empieza en 2 y sale uno más cada 3 rondas, hasta 6 |
+| Fantasmas | Se distinguen solo por color: rojo, verde, amarillo, azul, morado y cian. Todos siguen la misma regla: en cada cruce van por el camino que más los acerca a ti, sin dar media vuelta |
+| Para no amontonarse | En cada cruce, 1 de cada 4 veces (25 %) eligen un camino al azar |
+| Susto | Huyen al azar a media velocidad; 6 s en la ronda 1, 0.5 s menos cada ronda, mínimo 2 s |
+| Salida de la casa | Uno cada 3 s |
 | Fantasma comido | Vuelve a la casa como ojos y espera 5 s antes de salir; 0.5 s menos cada ronda, mínimo 2 s |
+| Controles | Joystick tipo Atari con diagonales y botón redondo de pausa; swipe; flechas o WASD |
+| Sonido | Efectos 8 bits y música original hechos en código (Web Audio, sin archivos); empiezan con el primer toque; Música y Efectos se silencian por separado y se recuerdan en el dispositivo |
 | Marcador | El mejor puntaje se guarda en el contrato `Leaderboard` |
 
 ### Prueba la muestra
@@ -99,6 +106,8 @@ terminada: así se verá lo que vas a construir. La aplicación de ejemplo está
 ya desplegado: `0x0aAf511a454c6A522b37210ca6931Cde1c400Ac9`.
 
 Puedes ver el contrato en [Blockscout](https://blockscout-testnet.polkadot.io/address/0x0aAf511a454c6A522b37210ca6931Cde1c400Ac9?tab=index).
+
+<img src="../img/cap5/polka-man-inicio.png" alt="Pantalla de inicio de Polka-Man: Jugar, Conectar cuenta con su sugerencia, Ranking y los botones Música y Efectos" width="220" align="right">
 
 La muestra abre en una **pantalla de inicio**: Jugar, Conectar cuenta, Ranking y, ya con cuenta, tu
 Username. Conectar es opcional: si tocas Jugar sin cuenta, un aviso te recuerda una sola vez que sin
@@ -118,6 +127,8 @@ Prueba:
 - Guardar un récord con una firma: los pasos salen en un popup aparte, encima del fin.
 - Ver el ranking en su propia pestaña (Ver ranking en el fin, Ranking en el inicio o en el menú).
 - Elegir tu username desde el menú, aunque todavía no tengas récord.
+- Escuchar la música y los efectos, y silenciar cada uno con su botón.
+- Ver que los fantasmas se distinguen por color y te persiguen todos igual.
 
 Juega 5 minutos y anota 3 cosas que harías distinto. Después armas la tuya con los prompts, fase por
 fase ([sección 3](#3-cómo-vas-a-trabajar)).
@@ -167,8 +178,8 @@ Un ejemplo de este juego:
 Malo: Haz que haya fantasmas.
 
 Bueno: Lee SPEC.md (y spec-fantasmas.md si existe) y AGENTS.md. Agrega los fantasmas que
-dice el spec, cada uno con su forma de perseguir. Si uno toca al personaje, se pierde una
-vida. Si te falta algún dato o hay que decidir algo que no está en el spec, pregúntame
+dice el spec, todos con la misma regla para perseguir. Si uno toca al personaje, se pierde
+una vida. Si te falta algún dato o hay que decidir algo que no está en el spec, pregúntame
 antes de escribir código. Primero dime tu plan.
 ```
 
@@ -277,15 +288,17 @@ Así se reparte este juego en fases. Cada fase es una vuelta del ciclo de la
 |---|---|---|---|---|
 | 0 | [Define tu juego](../prompts/00-define-tu-juego.md) | `SPEC.md` sin huecos | — | 15–20 min |
 | 1 | [Tu proyecto](../prompts/01-proyecto.md) | Proyecto que arranca, `AGENTS.md`, un canvas y un test | Navegador | 20–25 min |
-| 2 | [Laberinto y movimiento](../prompts/02-laberinto.md) | Laberinto y personaje con teclado, swipe y D-pad, con pausa | Navegador | 30–35 min |
+| 2 | [Laberinto y movimiento](../prompts/02-laberinto.md) | Laberinto y personaje con teclado, swipe y joystick con diagonales, con pausa | Navegador | 30–35 min |
 | 3 | [Bolitas, puntaje y rondas](../prompts/03-puntos.md) | Comer bolitas, HUD y nueva ronda al vaciar | Navegador | 20–25 min |
-| 4 | [Fantasmas y vidas](../prompts/04-fantasmas.md) | Fantasmas, vidas y pantalla de fin | Navegador | 30–40 min |
-| 5 | [Bolitas especiales y dificultad](../prompts/05-poder-y-dificultad.md) | Fantasmas asustados y dificultad por ronda con tope | Navegador | 25–35 min |
-| 6 | [Tu contrato y el ranking](../prompts/06-tu-contrato.md) | Top 10 de tu contrato | Navegador | 25–30 min |
+| 4 | [Fantasmas y vidas](../prompts/04-fantasmas.md) | Fantasmas por color con una sola regla, vidas y pantalla de fin | Navegador | 30–40 min |
+| 5 | [Bolitas especiales y dificultad](../prompts/05-poder-y-dificultad.md) | Fantasmas asustados, espera en la casa y dificultad por ronda con tope | Navegador | 25–35 min |
+| 6 | [Tu contrato y el ranking](../prompts/06-tu-contrato.md) | Top 10 de tu contrato en su propia pestaña | Navegador | 25–30 min |
 | 7 | [Publica en tu .dot](../prompts/07-publica.md) | Tu dominio `.dot` y tu juego publicado en él, abierto desde el Host | Host | 15–20 min |
-| 8 | [Guarda tu récord](../prompts/08-guarda-tu-record.md) | Conectar, permiso de gas y guardar con una firma | Host | 30–40 min |
+| 8 | [Guarda tu récord](../prompts/08-guarda-tu-record.md) | Conectar, permiso de gas y guardar con una firma, con los pasos en un popup | Host | 30–40 min |
+| 9 | [Pantalla de inicio y menú](../prompts/09-pantalla-de-inicio.md) | Inicio con Jugar, Conectar y Ranking; menú con pestañas | Navegador y Host | 25–35 min |
+| 10 | [Sonido, música y animaciones](../prompts/10-sonido-y-animaciones.md) | Animaciones, efectos 8 bits y música original con Música y Efectos | Navegador | 30–40 min |
 
-En total, de 3.5 a 4.5 horas (**POR VERIFICAR** con un ensayo). Un commit y un `git push` por fase.
+En total, de 4.5 a 5.5 horas (**POR VERIFICAR** con un ensayo). Un commit y un `git push` por fase.
 Los errores típicos de la IA en este stack están en el
 [capítulo 4, sección 15](./04-vibe-coding.md#15-errores-comunes-de-la-ia-en-este-stack).
 
@@ -298,9 +311,11 @@ el agente la "limpia"? Error típico: crea el proyecto encima y borra lo que ya 
 
 ### Fase 2 · Laberinto y movimiento
 
-El laberinto en el canvas y el personaje que se mueve con teclado, swipe y D-pad
-([prompt](../prompts/02-laberinto.md)). Piensa: ¿qué pasa si el jugador pide girar justo antes del
-cruce? Error típico: la pausa se quita sola al volver a la pestaña.
+El laberinto en el canvas y el personaje que se mueve con teclado, swipe y un joystick tipo Atari
+que entiende diagonales, con un botón redondo de pausa ([prompt](../prompts/02-laberinto.md)).
+Piensa: ¿qué pasa si el jugador pide girar justo antes del cruce, o inclina el joystick casi arriba
+y un poco a la derecha? Error típico: el joystick solo entiende arriba, abajo, izquierda y derecha,
+o la pausa se quita sola al volver a la pestaña.
 
 ### Fase 3 · Bolitas, puntaje y rondas
 
@@ -310,9 +325,11 @@ laberinto original y la ronda 2 empieza vacía.
 
 ### Fase 4 · Fantasmas y vidas
 
-Fantasmas que persiguen, vidas y pantalla de fin ([prompt](../prompts/04-fantasmas.md)). Piensa:
-¿qué pasa si dos fantasmas te tocan al mismo tiempo? Error típico: usa un azar sin control y los
-tests fallan a veces sí y a veces no, o pinta un fantasma del mismo color que el personaje.
+Fantasmas que se distinguen por color y persiguen todos con la misma regla, vidas y pantalla de
+fin ([prompt](../prompts/04-fantasmas.md)). Piensa: ¿qué pasa si dos fantasmas te tocan al mismo
+tiempo, o si todos van por el mismo pasillo? Error típico: les da a cada fantasma una forma
+distinta de perseguir y los tests no la cubren, usa un azar sin semilla y los tests fallan a veces
+sí y a veces no, o pinta un fantasma del mismo color que el personaje.
 
 ### Fase 5 · Bolitas especiales y dificultad
 
@@ -356,7 +373,8 @@ PGAS y guardar récord) se prueba con la app **publicada en un dominio `.dot`** 
 desde el Host
 ([skill, `app-sdk.md`](https://github.com/BrandonFilth/polkadot-products-devnet/blob/main/skills/polkadot-products-devnet/references/app-sdk.md)).
 Las fases 1 a 6 se prueban en el navegador. Para las fases 7 y 8 publicas en tu `.dot` con el ciclo
-de abajo.
+de abajo. Las fases 9 y 10 se prueban en el navegador; Conectar desde la pantalla de inicio, con el
+mismo ciclo de publicar.
 
 > El Host deriva una cuenta por dominio: tu cuenta en tu `.dot` es distinta de la que tienes en la
 > app de un compañero ([capítulo 3, sección 16](./03-smart-contracts.md#16-tus-tres-cuentas)).
@@ -523,7 +541,33 @@ caracteres, solo `a-z`, `0-9` y `_`, único en tu contrato.
 
 ---
 
-## 10. Si te atoras y problemas comunes
+## 10. Pantalla de inicio, sonido y música
+
+Las dos últimas fases juntan lo que ya construiste y le dan forma de juego terminado. Las dos se
+prueban en el navegador; Conectar desde la pantalla de inicio se prueba en el Host con el
+[ciclo de publicar](#probar-dentro-del-host-publica-en-tu-dot).
+
+### Fase 9 · Pantalla de inicio y menú
+
+La pantalla de inicio con Jugar, Conectar cuenta y Ranking, y un menú arriba con las pestañas
+Username y Ranking ([prompt](../prompts/09-pantalla-de-inicio.md)). Conectar es una sugerencia:
+sin cuenta se juega igual, pero el récord no se guarda. Piensa: ¿qué pasa si alguien toca Jugar
+sin cuenta dos veces seguidas, o abre el menú en plena partida? Error típico: el juego arranca solo
+detrás de la pantalla de inicio, el aviso sin cuenta sale en cada partida, o el menú es
+transparente y se ve el laberinto a través de él.
+
+### Fase 10 · Sonido, música y animaciones
+
+Animaciones al comer y al morir, efectos 8 bits y una música de fondo original, todo hecho en
+código con la Web Audio API, con los botones Música y Efectos
+([prompt](../prompts/10-sonido-y-animaciones.md)). Piensa: ¿qué pasa si el Host no deja reproducir
+audio? Error típico: la música empieza antes del primer toque y el navegador la bloquea, copia la
+melodía de un juego conocido, o un solo botón apaga la Música y los Efectos a la vez. Que el sonido
+funcione dentro del Host y en un teléfono real está **POR VERIFICAR**.
+
+---
+
+## 11. Si te atoras y problemas comunes
 
 Sube por esta escalera, en orden:
 
