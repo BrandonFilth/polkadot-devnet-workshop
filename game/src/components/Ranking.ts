@@ -2,6 +2,15 @@
 import { shortAddress } from '../contract/ranking';
 import type { Hub, RankingRow } from '../hub/hub';
 
+/** Filas que se piden al contrato. */
+export const RANKING_TOP = 10;
+
+/** Celdas de una fila: posición, jugador (con «(tú)» si es tuya) y puntaje. */
+export function rankingCells(row: RankingRow, index: number): [string, string, string] {
+  const name = row.username !== '' ? row.username : shortAddress(row.address);
+  return [String(index + 1), row.mine ? `${name} (tú)` : name, row.score.toString()];
+}
+
 export interface Ranking {
   readonly element: HTMLElement;
   /** Vuelve a leer el top 10 con hub.readTop(). */
@@ -52,12 +61,16 @@ export function createRanking(hub: Hub): Ranking {
         tr.className = 'ranking-mine';
         tr.setAttribute('aria-current', 'true');
       }
-      tr.insertCell().textContent = String(i + 1);
-      const name = row.username !== '' ? row.username : shortAddress(row.address);
-      tr.insertCell().textContent = row.mine ? `${name} (tú)` : name;
-      tr.insertCell().textContent = row.score.toString();
+      for (const text of rankingCells(row, i)) tr.insertCell().textContent = text;
     });
-    body.replaceChildren(t);
+    // La lista se desplaza dentro de su caja (alto máximo fijo): muchas filas nunca alargan la pantalla.
+    const scroll = document.createElement('div');
+    scroll.className = 'ranking-scroll';
+    scroll.tabIndex = 0;
+    scroll.setAttribute('role', 'region');
+    scroll.setAttribute('aria-label', 'Lista del ranking');
+    scroll.append(t);
+    body.replaceChildren(scroll);
   };
 
   // Solo cuenta la última lectura pedida.
@@ -65,7 +78,7 @@ export function createRanking(hub: Hub): Ranking {
   const load = () => {
     const mySeq = ++seq;
     status('Cargando…');
-    hub.readTop(10).then(
+    hub.readTop(RANKING_TOP).then(
       (rows) => {
         if (mySeq !== seq) return;
         if (rows.length === 0) status('Todavía no hay récords');

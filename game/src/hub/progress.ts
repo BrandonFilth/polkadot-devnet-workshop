@@ -1,6 +1,6 @@
 /**
  * Estados visibles de cada interacción con el Host (conectar, guardar récord, username).
- * Máquina pura: hub.ts la alimenta y las pantallas solo la dibujan (components/Progreso.ts).
+ * Máquina pura: hub.ts la alimenta y el popup de estados solo la dibuja (components/TxEstado.ts).
  *
  * Qué estado sale de dónde (@parity/product-sdk 0.27.0 → product-sdk-contracts → product-sdk-tx 0.4.7,
  * `submitAndWatch`, que recibe el `onStatus` que pasamos a `.tx()`):
@@ -50,15 +50,18 @@ export const PROGRESS_TEXT: Record<ProgressStep, string> = {
   error: 'No se pudo completar',
 };
 
+/** Línea de `actualizando` cuando la operación es el username. */
+export const USERNAME_UPDATING = 'Leyendo de la blockchain…';
+
 /** Nombre corto de cada paso en la lista. */
 export const STEP_LABEL: Record<ProgressStep, string> = {
   conectando: 'Conectar cuenta',
   'permiso-gas': 'Permiso de gas',
-  simulando: 'Simular',
-  firma: 'Firmar en el teléfono',
-  enviando: 'Enviar',
-  confirmando: 'Confirmar en la blockchain',
-  actualizando: 'Actualizar ranking',
+  simulando: 'Simulando',
+  firma: 'Firma en tu teléfono',
+  enviando: 'Enviando',
+  confirmando: 'Confirmando en la blockchain',
+  actualizando: 'Actualizando',
   listo: 'Listo',
   error: 'Error',
 };
@@ -127,7 +130,7 @@ export interface ProgressView {
   tone: 'curso' | 'listo' | 'error';
 }
 
-/** Lo que dibuja components/Progreso.ts. null = no se muestra. */
+/** Lo que dibuja components/TxEstado.ts. null = no se muestra. */
 export function progressView(p: Progress | null, ops: readonly ProgressOp[]): ProgressView | null {
   if (!p || !ops.includes(p.op)) return null;
   const order = STEPS[p.op];
@@ -143,6 +146,8 @@ export function progressView(p: Progress | null, ops: readonly ProgressOp[]): Pr
     return { step, label: STEP_LABEL[step], status };
   });
   let line = p.message;
+  // Al guardar el username se relee la cuenta, no el ranking.
+  if (p.op === 'username' && p.step === 'actualizando') line = USERNAME_UPDATING;
   if (p.step === 'error' && p.kind) line = `${KIND_TITLE[p.kind]}. ${p.message}`;
   return { steps, line, tone: p.step === 'listo' ? 'listo' : p.step === 'error' ? 'error' : 'curso' };
 }

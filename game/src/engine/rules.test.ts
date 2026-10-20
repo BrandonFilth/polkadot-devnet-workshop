@@ -18,12 +18,14 @@ import {
   CONTROLS_HEIGHT_PX,
   HUD_HEIGHT_PX,
   JOYSTICK_DEAD_ZONE,
+  JOYSTICK_DIAGONAL_HALF_DEG,
   JOYSTICK_KNOB_RADIUS_PX,
   JOYSTICK_RADIUS_PX,
   KEYBOARD_MIN_PX,
   MIN_TILE_PX,
   PAUSE_BUTTON_PX,
   PLAYER_SPEED,
+  RANKING_MAX_HEIGHT_PX,
   VIEW_CROP_TILES,
 } from './rules';
 
@@ -68,6 +70,13 @@ describe('rules: dificultad', () => {
     expect(ghostCount(r)).toBe(count);
     expect(round3(ghostSpeed(r))).toBe(speed);
     expect(round3(frightenedSeconds(r))).toBe(fright);
+  });
+
+  it('diagonal del joystick y alto del ranking', () => {
+    expect(JOYSTICK_DIAGONAL_HALF_DEG).toBe(32.5);
+    // 75° cae dentro del sector diagonal (45 ± 32.5) con margen.
+    expect(Math.abs(75 - 45)).toBeLessThan(JOYSTICK_DIAGONAL_HALF_DEG - 1);
+    expect(RANKING_MAX_HEIGHT_PX).toBe(320);
   });
 
   it('pantalla y controles con los valores pedidos', () => {

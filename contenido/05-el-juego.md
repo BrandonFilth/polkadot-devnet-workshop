@@ -99,16 +99,21 @@ ya desplegado: `0x0aAf511a454c6A522b37210ca6931Cde1c400Ac9`.
 
 Puedes ver el contrato en [Blockscout](https://blockscout-testnet.polkadot.io/address/0x0aAf511a454c6A522b37210ca6931Cde1c400Ac9?tab=index).
 
+La muestra abre en una **pantalla de inicio**: Jugar, Conectar cuenta (recomendado), Ranking y, ya
+con cuenta, tu Username. Conectar es opcional: si tocas Jugar sin cuenta, un aviso te recuerda una
+sola vez que sin cuenta no se guarda tu récord, y puedes jugar igual.
+
 Prueba:
 
-- Moverte con swipe o con el joystick.
+- Conectar tu cuenta desde la pantalla de inicio.
+- Moverte con el joystick (también en diagonal: si lo inclinas arriba y a la derecha, gira a la
+  derecha en el primer cruce donde se pueda), con swipe o con las flechas.
 - Comer bolitas y bolitas especiales, y comerte a los fantasmas asustados.
 - Chocar con un fantasma y perder vidas hasta el fin de la partida.
 - Vaciar el laberinto y ver que cada ronda se pone más difícil.
-- Conectar tu cuenta.
-- Guardar un récord con una firma y verlo en el ranking.
+- Guardar un récord con una firma: los pasos salen en un popup aparte, encima del fin.
+- Ver el ranking en su propia pestaña (Ver ranking en el fin, Ranking en el inicio o en el menú).
 - Elegir tu username desde el menú, aunque todavía no tengas récord.
-- Ver el ranking desde el menú.
 
 Juega 5 minutos y anota 3 cosas que harías distinto. Después armas la tuya con los prompts, fase por
 fase ([sección 3](#3-cómo-vas-a-trabajar)).
@@ -479,9 +484,10 @@ Fase 8 ([prompt](../prompts/08-guarda-tu-record.md)). Esto es lo que tu app debe
 3. **Releer.** Vuelve a leer el récord del contrato, unas cuantas veces si hace falta, porque la red
    puede ir un poco atrás.
 
-Mientras tanto, la muestra dice en qué paso va: Simulando → Esperando tu firma en el teléfono →
-Enviando a la blockchain → Confirmando en la blockchain → Actualizando ranking → Listo, o el error con
-su motivo (firma rechazada, sin respuesta a tiempo, sin gas). Cada paso sale de un evento real del SDK
+Mientras tanto, la muestra dice en qué paso va en un popup aparte, encima de la pantalla desde la que
+firmaste (y que queda bloqueada hasta que termine): Simulando → Firma en tu teléfono → Enviando →
+Confirmando en la blockchain → Actualizando → Listo, o el error con su motivo (firma rechazada, sin
+respuesta a tiempo, sin gas), con un botón Cerrar. Cada paso sale de un evento real del SDK
 (`onStatus` de `.tx()`) o de un paso propio de la app (la simulación y la relectura); ninguno se
 muestra si no pasó.
 

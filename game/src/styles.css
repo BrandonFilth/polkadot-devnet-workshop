@@ -6,7 +6,9 @@
   --ink: #f2f2ef;
   --muted: #8b8b86;
   --line: #2a2a2a;
+  --panel: #0b0b0b;
   --accent: #ff2867;
+  --ranking-max-h: 320px;
   --mono: 'JetBrains Mono', Consolas, monospace;
   --display: 'Space Mono', 'JetBrains Mono', monospace;
   --hud-h: 44px;
@@ -188,6 +190,18 @@ body {
   }
 }
 
+/* Celular en vertical: el laberinto justo debajo del HUD (--maze-h lo calcula app.ts con portraitSplit)
+   y la zona de controles se queda con el resto; el joystick y la pausa van centrados en ella. */
+@media (pointer: coarse) and (orientation: portrait) {
+  #app {
+    grid-template-rows: var(--hud-h) var(--maze-h, minmax(0, 1fr)) minmax(var(--controls-h), 1fr);
+  }
+
+  .controles {
+    height: auto;
+  }
+}
+
 /* Mientras escribes (teclado del celular abierto) los controles se esconden. */
 #app.teclado .controles {
   display: none;
@@ -291,9 +305,49 @@ body {
   /* Centrado que no recorta arriba cuando el contenido desborda y se desplaza. */
   justify-content: flex-start;
   gap: 16px;
-  padding: 24px;
+  padding: 16px;
   text-align: center;
-  background: rgba(5, 5, 5, 0.78);
+  /* Opaco: el laberinto nunca se ve detrás del texto de pausa ni del fin. */
+  background: var(--bg);
+}
+
+/* Pausa y fin tapan escenario y controles (debajo del HUD): el popup nunca queda cortado por el alto del
+   laberinto. «LISTO» y «RONDA N» siguen dentro del escenario. */
+.overlay:not(.overlay--quiet) {
+  position: fixed;
+  inset: calc(env(safe-area-inset-top) + var(--hud-h)) 0 0;
+  z-index: 5;
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
+
+/* Pausa y fin: un panel opaco con borde. */
+.overlay-box {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 420px;
+  padding: 24px 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+.overlay-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.overlay-row[hidden] {
+  display: none;
+}
+
+.overlay-row .overlay-secondary {
+  min-width: 140px;
 }
 
 .overlay::before,
@@ -325,10 +379,25 @@ body {
   color: var(--muted);
 }
 
-/* «LISTO»: deja ver el tablero y no bloquea el swipe. */
+/* «LISTO» y «RONDA N»: el contenedor deja ver el tablero y no bloquea el swipe, pero el texto va en una
+   pastilla opaca (el laberinto nunca se ve a través del texto). Único fondo transparente de una capa. */
 .overlay--quiet {
   background: transparent;
   pointer-events: none;
+}
+
+.overlay--quiet .overlay-box {
+  width: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+.overlay--quiet h1 {
+  padding: 4px 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
 }
 
 .overlay [hidden] {
@@ -463,18 +532,21 @@ button:focus-visible {
   touch-action: manipulation;
 }
 
-.overlay .conexion-status,
 .overlay .fin-notice,
-.overlay .fin-message,
-.overlay .conexion-result,
-.overlay .ranking-status {
+.overlay .fin-message {
   max-width: 36ch;
   font-size: 15px;
 }
 
-.overlay .conexion-status--aviso,
 .overlay .fin-notice {
   color: var(--ink);
+}
+
+.ranking-status {
+  margin: 0;
+  max-width: 36ch;
+  font-size: 15px;
+  color: var(--muted);
 }
 
 .overlay .fin-summary {
@@ -502,6 +574,30 @@ button:focus-visible {
   flex-direction: column;
   align-items: center;
   gap: 8px;
+}
+
+/* La lista se desplaza dentro de su caja: alto máximo fijo (RANKING_MAX_HEIGHT_PX), encabezado fijo. */
+.ranking-scroll {
+  width: 100%;
+  max-height: var(--ranking-max-h);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+}
+
+.ranking-scroll:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.ranking-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--panel);
 }
 
 .ranking-table {
@@ -552,15 +648,155 @@ button:focus-visible {
 }
 
 .fin [hidden],
-.conexion [hidden] {
+.inicio [hidden] {
   display: none;
 }
 
-.conexion {
+/* Pantalla de inicio: opaca, a pantalla completa, tapa HUD, escenario y controles. */
+.inicio {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+    max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  background: var(--bg);
+  text-align: center;
+}
+
+.inicio::before,
+.inicio::after {
+  content: '';
+  flex: 1 0 0;
+}
+
+.inicio[hidden] {
+  display: none;
+}
+
+.inicio-box {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.inicio h1 {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(36px, 11vw, 72px);
+  letter-spacing: 0.04em;
+  color: var(--accent);
+}
+
+.inicio p {
+  margin: 0;
+  max-width: 34ch;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.inicio .inicio-sugerencia,
+.inicio .inicio-status--aviso {
+  color: var(--ink);
+}
+
+.inicio-jugar {
+  min-width: 220px;
+  min-height: 56px;
+  font-size: 22px;
+}
+
+.inicio-conectar--recomendado {
+  border-color: var(--accent);
+}
+
+/* Aviso «Sin cuenta no se guardará tu récord»: diálogo opaco sobre el inicio. */
+.aviso {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: var(--bg);
+}
+
+.aviso[hidden] {
+  display: none;
+}
+
+.aviso-box,
+.tx-box {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 360px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  text-align: center;
+}
+
+.aviso-box h2,
+.tx-box h2 {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+}
+
+.aviso-box p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--ink);
+}
+
+/* Popup de estados: encima de todo (salvo «Gira tu teléfono»). El fondo bloquea los toques; lo de abajo
+   ya es opaco, así que se ve el popup de fin (o el username) detrás de este. */
+.tx {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: transparent;
+}
+
+.tx[hidden] {
+  display: none;
+}
+
+.tx-box {
+  border-color: var(--muted);
+  box-shadow: 0 16px 40px #000000, 0 0 0 1px #000000;
+  outline: none;
+}
+
+.tx-box .progreso {
+  align-self: center;
+}
+
+.tx-box[data-tone='error'] {
+  border-color: var(--accent);
 }
 
 /* Modal de username: fijo al área visible (visualViewport, ver components/teclado.ts). */
@@ -578,7 +814,7 @@ button:focus-visible {
   overflow-y: auto;
   touch-action: pan-y;
   overscroll-behavior: contain;
-  background: rgba(5, 5, 5, 0.92);
+  background: var(--bg);
 }
 
 .modal::before,
@@ -610,7 +846,7 @@ button:focus-visible {
   padding: 20px;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: var(--bg);
+  background: var(--panel);
 }
 
 #app.teclado .modal-box {
@@ -661,13 +897,14 @@ button:focus-visible {
   display: none;
 }
 
-/* Menú superior: hoja fija debajo del HUD, por encima del escenario y de los controles. */
+/* Menú superior: hoja fija debajo del HUD, por encima del escenario y de los controles. Fondo opaco:
+   el laberinto no se ve detrás; el HUD queda a la vista (su botón Menú lo cierra). */
 .menu {
   position: fixed;
-  inset: 0;
+  inset: calc(env(safe-area-inset-top) + var(--hud-h)) 0 0;
   z-index: 20;
-  padding: calc(env(safe-area-inset-top) + var(--hud-h)) env(safe-area-inset-right) 0 env(safe-area-inset-left);
-  background: rgba(5, 5, 5, 0.6);
+  padding: 0 env(safe-area-inset-right) 0 env(safe-area-inset-left);
+  background: var(--bg);
   touch-action: pan-y;
 }
 
@@ -690,7 +927,7 @@ button:focus-visible {
   border: 1px solid var(--line);
   border-top: 0;
   border-radius: 0 0 12px 12px;
-  background: var(--bg);
+  background: var(--panel);
 }
 
 .menu-bar {

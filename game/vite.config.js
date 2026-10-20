@@ -13,6 +13,8 @@ export default defineConfig({
           environment: 'node',
           include: ['src/**/*.test.ts'],
           exclude: ['src/**/*.red.test.ts'],
+          // styles.css llega como texto a los tests de superficies opacas y del ranking (components/ranking.test.ts).
+          css: { include: [/styles\.css/] },
         },
       },
       {

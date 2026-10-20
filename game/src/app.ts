@@ -1,15 +1,17 @@
 // Arma el DOM y conecta motor, dibujo, controles y componentes.
-import { createConexion } from './components/Conexion';
+import { capas, type Capa } from './components/capas';
 import { createControles } from './components/Controles';
 import { createFinDePartida, type Mine } from './components/FinDePartida';
 import { createHud } from './components/Hud';
-import { createMenu, pauseForMenu } from './components/Menu';
+import { createInicio } from './components/Inicio';
+import { createMenu, pauseForMenu, type MenuTab } from './components/Menu';
 import { createOverlay } from './components/Overlay';
-import { createRanking } from './components/Ranking';
 import { attachTeclado } from './components/teclado';
+import { createTxEstado } from './components/TxEstado';
 import { createUsername } from './components/Username';
+import { withDebug } from './dev/debug';
 import { createHub } from './hub/hub';
-import { createGame, setPaused, update } from './engine/game';
+import { createGame, goToTitle, setPaused, update } from './engine/game';
 import { MAZE, parseMaze } from './engine/maze';
 import {
   CONTROLS_HEIGHT_PX,
@@ -17,12 +19,15 @@ import {
   JOYSTICK_KNOB_RADIUS_PX,
   JOYSTICK_RADIUS_PX,
   PAUSE_BUTTON_PX,
+  RANKING_MAX_HEIGHT_PX,
 } from './engine/rules';
 import { attachControls } from './input/controls';
 import { startLoop } from './loop';
 import { createRenderer } from './render/draw';
+import { portraitSplit } from './render/layout';
 
 const LANDSCAPE_PHONE = '(orientation: landscape) and (pointer: coarse)';
+const PORTRAIT_PHONE = '(orientation: portrait) and (pointer: coarse)';
 
 export function startApp(root: HTMLElement): void {
   const maze = parseMaze(MAZE);
@@ -34,6 +39,7 @@ export function startApp(root: HTMLElement): void {
   root.style.setProperty('--joy-r', `${JOYSTICK_RADIUS_PX}px`);
   root.style.setProperty('--knob-r', `${JOYSTICK_KNOB_RADIUS_PX}px`);
   root.style.setProperty('--pause-size', `${PAUSE_BUTTON_PX}px`);
+  root.style.setProperty('--ranking-max-h', `${RANKING_MAX_HEIGHT_PX}px`);
 
   const header = document.createElement('header');
   header.className = 'hud';
@@ -57,8 +63,34 @@ export function startApp(root: HTMLElement): void {
 
   root.replaceChildren(header, stage, controles.element, rotate);
 
+  // Celular en vertical: el laberinto pegado al HUD (--maze-h) y lo que sobra para los controles (styles.css).
+  const portrait = window.matchMedia(PORTRAIT_PHONE);
+  const syncSplit = () => {
+    if (!portrait.matches) {
+      root.style.removeProperty('--maze-h');
+      return;
+    }
+    const cs = getComputedStyle(root);
+    const px = (name: string) => parseFloat(cs.getPropertyValue(name)) || 0;
+    const split = portraitSplit({
+      width: root.clientWidth,
+      height: root.clientHeight,
+      safeTop: px('padding-top'),
+      safeRight: px('padding-right'),
+      safeBottom: px('padding-bottom'),
+      safeLeft: px('padding-left'),
+      touch: true,
+    });
+    root.style.setProperty('--maze-h', `${split.mazeHeight}px`);
+  };
+  portrait.addEventListener('change', syncSplit);
+  window.addEventListener('resize', syncSplit);
+  syncSplit();
+
   // Un solo Hub para toda la sesión. El juego no espera al Host.
-  const hub = createHub();
+  // En desarrollo, `?debug` permite simular estados para las capturas; en el build esta rama no existe.
+  const realHub = createHub();
+  const hub = import.meta.env.DEV ? withDebug(realHub, state) : realHub;
   void hub.start();
   const busy = () => hub.getState().busy;
 
@@ -78,13 +110,11 @@ export function startApp(root: HTMLElement): void {
     );
   };
 
-  const ranking = createRanking(hub);
-  const conexion = createConexion(hub);
+  // Capas: lo de abajo de la superficie de arriba queda inerte (applyLayers, más abajo).
+  const layers = () => applyLayers();
+
   // Modal y menú van en #app (no en el escenario) para que su overflow no los recorte.
-  const username = createUsername(root, hub, () => {
-    refreshMine();
-    ranking.load();
-  });
+  const username = createUsername(root, hub, () => refreshMine(), layers);
   const openUsername = () => {
     pauseForMenu(state);
     username.open(typeof mine === 'object' && mine ? mine.username : '');
@@ -93,29 +123,9 @@ export function startApp(root: HTMLElement): void {
     hub,
     score: () => state.score,
     mine: () => mine,
-    onSaved: () => {
-      refreshMine();
-      ranking.load();
-    },
+    onSaved: () => refreshMine(),
     openUsername,
   });
-
-  // Botón Username del título: solo con cuenta conectada.
-  const nameButton = document.createElement('button');
-  nameButton.type = 'button';
-  nameButton.className = 'overlay-secondary';
-  nameButton.hidden = true;
-  nameButton.addEventListener('click', openUsername);
-  let shownName: string | null = null;
-  const syncNameButton = () => {
-    const label =
-      hub.getState().account === null ? '' : typeof mine === 'object' && mine && mine.username !== '' ? mine.username : 'Elige un username';
-    if (label === shownName) return;
-    shownName = label;
-    nameButton.hidden = label === '';
-    nameButton.textContent = label;
-    nameButton.setAttribute('aria-label', label === 'Elige un username' ? label : `Username: ${label}`);
-  };
 
   // Al pasar de sin cuenta a una cuenta, se relee el récord.
   let hadAccount = hub.getState().account !== null;
@@ -129,39 +139,105 @@ export function startApp(root: HTMLElement): void {
     hadAccount = has;
   });
 
+  // El menú devuelve el foco a quien lo abrió (botón Menú, Ranking del inicio o Ver ranking del fin).
+  let menuOpener: HTMLElement | null = null;
   const menu = createMenu({
     parent: root,
     state,
     hub,
     mine: () => mine,
     openUsername,
-    trigger: () => hud.menuButton,
+    trigger: () => menuOpener ?? hud.menuButton,
+    onToggle: layers,
   });
+  const openMenu = (tab?: MenuTab) => {
+    menuOpener = document.activeElement instanceof HTMLElement && document.activeElement !== document.body ? document.activeElement : null;
+    menu.open(tab);
+  };
   const hud = createHud(
     header,
     state,
     () => (hub.getState().account !== null && typeof mine === 'object' && mine ? mine.best : null),
-    () => (menu.isOpen ? menu.close() : menu.open()),
+    () => {
+      if (menu.isOpen) return menu.close();
+      menuOpener = null;
+      menu.open();
+    },
   );
   hud.sync();
+
   const overlay = createOverlay(stage, state, {
-    titleTop: [conexion.element],
-    title: [nameButton, ranking.element],
     fin: [fin.element],
-    finAfter: [ranking.element],
     busy,
+    onVerRanking: () => openMenu('ranking'),
+    onInicio: () => goToTitle(state),
     onPhase(phase) {
-      if (phase === 'titulo') ranking.load();
       if (phase === 'fin') {
         fin.enter();
-        ranking.load();
         if (hub.getState().account !== null) refreshMine();
       }
     },
   });
-  syncNameButton();
+
+  // Pantalla de inicio: opaca, tapa HUD, escenario y controles. El aviso «sin cuenta» va encima.
+  const inicio = createInicio(root, {
+    state,
+    hub,
+    mine: () => mine,
+    onRanking: () => openMenu('ranking'),
+    onUsername: openUsername,
+    onToggle: layers,
+  });
+
+  // Popup de estados: el último en #app, por encima de todo lo demás (salvo «Gira tu teléfono»).
+  const tx = createTxEstado(root, hub, layers);
+  root.append(rotate);
+
+  const LAYER_ELEMENTS: Record<Exclude<Capa, 'juego'>, HTMLElement> = {
+    inicio: inicio.element,
+    pausa: overlay.element,
+    fin: overlay.element,
+    menu: menu.element,
+    username: username.element,
+    aviso: inicio.aviso,
+    tx: tx.element,
+  };
+  let top: Capa = 'juego';
+  let shownLayers = '';
+  const setInert = (el: HTMLElement, inert: boolean) => {
+    if (el.inert === inert) return;
+    el.inert = inert;
+    if (inert) el.setAttribute('aria-hidden', 'true');
+    else el.removeAttribute('aria-hidden');
+  };
+  function applyLayers() {
+    const c = capas({
+      phase: state.phase,
+      menuOpen: menu.isOpen,
+      usernameOpen: username.isOpen,
+      avisoOpen: inicio.avisoOpen,
+      txOpen: tx.isOpen,
+    });
+    top = c.top;
+    const key = c.open.join(',');
+    if (key === shownLayers) return;
+    shownLayers = key;
+    // Tablero y controles: inertes con cualquier superficie encima (pausa y fin los tapan; ahí está Seguir).
+    setInert(canvas, top !== 'juego');
+    setInert(controles.element, top !== 'juego');
+    // HUD: el botón Menú sigue a la mano en pausa, fin y con el menú abierto (lo cierra).
+    setInert(header, top === 'inicio' || top === 'username' || top === 'aviso' || top === 'tx');
+    for (const [capa, el] of Object.entries(LAYER_ELEMENTS) as Array<[Capa, HTMLElement]>) {
+      if (capa === 'pausa' || capa === 'fin') continue;
+      setInert(el, c.inert.includes(capa));
+    }
+    setInert(overlay.element, c.inert.includes('pausa') || c.inert.includes('fin'));
+  }
+
   overlay.sync();
-  attachControls(state, stage, busy);
+  inicio.sync();
+  applyLayers();
+  attachControls(state, stage, busy, () => top !== 'juego');
   attachTeclado(root);
 
   // Pausa automática: siempre setPaused(true). Nada reanuda solo.
@@ -200,9 +276,10 @@ export function startApp(root: HTMLElement): void {
       scene.ghosts = state.ghosts;
       scene.frightTimer = state.frightTimer;
       overlay.sync();
+      inicio.sync();
       if (state.phase === 'fin') fin.sync();
-      if (state.phase === 'titulo') syncNameButton();
       if (menu.isOpen) menu.sync();
+      applyLayers();
       hud.sync();
       controles.sync();
       renderer.draw(scene, timeMs);

@@ -1,16 +1,49 @@
-// Joystick virtual: el desplazamiento de la perilla se convierte en una de las 4 direcciones del laberinto.
-import { JOYSTICK_DEAD_ZONE } from '../engine/rules';
+// Joystick virtual: el desplazamiento de la perilla se convierte en direcciones del laberinto (8 sectores).
+import { JOYSTICK_DEAD_ZONE, JOYSTICK_DIAGONAL_HALF_DEG } from '../engine/rules';
 import type { Dir } from '../engine/types';
 
+/** Lo que pide un gesto: la dirección del eje dominante y, en diagonal, la del otro eje. */
+export interface Wanted {
+  primary: Dir;
+  secondary: Dir | null;
+}
+
 /**
- * Dirección para un desplazamiento (dx, dy) desde el centro de la base. `dy` positivo es hacia abajo.
- * Dentro de la zona muerta (deadZone × radio) da null. Fuera, gana el eje dominante: 4 sectores de 90°
- * centrados en los ejes; en el empate exacto (45°) gana el horizontal, igual que el swipe.
+ * 8 sectores para un desplazamiento (dx, dy) fuera de la zona muerta. `dy` positivo es hacia abajo.
+ * Recto si el ángulo queda a (45 − halfDeg)° o menos de un eje; si no, diagonal: principal = eje
+ * dominante (en el empate exacto de 45° gana el horizontal), secundaria = el otro eje.
+ */
+export function sectorDirections(dx: number, dy: number, halfDeg = JOYSTICK_DIAGONAL_HALF_DEG): Wanted {
+  const ax = Math.abs(dx);
+  const ay = Math.abs(dy);
+  const horizontal: Dir = dx > 0 ? 'derecha' : 'izquierda';
+  const vertical: Dir = dy > 0 ? 'abajo' : 'arriba';
+  const band = 45 - halfDeg;
+  // Ángulo desde el eje horizontal, de 0 a 90.
+  const angle = (Math.atan2(ay, ax) * 180) / Math.PI;
+  if (angle <= band) return { primary: horizontal, secondary: null };
+  if (angle >= 90 - band) return { primary: vertical, secondary: null };
+  return ax >= ay ? { primary: horizontal, secondary: vertical } : { primary: vertical, secondary: horizontal };
+}
+
+/** Direcciones del joystick. Dentro de la zona muerta (deadZone × radio) da null. */
+export function joystickDirections(
+  dx: number,
+  dy: number,
+  radius: number,
+  deadZone = JOYSTICK_DEAD_ZONE,
+  halfDeg = JOYSTICK_DIAGONAL_HALF_DEG,
+): Wanted | null {
+  if (Math.hypot(dx, dy) < deadZone * radius) return null;
+  return sectorDirections(dx, dy, halfDeg);
+}
+
+/**
+ * Dirección principal para un desplazamiento (dx, dy): gana el eje dominante; en el empate exacto
+ * (45°) gana el horizontal, igual que el swipe. Dentro de la zona muerta da null.
  */
 export function joystickDirection(dx: number, dy: number, radius: number, deadZone = JOYSTICK_DEAD_ZONE): Dir | null {
-  if (Math.hypot(dx, dy) < deadZone * radius) return null;
-  if (Math.abs(dx) >= Math.abs(dy)) return dx > 0 ? 'derecha' : 'izquierda';
-  return dy > 0 ? 'abajo' : 'arriba';
+  return joystickDirections(dx, dy, radius, deadZone)?.primary ?? null;
 }
 
 /** Posición de la perilla: el mismo desplazamiento, pero sin salir del radio de la base. */

@@ -3,7 +3,6 @@
 import { setPaused, type GameState } from '../engine/game';
 import type { HostPhase, Hub } from '../hub/hub';
 import type { Mine } from './FinDePartida';
-import { createProgreso } from './Progreso';
 import { createRanking } from './Ranking';
 
 export type MenuTab = 'username' | 'ranking';
@@ -63,6 +62,8 @@ export function createMenu(opts: {
   openUsername: () => void;
   /** Botón que abre el menú: recibe el foco al cerrar. */
   trigger: () => HTMLElement | null;
+  /** Al abrir o cerrar, antes de mover el foco (app.ts reajusta las capas). */
+  onToggle?: () => void;
 }): Menu {
   const { hub } = opts;
   const element = document.createElement('div');
@@ -117,12 +118,12 @@ export function createMenu(opts: {
   userButton.className = 'overlay-secondary';
   const userHint = document.createElement('p');
   userHint.className = 'menu-hint';
-  const progreso = createProgreso(hub, ['conectar', 'guardar', 'username']);
+  // Los pasos de conectar van en el popup de estados (TxEstado); aquí solo lo que no pasó por él.
   const userResult = document.createElement('p');
   userResult.className = 'menu-hint';
   userResult.setAttribute('role', 'status');
   userResult.hidden = true;
-  userPanel.append(userText, userButton, userHint, progreso.element, userResult);
+  userPanel.append(userText, userButton, userHint, userResult);
 
   // Ranking: su propia instancia; se lee por ETH-RPC, también fuera del Host.
   const ranking = createRanking(hub);
@@ -173,7 +174,6 @@ export function createMenu(opts: {
       userResult.hidden = true;
       void hub.start();
     } else if (action === 'conectar') {
-      progreso.reset();
       const r = await hub.connect();
       const p = hub.getState().progress;
       userResult.textContent = r.message;
@@ -206,6 +206,7 @@ export function createMenu(opts: {
   const close = () => {
     if (element.hidden) return;
     element.hidden = true;
+    opts.onToggle?.();
     const trigger = opts.trigger();
     trigger?.setAttribute('aria-expanded', 'false');
     trigger?.focus({ preventScroll: true });
@@ -248,10 +249,10 @@ export function createMenu(opts: {
     },
     open(next = tab) {
       pauseForMenu(opts.state);
-      progreso.reset();
       userResult.hidden = true;
       shownKey = '';
       element.hidden = false;
+      opts.onToggle?.();
       opts.trigger()?.setAttribute('aria-expanded', 'true');
       show(next);
       (next === 'ranking' ? rankTab : userTab).focus({ preventScroll: true });

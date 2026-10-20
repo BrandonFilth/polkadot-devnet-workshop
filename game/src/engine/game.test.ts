@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createGame, setDirection, setPaused, start, togglePause, update, type GameState } from './game';
+import { createGame, goToTitle, setDirection, setDirections, setPaused, start, togglePause, update, type GameState } from './game';
 import { createGhost } from './ghosts';
 import { MAZE, parseMaze } from './maze';
 import {
@@ -60,6 +60,46 @@ describe('game', () => {
     expect(s.phase).toBe('jugando');
     update(s, 0.05);
     expect(s.player.pos.x).toBeLessThan(9);
+  });
+
+  it('setDirections guarda las dos pedidas solo en listo y jugando', () => {
+    const s = createGame(1);
+    setDirections(s, 'arriba', 'derecha');
+    expect(s.player.nextDir).toBeNull();
+    expect(s.player.altDir).toBeNull();
+    start(s);
+    setDirections(s, 'arriba', 'derecha');
+    expect(s.player.nextDir).toBe('arriba');
+    expect(s.player.altDir).toBe('derecha');
+    setDirection(s, 'abajo');
+    expect(s.player.altDir).toBeNull();
+    setPaused(s, true);
+    setDirections(s, 'izquierda', 'arriba');
+    expect(s.player.nextDir).toBe('abajo');
+  });
+
+  it('goToTitle solo desde fin: vuelve a titulo con tablero nuevo y la misma semilla', () => {
+    const s = createGame(7);
+    start(s);
+    update(s, READY_SECONDS + 0.5);
+    goToTitle(s);
+    expect(s.phase).toBe('jugando');
+    s.phase = 'fin';
+    s.score = 990;
+    s.lives = 0;
+    s.round = 4;
+    s.orbs.clear();
+    const seed = s.seed;
+    goToTitle(s);
+    expect(s.phase).toBe('titulo');
+    expect(s.score).toBe(0);
+    expect(s.lives).toBe(LIVES);
+    expect(s.round).toBe(1);
+    expect(s.orbs.size).toBeGreaterThan(0);
+    expect(s.player.pos).toEqual({ x: 9, y: 15 });
+    expect(s.seed).toBe(seed);
+    start(s);
+    expect(s.phase).toBe('listo');
   });
 
   it('setPaused(true) dos veces deja pausa y no reanuda', () => {

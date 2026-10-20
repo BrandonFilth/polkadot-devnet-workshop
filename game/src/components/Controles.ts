@@ -1,8 +1,8 @@
-// Controles táctiles estilo Atari: joystick (base + perilla) a la izquierda y botón rojo de pausa a la derecha.
-import { setDirection, togglePause, type GameState } from '../engine/game';
+// Controles táctiles estilo Atari: joystick (base + perilla, 8 sectores) a la izquierda y botón rojo de pausa a la derecha.
+import { setDirections, togglePause, type GameState } from '../engine/game';
 import { JOYSTICK_RADIUS_PX } from '../engine/rules';
 import type { Dir } from '../engine/types';
-import { joystickDirection, knobOffset } from '../input/joystick';
+import { joystickDirections, knobOffset } from '../input/joystick';
 
 export interface Controles {
   readonly element: HTMLElement;
@@ -36,7 +36,9 @@ export function createControles(state: GameState): Controles {
 
   // Un solo dedo a la vez. Al soltar la perilla vuelve al centro y Polka-Man sigue su camino.
   let active: { id: number; cx: number; cy: number } | null = null;
-  let last: Dir | null = null;
+  // Último pedido enviado («principal|secundaria») y su principal, para no repetir llamadas.
+  let last: string | null = null;
+  let lastPrimary: Dir | null = null;
 
   const moveKnob = (x: number, y: number) => {
     knob.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
@@ -48,10 +50,13 @@ export function createControles(state: GameState): Controles {
     const dy = e.clientY - active.cy;
     const k = knobOffset(dx, dy, JOYSTICK_RADIUS_PX);
     moveKnob(k.x, k.y);
-    const dir = joystickDirection(dx, dy, JOYSTICK_RADIUS_PX);
-    if (dir && dir !== last) {
-      last = dir;
-      setDirection(state, dir);
+    const w = joystickDirections(dx, dy, JOYSTICK_RADIUS_PX);
+    if (!w) return;
+    const key = `${w.primary}|${w.secondary}`;
+    if (key !== last) {
+      last = key;
+      lastPrimary = w.primary;
+      setDirections(state, w.primary, w.secondary);
     }
   };
 
@@ -61,6 +66,7 @@ export function createControles(state: GameState): Controles {
     const rect = base.getBoundingClientRect();
     active = { id: e.pointerId, cx: rect.left + rect.width / 2, cy: rect.top + rect.height / 2 };
     last = null;
+    lastPrimary = null;
     base.setPointerCapture?.(e.pointerId);
     base.classList.add('joystick--activo');
     track(e);
@@ -73,7 +79,10 @@ export function createControles(state: GameState): Controles {
   const onUp = (e: PointerEvent) => {
     if (!active || e.pointerId !== active.id) return;
     active = null;
+    // Al soltar, una diagonal queda recta: Polka-Man no sigue en zigzag con la perilla en el centro.
+    if (lastPrimary) setDirections(state, lastPrimary, null);
     last = null;
+    lastPrimary = null;
     base.classList.remove('joystick--activo');
     moveKnob(0, 0);
   };

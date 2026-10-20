@@ -1,5 +1,5 @@
 // Cuentas del tamaño del laberinto en pantalla. Puro (sin DOM) para probarlo con Vitest.
-import { CONTROLS_HEIGHT_PX, HUD_HEIGHT_PX, MIN_TILE_PX, VIEW_CROP_TILES } from '../engine/rules';
+import { CONTROLS_HEIGHT_PX, HUD_HEIGHT_PX, MAZE_HEIGHT, MAZE_WIDTH, MIN_TILE_PX, VIEW_CROP_TILES } from '../engine/rules';
 
 export interface Viewport {
   width: number;
@@ -21,6 +21,17 @@ export function stageSize(v: Viewport): { width: number; height: number } {
     width: Math.max(0, v.width - v.safeLeft - v.safeRight),
     height: Math.max(0, v.height - v.safeTop - v.safeBottom - HUD_HEIGHT_PX - (v.touch ? CONTROLS_HEIGHT_PX : 0)),
   };
+}
+
+/**
+ * Celular en vertical: el laberinto va pegado al HUD con su alto exacto y la zona de controles se
+ * queda con todo lo que sobra (nunca menos de CONTROLS_HEIGHT_PX). La casilla es la misma de siempre.
+ */
+export function portraitSplit(v: Viewport): { tile: number; mazeHeight: number; controlsHeight: number } {
+  const stage = stageSize({ ...v, touch: true });
+  const layout = mazeLayout(MAZE_WIDTH, MAZE_HEIGHT, stage.width, stage.height);
+  const mazeHeight = Math.min(layout.cssHeight, stage.height);
+  return { tile: layout.tile, mazeHeight, controlsHeight: CONTROLS_HEIGHT_PX + (stage.height - mazeHeight) };
 }
 
 export interface MazeLayout {

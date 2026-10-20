@@ -3,14 +3,16 @@ import { INVALID_USERNAME_MESSAGE } from '../contract/errors';
 import type { Hub } from '../hub/hub';
 import { isValidUsername } from '../lib/username';
 import { DONE_VISIBLE_MS } from '../engine/rules';
-import { createProgreso } from './Progreso';
 
 export interface Username {
+  readonly element: HTMLElement;
+  readonly isOpen: boolean;
   /** Abre el modal con el username actual. */
   open(current: string): void;
 }
 
-export function createUsername(parent: HTMLElement, hub: Hub, onSaved: () => void): Username {
+/** `onToggle` se llama al abrir o cerrar, antes de mover el foco (app.ts reajusta las capas). */
+export function createUsername(parent: HTMLElement, hub: Hub, onSaved: () => void, onToggle: () => void = () => {}): Username {
   const backdrop = document.createElement('div');
   backdrop.className = 'modal';
   backdrop.hidden = true;
@@ -55,9 +57,8 @@ export function createUsername(parent: HTMLElement, hub: Hub, onSaved: () => voi
   cancel.textContent = 'Cancelar';
   actions.append(submit, cancel);
 
-  const progreso = createProgreso(hub, ['username']);
-
-  dialog.append(title, label, input, message, progreso.element, actions);
+  // Los pasos de la firma van en el popup de estados (TxEstado), encima de este modal.
+  dialog.append(title, label, input, message, actions);
   backdrop.append(dialog);
   parent.append(backdrop);
 
@@ -67,7 +68,9 @@ export function createUsername(parent: HTMLElement, hub: Hub, onSaved: () => voi
   const close = () => {
     if (backdrop.hidden || sending) return;
     backdrop.hidden = true;
-    returnFocus?.focus({ preventScroll: true });
+    onToggle();
+    // Con el popup de estados abierto el foco se queda en su «Cerrar».
+    if (!document.activeElement?.closest?.('.tx')) returnFocus?.focus({ preventScroll: true });
     returnFocus = null;
   };
 
@@ -95,7 +98,6 @@ export function createUsername(parent: HTMLElement, hub: Hub, onSaved: () => voi
     cancel.disabled = true;
     input.readOnly = true;
     message.textContent = '';
-    progreso.reset();
     let saved = false;
     try {
       const r = await hub.setUsername(name);
@@ -147,12 +149,16 @@ export function createUsername(parent: HTMLElement, hub: Hub, onSaved: () => voi
   });
 
   return {
+    element: backdrop,
+    get isOpen() {
+      return !backdrop.hidden;
+    },
     open(current) {
       returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
       input.value = current;
       message.textContent = '';
-      progreso.reset();
       backdrop.hidden = false;
+      onToggle();
       input.focus();
       input.select();
     },

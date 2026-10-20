@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { MAZE, parseMaze, playerCanEnter } from './maze';
 import { advance, type Mover } from './movement';
-import { createPlayer, requestDirection, updatePlayer } from './player';
+import { chooseAtCenter, createPlayer, requestDirection, requestDirections, updatePlayer, type Player } from './player';
+import type { Dir } from './types';
 import { DT } from './rules';
 
 const maze = parseMaze(MAZE);
@@ -103,6 +104,15 @@ describe('Polka-Man', () => {
     expect(p.pos.x).toBeCloseTo(8.8);
   });
 
+  it('la secundaria contraria no invierte; la principal contraria sí, al instante', () => {
+    const p = createPlayer(maze);
+    p.pos = { x: 8.5, y: 15 };
+    requestDirections(p, 'arriba', 'derecha');
+    expect(p.dir).toBe('izquierda');
+    requestDirections(p, 'derecha', 'arriba');
+    expect(p.dir).toBe('derecha');
+  });
+
   it('la boca solo avanza mientras se mueve', () => {
     const p = createPlayer(maze);
     p.pos = { x: 1, y: 19 };
@@ -111,5 +121,81 @@ describe('Polka-Man', () => {
     requestDirection(p, 'derecha');
     updatePlayer(p, maze, 0.05);
     expect(p.mouth).toBeGreaterThan(0);
+  });
+});
+
+describe('Polka-Man: diagonales (dos direcciones pedidas)', () => {
+  /** Sube por la columna 1 desde justo encima de (1, 19); devuelve dónde giró y cómo terminó. */
+  const upColumn1 = (primary: Dir, secondary: Dir | null) => {
+    const p: Player = createPlayer(maze);
+    p.pos = { x: 1, y: 18.95 };
+    p.dir = 'arriba' as Dir;
+    requestDirections(p, primary, secondary);
+    let turnedAt: { x: number; y: number } | null = null;
+    for (let i = 0; i < 120 && !turnedAt; i++) {
+      updatePlayer(p, maze, DT);
+      if (p.dir === 'derecha') turnedAt = { x: Math.round(p.pos.x), y: Math.round(p.pos.y) };
+    }
+    return { p, turnedAt };
+  };
+
+  it('75° (arriba + derecha) subiendo: en (1, 18) sigue arriba y en (1, 17) gira a la derecha', () => {
+    // (2, 18) es pared: ahí no gira. (2, 17) es orbe: ahí sí.
+    const { turnedAt, p } = upColumn1('arriba', 'derecha');
+    expect(turnedAt).toEqual({ x: 1, y: 17 });
+    expect(p.pos.y).toBe(17);
+    for (let i = 0; i < 10; i++) updatePlayer(p, maze, DT);
+    expect(p.pos.x).toBeGreaterThan(1);
+    expect(p.pos.y).toBe(17);
+  });
+
+  it('15° (derecha + arriba) subiendo: también gira a la derecha en (1, 17)', () => {
+    expect(upColumn1('derecha', 'arriba').turnedAt).toEqual({ x: 1, y: 17 });
+  });
+
+  it('90° (arriba sola): no gira; se queda contra la pared en (1, 17) mirando arriba, igual que requestDirection', () => {
+    const { p, turnedAt } = upColumn1('arriba', null);
+    expect(turnedAt).toBeNull();
+    expect(p.pos).toEqual({ x: 1, y: 17 });
+    expect(p.dir).toBe('arriba');
+    const q = createPlayer(maze);
+    q.pos = { x: 1, y: 18.95 };
+    q.dir = 'arriba';
+    requestDirection(q, 'arriba');
+    for (let i = 0; i < 120; i++) updatePlayer(q, maze, DT);
+    expect(q.pos).toEqual(p.pos);
+    expect(q.dir).toBe(p.dir);
+  });
+
+  it('diagonal contra pared en los dos ejes: sigue en su dirección, sin reversa', () => {
+    // Hacia la izquierda por la fila 3, pide arriba + derecha: (2, 2) es pared y la derecha es la contraria.
+    const p = createPlayer(maze);
+    p.pos = { x: 2.2, y: 3 };
+    p.dir = 'izquierda';
+    requestDirections(p, 'arriba', 'derecha');
+    updatePlayer(p, maze, 0.05); // cruza el centro (2, 3)
+    expect(p.dir).toBe('izquierda');
+    expect(p.pos.x).toBeLessThan(2);
+    expect(p.pos.y).toBe(3);
+  });
+
+  it('chooseAtCenter: giro primero, después la otra, si no sigue igual', () => {
+    const open = (...dirs: Dir[]) => (d: Dir) => dirs.includes(d);
+    // Cardinal: lo de siempre.
+    expect(chooseAtCenter('arriba', 'derecha', null, open('derecha', 'arriba'))).toBe('derecha');
+    expect(chooseAtCenter('arriba', 'derecha', null, open('arriba'))).toBe('arriba');
+    // Diagonal: el giro gana aunque sea la secundaria.
+    expect(chooseAtCenter('arriba', 'arriba', 'derecha', open('arriba', 'derecha'))).toBe('derecha');
+    expect(chooseAtCenter('arriba', 'derecha', 'arriba', open('arriba', 'derecha'))).toBe('derecha');
+    // Giro cerrado: la otra pedida si se puede.
+    expect(chooseAtCenter('arriba', 'arriba', 'derecha', open('arriba'))).toBe('arriba');
+    // La secundaria contraria nunca se prueba en un centro.
+    expect(chooseAtCenter('izquierda', 'arriba', 'derecha', open('derecha'))).toBe('izquierda');
+    // Nada abierto: sigue igual (y advance lo detiene en la pared).
+    expect(chooseAtCenter('izquierda', 'arriba', 'derecha', open())).toBe('izquierda');
+    // Sin dirección: principal, después secundaria.
+    expect(chooseAtCenter(null, 'arriba', 'derecha', open('arriba', 'derecha'))).toBe('arriba');
+    expect(chooseAtCenter(null, 'arriba', 'derecha', open('derecha'))).toBe('derecha');
+    expect(chooseAtCenter(null, null, null, open('derecha'))).toBeNull();
   });
 });

@@ -120,6 +120,16 @@ export const JOYSTICK_KNOB_RADIUS_PX = 26;
 /** Zona muerta del joystick, como fracción del radio: más cerca del centro no cambia la dirección. */
 export const JOYSTICK_DEAD_ZONE = 0.3;
 
+/**
+ * Media anchura, en grados, del sector diagonal del joystick (y del swipe) alrededor de cada 45°.
+ * 32.5 → diagonal de 12.5° a 77.5° desde el eje horizontal; recto = ±12.5° alrededor de cada eje.
+ * Con ±22.5 los 75° caerían en «arriba» puro y con ±30 justo en el borde: 32.5 los incluye con margen.
+ */
+export const JOYSTICK_DIAGONAL_HALF_DEG = 32.5;
+
+/** Alto máximo de la lista del ranking, en px CSS; más filas se desplazan dentro de su caja. */
+export const RANKING_MAX_HEIGHT_PX = 320;
+
 /** Diámetro del botón de pausa estilo Atari, en px CSS. */
 export const PAUSE_BUTTON_PX = 72;
 

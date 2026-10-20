@@ -1,7 +1,7 @@
 // Estado de la partida: mutable y serializable (solo datos). Avanza con update(state, dt).
 import { createGhosts, frighten, playerTile, updateGhost, type Ghost } from './ghosts';
 import { MAZE, parseMaze, tileIndex } from './maze';
-import { createPlayer, requestDirection, updatePlayer, type Player } from './player';
+import { createPlayer, requestDirections, updatePlayer, type Player } from './player';
 import {
   DEATH_SECONDS,
   frightenedSeconds,
@@ -131,10 +131,28 @@ export function start(state: GameState): void {
   state.phaseTimer = READY_SECONDS;
 }
 
+/** Pide una dirección principal y, en diagonal, una secundaria. Solo cuenta en 'listo' y 'jugando'. */
+export function setDirections(state: GameState, primary: Dir, secondary: Dir | null): void {
+  if (state.phase !== 'listo' && state.phase !== 'jugando') return;
+  requestDirections(state.player, primary, secondary);
+}
+
 /** Pide una dirección. Solo cuenta en 'listo' y 'jugando'. */
 export function setDirection(state: GameState, dir: Dir): void {
-  if (state.phase !== 'listo' && state.phase !== 'jugando') return;
-  requestDirection(state.player, dir);
+  setDirections(state, dir, null);
+}
+
+/** Vuelve a la pantalla de inicio. Solo desde 'fin': tablero nuevo, misma semilla. */
+export function goToTitle(state: GameState): void {
+  if (state.phase !== 'fin') return;
+  state.score = 0;
+  state.lives = LIVES;
+  state.round = 1;
+  refillOrbs(state);
+  resetPositions(state);
+  state.resumePhase = null;
+  state.phaseTimer = 0;
+  state.phase = 'titulo';
 }
 
 /** Pausa (true) o reanuda (false). Idempotente: repetir la llamada no cambia nada. */

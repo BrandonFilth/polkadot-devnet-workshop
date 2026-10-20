@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SWIPE_THRESHOLD_PX } from '../engine/rules';
-import { swipeDirection } from './swipe';
+import { swipeDirection, swipeDirections } from './swipe';
 
 describe('swipeDirection', () => {
   it('usa un umbral de 24 px', () => {
@@ -20,6 +20,13 @@ describe('swipeDirection', () => {
 
   it('dy positivo es abajo', () => {
     expect(swipeDirection(0, 50)).toBe('abajo');
+  });
+
+  it('un swipe diagonal pide dos direcciones; uno recto, una', () => {
+    expect(swipeDirections(30, -30)).toEqual({ primary: 'derecha', secondary: 'arriba' });
+    expect(swipeDirections(10, -40)).toEqual({ primary: 'arriba', secondary: 'derecha' });
+    expect(swipeDirections(-40, 2)).toEqual({ primary: 'izquierda', secondary: null });
+    expect(swipeDirections(10, 10)).toBeNull();
   });
 
   it('bajo el umbral da null', () => {

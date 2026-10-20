@@ -1,5 +1,24 @@
 import { describe, expect, it } from 'vitest';
-import { saveOptions } from './FinDePartida';
+import { finButtons, saveOptions } from './FinDePartida';
+
+describe('finButtons: el popup de fin no lleva el ranking dentro', () => {
+  it('con récord por guardar: Guardar, Jugar otra vez, Ver ranking, Inicio', () => {
+    expect(finButtons('guardar')).toEqual(['guardar', 'jugar', 'ranking', 'inicio']);
+    expect(finButtons('conectar')).toEqual(['guardar', 'jugar', 'ranking', 'inicio']);
+    expect(finButtons('cargando')).toEqual(['guardar', 'jugar', 'ranking', 'inicio']);
+  });
+
+  it('sin nada que guardar: Jugar otra vez, Ver ranking, Inicio', () => {
+    for (const o of ['no-supera', 'cero', 'fuera'] as const) expect(finButtons(o)).toEqual(['jugar', 'ranking', 'inicio']);
+  });
+
+  it('«ranking» es un botón que abre su pestaña, nunca una lista', () => {
+    for (const o of ['guardar', 'conectar', 'cargando', 'no-supera', 'cero', 'fuera'] as const) {
+      expect(finButtons(o).filter((b) => b === 'ranking')).toHaveLength(1);
+      expect(finButtons(o)).not.toContain('lista');
+    }
+  });
+});
 
 const base = { host: 'listo' as const, connected: true, score: 500, best: 100n as bigint | null | 'error', busy: false };
 

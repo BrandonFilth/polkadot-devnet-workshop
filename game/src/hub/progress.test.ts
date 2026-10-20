@@ -93,6 +93,25 @@ describe('progreso: vista', () => {
     expect(v.steps.find((s) => s.step === 'firma')!.status).toBe('actual');
   });
 
+  it('los pasos se llaman como en el popup: Simulando → Firma en tu teléfono → … → Actualizando', () => {
+    const v = progressView(begin('guardar'), ['guardar'])!;
+    expect(v.steps.map((s) => s.label)).toEqual([
+      'Simulando',
+      'Firma en tu teléfono',
+      'Enviando',
+      'Confirmando en la blockchain',
+      'Actualizando',
+    ]);
+    expect(progressView(begin('conectar'), ['conectar'])!.steps.map((s) => s.label)).toEqual(['Conectar cuenta', 'Permiso de gas']);
+  });
+
+  it('username en actualizando dice «Leyendo de la blockchain…»; guardar sigue con el ranking', () => {
+    const u = walk(begin('username'), 'firma', 'enviando', 'confirmando', 'actualizando');
+    expect(progressView(u, ['username'])!.line).toBe('Leyendo de la blockchain…');
+    const g = walk(begin('guardar'), 'firma', 'enviando', 'confirmando', 'actualizando');
+    expect(progressView(g, ['guardar'])!.line).toBe(PROGRESS_TEXT.actualizando);
+  });
+
   it('títulos distintos para rechazada, sin respuesta y otro', () => {
     expect(new Set([KIND_TITLE.rejected, KIND_TITLE.timeout, KIND_TITLE.other]).size).toBe(3);
   });

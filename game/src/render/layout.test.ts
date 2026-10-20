@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { MAZE_HEIGHT, MAZE_WIDTH, MIN_TILE_PX } from '../engine/rules';
-import { mazeLayout, stageSize, type Viewport } from './layout';
+import { CONTROLS_HEIGHT_PX, HUD_HEIGHT_PX, MAZE_HEIGHT, MAZE_WIDTH, MIN_TILE_PX } from '../engine/rules';
+import { mazeLayout, portraitSplit, stageSize, type Viewport } from './layout';
 
 const phone = (width: number, height: number, extra: Partial<Viewport> = {}): Viewport => ({
   width,
@@ -44,6 +44,21 @@ describe('layout del laberinto', () => {
     expect(stage).toEqual({ width: 1440, height: 856 });
     expect(maze.tile).toBe(42);
     expect([maze.cssWidth, maze.cssHeight]).toEqual([756, 840]);
+  });
+
+  it('vertical: el laberinto pegado al HUD y lo que sobra para los controles (390×844 y 360×800)', () => {
+    expect(portraitSplit(phone(390, 844))).toEqual({ tile: 21, mazeHeight: 420, controlsHeight: 380 });
+    expect(portraitSplit(phone(360, 800))).toEqual({ tile: 20, mazeHeight: 400, controlsHeight: 356 });
+    // La casilla no cambia respecto al layout de siempre, y todo suma el alto disponible.
+    const v = phone(390, 844, { safeTop: 24, safeBottom: 34 });
+    const s = portraitSplit(v);
+    expect(s.tile).toBe(layoutFor(v).maze.tile);
+    expect(s.mazeHeight + s.controlsHeight + HUD_HEIGHT_PX).toBe(844 - 24 - 34);
+  });
+
+  it('vertical en pantalla baja: los controles nunca bajan de su alto mínimo', () => {
+    const s = portraitSplit(phone(390, 500));
+    expect(s.controlsHeight).toBeGreaterThanOrEqual(CONTROLS_HEIGHT_PX);
   });
 
   it('un escenario diminuto usa la casilla mínima', () => {
