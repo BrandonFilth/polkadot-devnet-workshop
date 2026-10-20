@@ -43,20 +43,8 @@ export const RELEASE_INTERVAL = 3;
 /** Duración de la fase «muriendo», en segundos. */
 export const DEATH_SECONDS = 1.2;
 
-/** Muestras de la casilla de Polka-Man que guarda Lag. */
-export const LAG_SAMPLES = 8;
-
-/** Segundos entre dos muestras de Lag. */
-export const LAG_SAMPLE_SECONDS = 0.25;
-
-/** Casillas por delante de Polka-Man que apunta Fork. */
-export const FORK_AHEAD = 4;
-
-/** Si Polka-Man está a esta distancia o menos, Gas se va a su esquina. */
-export const GAS_RADIUS = 6;
-
-/** Si Polka-Man está a esta distancia o menos, Nonce lo persigue. */
-export const NONCE_RADIUS = 5;
+/** Probabilidad de que un fantasma elija un camino al azar en un cruce, para no amontonarse. */
+export const GHOST_SCATTER_CHANCE = 0.25;
 
 /** Fantasmas en la ronda 1. */
 export const GHOST_START = 2;

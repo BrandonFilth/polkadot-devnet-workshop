@@ -1,45 +1,29 @@
-// Fantasmas: personalidades, objetivos, modos y movimiento. Lógica pura.
+// Fantasmas: colores, modos y movimiento (una sola regla para todos). Lógica pura.
 import { tileAt, tileIndex } from './maze';
 import { advance, DIR_VECTORS, OPPOSITE } from './movement';
 import { random } from './rng';
-import { EYES_SPEED, FORK_AHEAD, FRIGHT_SPEED_FACTOR, GAS_RADIUS, NONCE_RADIUS } from './rules';
+import { EYES_SPEED, FRIGHT_SPEED_FACTOR, GHOST_SCATTER_CHANCE } from './rules';
 import type { Dir, GhostMode, Maze, Vec } from './types';
 
-export interface Personality {
-  name: string;
-  color: string;
-}
-
-/** Las 6 personalidades, en orden: el fantasma i usa la personalidad i. */
-export const PERSONALITIES: readonly Personality[] = [
-  { name: 'Bug', color: '#ff6b4a' },
-  { name: 'Lag', color: '#9be7b0' },
-  { name: 'Spam', color: '#ffd479' },
-  { name: 'Fork', color: '#7fb8ff' },
-  { name: 'Gas', color: '#c39bff' },
-  { name: 'Nonce', color: '#5ee0d0' },
+/** Los 6 colores, en orden: el fantasma i usa el color i. Solo cambia el color; todos se mueven igual. */
+export const GHOST_COLORS: readonly string[] = [
+  '#ff6b4a', // fantasma rojo
+  '#9be7b0', // fantasma verde
+  '#ffd479', // fantasma amarillo
+  '#7fb8ff', // fantasma azul
+  '#c39bff', // fantasma morado
+  '#5ee0d0', // fantasma cian
 ];
-
-/** Esquinas del tablero. */
-export const CORNER_TL: Vec = { x: 1, y: 1 };
-export const CORNER_TR: Vec = { x: 17, y: 1 };
-export const CORNER_BR: Vec = { x: 17, y: 19 };
-export const CORNER_BL: Vec = { x: 1, y: 19 };
-
-/** Recorrido de Nonce. */
-export const NONCE_CORNERS: readonly Vec[] = [CORNER_TL, CORNER_TR, CORNER_BR, CORNER_BL];
 
 /** Orden de desempate al elegir dirección. */
 const DIR_ORDER: readonly Dir[] = ['arriba', 'izquierda', 'abajo', 'derecha'];
 
 export interface Ghost {
-  /** Índice del fantasma; también su personalidad. */
+  /** Índice del fantasma: su color y su turno de salida. */
   id: number;
   pos: Vec;
   dir: Dir;
   mode: GhostMode;
-  /** Esquina actual de Nonce (índice en NONCE_CORNERS). */
-  corner: number;
   /** Casilla (índice) donde decidió por última vez; evita decidir dos veces en el mismo centro. */
   lastTile: number;
   /** Segundos que le quedan de espera en la casa tras ser comido (0 = sin espera). */
@@ -49,20 +33,20 @@ export interface Ghost {
 /** Lo que un fantasma necesita saber de la partida. */
 export interface GhostWorld {
   player: { pos: Vec; dir: Dir | null };
-  /** Muestras de la casilla de Polka-Man, de la más vieja a la más nueva. */
-  lagSamples: readonly Vec[];
   /** Estado del generador (la semilla de la partida). */
   rng: { seed: number };
   /** Casillas por segundo. */
   speed: number;
   /** Segundos de espera en la casa al llegar como ojos. Sin él (o 0) salen enseguida. */
   houseCooldown?: number;
+  /** Probabilidad de dispersión; sin él, GHOST_SCATTER_CHANCE. */
+  scatterChance?: number;
 }
 
 /** Fantasma i esperando en la casilla G número i % 3. */
 export function createGhost(maze: Maze, id: number): Ghost {
   const home = maze.house[id % maze.house.length]!;
-  return { id, pos: { x: home.x, y: home.y }, dir: 'arriba', mode: 'casa', corner: 0, lastTile: -1, houseTimer: 0 };
+  return { id, pos: { x: home.x, y: home.y }, dir: 'arriba', mode: 'casa', lastTile: -1, houseTimer: 0 };
 }
 
 export function createGhosts(maze: Maze, count: number): Ghost[] {
@@ -81,48 +65,6 @@ export function ghostCanEnter(maze: Maze, mode: GhostMode, col: number, row: num
 export function playerTile(maze: Maze, pos: Vec): Vec {
   const c = Math.round(pos.x);
   return { x: ((c % maze.width) + maze.width) % maze.width, y: Math.round(pos.y) };
-}
-
-function dist(a: Vec, b: Vec): number {
-  return Math.hypot(a.x - b.x, a.y - b.y);
-}
-
-function clamp(v: number, lo: number, hi: number): number {
-  return Math.min(hi, Math.max(lo, v));
-}
-
-/** Casilla objetivo según la personalidad; null para Spam (elige al azar). */
-export function ghostTarget(ghost: Ghost, world: GhostWorld, maze: Maze): Vec | null {
-  const p = playerTile(maze, world.player.pos);
-  switch (ghost.id % PERSONALITIES.length) {
-    case 0: // Bug
-      return p;
-    case 1: {
-      // Lag: la muestra más vieja.
-      const oldest = world.lagSamples[0];
-      return oldest ? { x: oldest.x, y: oldest.y } : p;
-    }
-    case 2: // Spam
-      return null;
-    case 3: {
-      // Fork: FORK_AHEAD casillas delante.
-      const dir = world.player.dir;
-      if (dir === null) return p;
-      const v = DIR_VECTORS[dir];
-      return {
-        x: clamp(p.x + v.x * FORK_AHEAD, 0, maze.width - 1),
-        y: clamp(p.y + v.y * FORK_AHEAD, 0, maze.height - 1),
-      };
-    }
-    case 4: // Gas
-      return dist(ghost.pos, p) > GAS_RADIUS ? p : { ...CORNER_BL };
-    default: {
-      // Nonce
-      if (dist(ghost.pos, p) <= NONCE_RADIUS) return p;
-      const corner = NONCE_CORNERS[ghost.corner]!;
-      return { ...corner };
-    }
-  }
 }
 
 /** Centro de la casa: la casilla bajo la puerta. Ahí los ojos vuelven a 'saliendo'. */
@@ -146,7 +88,11 @@ export function modeSpeed(mode: GhostMode, speed: number): number {
   return speed;
 }
 
-/** Dirección en un centro: al azar si está asustado; si no, hacia su objetivo. */
+/**
+ * Dirección en un centro, la misma regla para todos los fantasmas:
+ * asustado elige al azar; ojos van a la salida; normal va hacia la casilla de Polka-Man,
+ * salvo que con probabilidad scatterChance elija un camino al azar para no amontonarse.
+ */
 function decide(ghost: Ghost, world: GhostWorld, maze: Maze, col: number, row: number): void {
   const reverse = OPPOSITE[ghost.dir];
   const open = DIR_ORDER.filter((d) => {
@@ -161,11 +107,12 @@ function decide(ghost: Ghost, world: GhostWorld, maze: Maze, col: number, row: n
     ghost.dir = candidates[Math.floor(random(world.rng) * candidates.length)]!;
     return;
   }
-  const target = ghost.mode === 'ojos' ? { ...maze.exit } : ghostTarget(ghost, world, maze);
-  if (target === null) {
+  if (ghost.mode === 'normal' && random(world.rng) < (world.scatterChance ?? GHOST_SCATTER_CHANCE)) {
+    // Dispersión: un camino al azar entre los abiertos sin media vuelta.
     ghost.dir = candidates[Math.floor(random(world.rng) * candidates.length)]!;
     return;
   }
+  const target = ghost.mode === 'ojos' ? { ...maze.exit } : playerTile(maze, world.player.pos);
   let best = candidates[0]!;
   let bestD = Infinity;
   for (const d of candidates) {
@@ -184,11 +131,6 @@ function decide(ghost: Ghost, world: GhostWorld, maze: Maze, col: number, row: n
 /** Mueve un fantasma `dt` segundos según su modo. En 'casa' no se mueve. */
 export function updateGhost(ghost: Ghost, world: GhostWorld, maze: Maze, dt: number): void {
   if (ghost.mode === 'casa') return;
-
-  // Nonce cambia de esquina cuando está a menos de 1 casilla de la actual.
-  if (ghost.id % PERSONALITIES.length === 5 && dist(ghost.pos, NONCE_CORNERS[ghost.corner]!) < 1) {
-    ghost.corner = (ghost.corner + 1) % NONCE_CORNERS.length;
-  }
 
   const canEnter = (c: number, r: number) => ghostCanEnter(maze, ghost.mode, c, r);
   advance(

@@ -1,5 +1,5 @@
 // Dibujo en Canvas 2D. Las paredes se pintan una vez por tamaño en un canvas aparte (caché).
-import { PERSONALITIES } from '../engine/ghosts';
+import { GHOST_COLORS } from '../engine/ghosts';
 import { tileAt } from '../engine/maze';
 import { DIR_VECTORS } from '../engine/movement';
 import {
@@ -236,7 +236,7 @@ function drawGhost(
 ) {
   const scared = ghost.mode === 'asustado';
   const eyesOnly = ghost.mode === 'ojos';
-  const color = scared ? (blink ? FRIGHT_BLINK : FRIGHT_BODY) : PERSONALITIES[ghost.id % PERSONALITIES.length]!.color;
+  const color = scared ? (blink ? FRIGHT_BLINK : FRIGHT_BODY) : GHOST_COLORS[ghost.id % GHOST_COLORS.length]!;
   // En la casa sube y baja; desfasado por fantasma. Quieto si se pide menos movimiento.
   const bob = ghost.mode === 'casa' && timeMs !== null ? GHOST_BOB * Math.sin(timeMs / 200 + ghost.id * 2) : 0;
 

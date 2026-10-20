@@ -1,14 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { createGame, start, update } from './game';
 import {
-  CORNER_BL,
-  CORNER_TL,
-  CORNER_TR,
   createGhost,
   frighten,
-  ghostTarget,
+  GHOST_COLORS,
   houseCenter,
-  PERSONALITIES,
   updateGhost,
   type Ghost,
   type GhostWorld,
@@ -18,13 +14,9 @@ import { OPPOSITE } from './movement';
 import {
   DT,
   EYES_SPEED,
-  FORK_AHEAD,
   FRIGHT_SPEED_FACTOR,
-  GAS_RADIUS,
   GHOST_BASE_SPEED,
-  LAG_SAMPLE_SECONDS,
-  LAG_SAMPLES,
-  NONCE_RADIUS,
+  GHOST_SCATTER_CHANCE,
   READY_SECONDS,
   RELEASE_INTERVAL,
 } from './rules';
@@ -32,10 +24,9 @@ import type { Dir, Vec } from './types';
 
 const maze = parseMaze(MAZE);
 
-function world(playerPos: Vec, playerDir: Dir | null = 'izquierda', samples: Vec[] = []): GhostWorld {
+function world(playerPos: Vec, playerDir: Dir | null = 'izquierda'): GhostWorld {
   return {
     player: { pos: playerPos, dir: playerDir },
-    lagSamples: samples,
     rng: { seed: 12345 },
     speed: GHOST_BASE_SPEED,
   };
@@ -49,110 +40,112 @@ function ghostAt(id: number, pos: Vec, mode: Ghost['mode'] = 'normal', dir: Dir 
   return g;
 }
 
-describe('personalidades', () => {
-  it('6 colores propios; ninguno es el rosa de Polka-Man', () => {
-    expect(PERSONALITIES.map((p) => p.name)).toEqual(['Bug', 'Lag', 'Spam', 'Fork', 'Gas', 'Nonce']);
-    expect(PERSONALITIES.map((p) => p.color)).toEqual([
-      '#ff6b4a',
-      '#9be7b0',
-      '#ffd479',
-      '#7fb8ff',
-      '#c39bff',
-      '#5ee0d0',
-    ]);
-    expect(PERSONALITIES.some((p) => p.color.toLowerCase() === '#ff2867')).toBe(false);
+/** Cruce de 4 caminos: (4, 3). Llegando por la izquierda ('derecha') puede seguir arriba, abajo o a la derecha. */
+const CROSS: Vec = { x: 4, y: 3 };
+
+/** Dirección que elige un fantasma en 'normal' parado en el centro de `pos`. */
+function decision(id: number, pos: Vec, dir: Dir, w: GhostWorld): Dir {
+  const g = ghostAt(id, pos, 'normal', dir);
+  updateGhost(g, w, maze, DT);
+  return g.dir;
+}
+
+/** Recorrido (posición y dirección en cada paso) de un fantasma en 'normal'. */
+function path(id: number, w: GhostWorld, steps = 600): string {
+  const g = ghostAt(id, { x: 9, y: 7 });
+  const out: string[] = [];
+  for (let i = 0; i < steps; i++) {
+    updateGhost(g, w, maze, DT);
+    out.push(`${g.pos.x.toFixed(4)},${g.pos.y.toFixed(4)},${g.dir}`);
+  }
+  return out.join(';');
+}
+
+describe('colores y regla compartida', () => {
+  it('6 colores propios, en orden; ninguno es el rosa de Polka-Man', () => {
+    expect(GHOST_COLORS).toEqual(['#ff6b4a', '#9be7b0', '#ffd479', '#7fb8ff', '#c39bff', '#5ee0d0']);
+    expect(GHOST_COLORS.some((c) => c.toLowerCase() === '#ff2867')).toBe(false);
   });
 
-  it('Bug apunta a la casilla de Polka-Man', () => {
-    const g = ghostAt(0, { x: 9, y: 7 });
-    expect(ghostTarget(g, world({ x: 4.3, y: 15 }), maze)).toEqual({ x: 4, y: 15 });
+  it('GHOST_SCATTER_CHANCE es 1 de cada 4', () => {
+    expect(GHOST_SCATTER_CHANCE).toBe(0.25);
   });
 
-  it('Lag apunta a la muestra más vieja; sin muestras, a Polka-Man', () => {
-    const g = ghostAt(1, { x: 9, y: 7 });
-    expect(ghostTarget(g, world({ x: 5, y: 15 }), maze)).toEqual({ x: 5, y: 15 });
-    const samples = [
-      { x: 1, y: 1 },
-      { x: 2, y: 1 },
-      { x: 3, y: 1 },
-    ];
-    expect(ghostTarget(g, world({ x: 5, y: 15 }, 'izquierda', samples), maze)).toEqual({ x: 1, y: 1 });
+  it('sin dispersión, en un cruce va por el camino que más lo acerca a Polka-Man, sin media vuelta', () => {
+    const chase = (player: Vec) => decision(0, CROSS, 'derecha', { ...world(player), scatterChance: 0 });
+    expect(chase({ x: 4, y: 15 })).toBe('abajo');
+    expect(chase({ x: 4, y: 1 })).toBe('arriba');
+    expect(chase({ x: 17, y: 3 })).toBe('derecha');
+    // Polka-Man justo detrás: no da media vuelta aunque sea lo más cerca.
+    expect(chase({ x: 1, y: 3 })).not.toBe('izquierda');
   });
 
-  it('Lag guarda LAG_SAMPLES muestras, una cada LAG_SAMPLE_SECONDS, y se vacían en cada vida', () => {
-    const s = createGame(7);
-    start(s);
-    update(s, READY_SECONDS);
-    s.ghosts = []; // sin fantasmas que interrumpan
-    const steps = Math.round((LAG_SAMPLE_SECONDS * 3) / DT);
-    for (let i = 0; i < steps; i++) update(s, DT);
-    expect(s.lagSamples.length).toBe(3);
-    const more = Math.round((LAG_SAMPLE_SECONDS * (LAG_SAMPLES + 4)) / DT);
-    for (let i = 0; i < more; i++) update(s, DT);
-    expect(s.phase).toBe('jugando');
-    expect(s.lagSamples.length).toBe(LAG_SAMPLES);
-    // Muerte forzada: al volver a 'listo' no quedan muestras.
-    s.ghosts = [ghostAt(0, s.player.pos)];
-    update(s, DT);
-    expect(s.phase).toBe('muriendo');
-    update(s, 10);
-    expect(s.lagSamples).toEqual([]);
+  it('todos los fantasmas siguen la misma regla: mismo inicio y mismo world, mismo recorrido', () => {
+    for (const scatterChance of [0, undefined]) {
+      const w = () => ({ ...world({ x: 17, y: 19 }, 'derecha'), scatterChance });
+      const first = path(0, w());
+      for (let id = 1; id < GHOST_COLORS.length; id++) expect(path(id, w())).toBe(first);
+    }
   });
 
-  it('Spam no tiene objetivo y elige al azar de forma determinista', () => {
-    const g = ghostAt(2, { x: 9, y: 7 });
-    expect(ghostTarget(g, world({ x: 5, y: 15 }), maze)).toBeNull();
+  it('con dispersión total elige al azar de forma determinista, sin media vuelta ni cruzar la puerta', () => {
     const run = () => {
-      const a = ghostAt(2, { x: 9, y: 7 });
-      const w = world({ x: 5, y: 15 });
-      const path: string[] = [];
-      for (let i = 0; i < 600; i++) {
-        updateGhost(a, w, maze, DT);
-        path.push(a.dir);
+      const g = ghostAt(0, { x: 9, y: 7 });
+      const w: GhostWorld = { ...world({ x: 17, y: 19 }), scatterChance: 1 };
+      const dirs: string[] = [];
+      for (let i = 0; i < 20 / DT; i++) {
+        const before = g.dir;
+        updateGhost(g, w, maze, DT);
+        expect(g.dir).not.toBe(OPPOSITE[before]);
+        const t = tileAt(maze, Math.round(g.pos.x), Math.round(g.pos.y));
+        expect(['pared', 'puerta', 'casa']).not.toContain(t);
+        dirs.push(g.dir);
       }
-      return path.join(',');
+      return dirs.join(',');
     };
     expect(run()).toBe(run());
+    // Y no es el recorrido de persecución pura.
+    const chase = path(0, { ...world({ x: 17, y: 19 }), scatterChance: 0 }, 20 / DT);
+    const scatter = path(0, { ...world({ x: 17, y: 19 }), scatterChance: 1 }, 20 / DT);
+    expect(scatter).not.toBe(chase);
   });
 
-  it('Fork apunta FORK_AHEAD casillas delante, recortado al tablero', () => {
-    const g = ghostAt(3, { x: 9, y: 7 });
-    expect(ghostTarget(g, world({ x: 9, y: 15 }, 'izquierda'), maze)).toEqual({ x: 9 - FORK_AHEAD, y: 15 });
-    expect(ghostTarget(g, world({ x: 9, y: 15 }, 'abajo'), maze)).toEqual({ x: 9, y: 19 });
-    expect(ghostTarget(g, world({ x: 2, y: 1 }, 'izquierda'), maze)).toEqual({ x: 0, y: 1 });
-    expect(ghostTarget(g, world({ x: 2, y: 19 }, 'abajo'), maze)).toEqual({ x: 2, y: 20 });
-    expect(ghostTarget(g, world({ x: 16, y: 1 }, 'derecha'), maze)).toEqual({ x: 18, y: 1 });
+  it('con la probabilidad por defecto y semilla fija, cerca de 1 de cada 4 decisiones es al azar', () => {
+    const w = world({ x: 4, y: 15 }); // sin scatterChance: usa GHOST_SCATTER_CHANCE
+    const n = 1000;
+    let other = 0;
+    for (let i = 0; i < n; i++) {
+      const d = decision(0, CROSS, 'derecha', w); // el mismo rng avanza en cada decisión
+      expect(d).not.toBe('izquierda');
+      if (d !== 'abajo') other += 1;
+    }
+    // Al azar elige 1 de 3 caminos y uno de ellos es el de persecución:
+    // solo 2 de cada 3 decisiones al azar se notan, así que la parte al azar es other / n * 3 / 2.
+    const scatterShare = ((other / n) * 3) / 2;
+    expect(scatterShare).toBeGreaterThanOrEqual(0.15);
+    expect(scatterShare).toBeLessThanOrEqual(0.35);
+    // Y la mayoría persigue.
+    expect(other / n).toBeLessThan(0.5);
   });
 
-  it('Gas persigue de lejos y se va a la esquina BL dentro de GAS_RADIUS', () => {
-    const far = ghostAt(4, { x: 9, y: 1 });
-    expect(ghostTarget(far, world({ x: 9, y: 1 + GAS_RADIUS + 1 }), maze)).toEqual({ x: 9, y: 8 });
-    const near = ghostAt(4, { x: 9, y: 1 });
-    expect(ghostTarget(near, world({ x: 9, y: 1 + GAS_RADIUS }), maze)).toEqual(CORNER_BL);
-  });
-
-  it('Nonce recorre las esquinas y persigue dentro de NONCE_RADIUS', () => {
-    const g = ghostAt(5, { x: 9, y: 19 });
-    expect(ghostTarget(g, world({ x: 9, y: 19 - NONCE_RADIUS - 1 }), maze)).toEqual(CORNER_TL);
-    expect(ghostTarget(g, world({ x: 9, y: 19 - NONCE_RADIUS }), maze)).toEqual({ x: 9, y: 19 - NONCE_RADIUS });
-    // En la esquina TL cambia a la siguiente (TR).
-    const atCorner = ghostAt(5, { x: 1, y: 1 }, 'normal', 'arriba');
-    updateGhost(atCorner, world({ x: 9, y: 19 }), maze, DT);
-    expect(atCorner.corner).toBe(1);
-    expect(ghostTarget(atCorner, world({ x: 9, y: 19 }), maze)).toEqual(CORNER_TR);
+  it('el azar solo se usa en normal: los ojos no gastan la semilla al decidir', () => {
+    const w = world({ x: 9, y: 15 });
+    const g = ghostAt(0, CROSS, 'ojos', 'derecha');
+    updateGhost(g, w, maze, DT);
+    expect(w.rng.seed).toBe(12345);
   });
 });
 
 describe('movimiento en normal', () => {
   it('ningún fantasma da media vuelta ni entra a una pared, la puerta o la casa', () => {
-    for (let id = 0; id < PERSONALITIES.length; id++) {
+    for (let id = 0; id < GHOST_COLORS.length; id++) {
       for (const player of [
         { x: 1, y: 1 },
         { x: 17, y: 19 },
         { x: 9, y: 15 },
       ]) {
         const g = ghostAt(id, { x: 9, y: 7 });
-        const w = world(player, 'derecha', [{ x: 1, y: 19 }]);
+        const w = world(player, 'derecha');
         const errors: string[] = [];
         for (let i = 0; i < 20 / DT; i++) {
           const before = g.dir;
@@ -214,10 +207,10 @@ describe('salida de la casa', () => {
     expect(g.pos).toEqual(pos);
   });
 
-  function leave(id: number, player: Vec): Ghost {
+  function leave(id: number, player: Vec, scatterChance?: number): Ghost {
     const g = createGhost(maze, id);
     g.mode = 'saliendo';
-    const w = world(player);
+    const w: GhostWorld = { ...world(player), scatterChance };
     for (let i = 0; i < 10 / DT && g.mode === 'saliendo'; i++) {
       updateGhost(g, w, maze, DT);
       const t = tileAt(maze, Math.round(g.pos.x), Math.round(g.pos.y));
@@ -235,9 +228,11 @@ describe('salida de la casa', () => {
     }
   });
 
-  it('Bug sale a la derecha con Polka-Man en (17, 7) y a la izquierda con (1, 7)', () => {
-    expect(leave(0, { x: 17, y: 7 }).dir).toBe('derecha');
-    expect(leave(0, { x: 1, y: 7 }).dir).toBe('izquierda');
+  it('al salir elige el lado más cerca de Polka-Man', () => {
+    for (let id = 0; id < GHOST_COLORS.length; id++) {
+      expect(leave(id, { x: 17, y: 7 }, 0).dir).toBe('derecha');
+      expect(leave(id, { x: 1, y: 7 }, 0).dir).toBe('izquierda');
+    }
   });
 });
 

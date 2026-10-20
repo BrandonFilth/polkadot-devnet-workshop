@@ -2,7 +2,7 @@
 // Jugar, Conectar cuenta con su sugerencia, Ranking y Username; los controles en una línea al pie.
 // Opaca y a pantalla completa. Jugar sin cuenta muestra una sola vez el aviso «Sin cuenta no se guardará tu récord».
 import { start, type GameState } from '../engine/game';
-import { PERSONALITIES } from '../engine/ghosts';
+import { GHOST_COLORS } from '../engine/ghosts';
 import type { HostPhase, Hub } from '../hub/hub';
 import type { Mine } from './FinDePartida';
 
@@ -23,8 +23,8 @@ const INICIO_ARTE =
   '<svg viewBox="0 0 340 96" focusable="false">' +
   '<path d="M48 48L86.1 26A44 44 0 1 0 86.1 70z" fill="#ff2867"/>' +
   '<circle cx="118" cy="48" r="7" fill="#f2f2ef"/><circle cx="146" cy="48" r="7" fill="#f2f2ef"/>' +
-  ghostArt(170, PERSONALITIES[0]!.color) +
-  ghostArt(250, PERSONALITIES[1]!.color) +
+  ghostArt(170, GHOST_COLORS[0]!) +
+  ghostArt(250, GHOST_COLORS[1]!) +
   '</svg>';
 
 export type ConnectAction = 'conectar' | 'reintentar' | 'esperar';

@@ -1,17 +1,16 @@
 // Estado de la partida: mutable y serializable (solo datos). Avanza con update(state, dt).
-import { createGhosts, frighten, playerTile, updateGhost, type Ghost } from './ghosts';
+import { createGhosts, frighten, updateGhost, type Ghost } from './ghosts';
 import { MAZE, parseMaze, tileIndex } from './maze';
 import { createPlayer, requestDirections, updatePlayer, type Player } from './player';
 import {
   DEATH_SECONDS,
   frightenedSeconds,
   GHOST_CHAIN_POINTS,
+  GHOST_SCATTER_CHANCE,
   ghostCount,
   ghostSpeed,
   HITBOX,
   houseCooldownSeconds,
-  LAG_SAMPLE_SECONDS,
-  LAG_SAMPLES,
   LIVES,
   MAX_EVENTS,
   ORB_POINTS,
@@ -46,10 +45,6 @@ export interface GameState {
   ghosts: Ghost[];
   /** Segundos en 'jugando' desde la última vida o ronda nueva (salida escalonada). */
   releaseClock: number;
-  /** Casillas de Polka-Man para Lag, de la más vieja a la más nueva. */
-  lagSamples: Vec[];
-  /** Segundos acumulados hacia la siguiente muestra de Lag. */
-  lagClock: number;
   /** Segundos de susto que quedan; uno solo para toda la partida (0 = sin susto). */
   frightTimer: number;
   /** Fantasmas comidos en el susto actual (índice en GHOST_CHAIN_POINTS). */
@@ -83,13 +78,11 @@ function refillOrbs(state: GameState): void {
   state.power = new Set(maze.power);
 }
 
-/** Polka-Man y fantasmas a sus posiciones de inicio; temporizadores y muestras de Lag de cero. */
+/** Polka-Man y fantasmas a sus posiciones de inicio; temporizadores de cero. */
 function resetPositions(state: GameState): void {
   state.player = createPlayer(maze);
   state.ghosts = createGhosts(maze, ghostCount(state.round));
   state.releaseClock = 0;
-  state.lagSamples = [];
-  state.lagClock = 0;
   endFright(state);
 }
 
@@ -128,8 +121,6 @@ export function createGame(seed: number): GameState {
     power: new Set(maze.power),
     ghosts: createGhosts(maze, ghostCount(1)),
     releaseClock: 0,
-    lagSamples: [],
-    lagClock: 0,
     frightTimer: 0,
     frightChain: 0,
     events: [],
@@ -218,10 +209,10 @@ function nextRound(state: GameState): void {
 function moveGhosts(state: GameState, dt: number): void {
   const world = {
     player: state.player,
-    lagSamples: state.lagSamples,
     rng: state,
     speed: ghostSpeed(state.round),
     houseCooldown: houseCooldownSeconds(state.round),
+    scatterChance: GHOST_SCATTER_CHANCE,
   };
   for (const ghost of state.ghosts) updateGhost(ghost, world, maze, dt);
 }
@@ -255,7 +246,7 @@ function hitByGhost(state: GameState): boolean {
   return state.ghosts.some((g) => (g.mode === 'normal' || g.mode === 'saliendo') && touches(state, g));
 }
 
-/** Espera de los comidos en la casa, salida escalonada y muestras de Lag. */
+/** Espera de los comidos en la casa y salida escalonada. */
 function tickTimers(state: GameState, dt: number): void {
   state.releaseClock += dt;
   for (const ghost of state.ghosts) {
@@ -271,12 +262,6 @@ function tickTimers(state: GameState, dt: number): void {
     if (ghost.mode === 'casa' && state.releaseClock >= ghost.id * RELEASE_INTERVAL - EPS) {
       ghost.mode = 'saliendo';
     }
-  }
-  state.lagClock += dt;
-  while (state.lagClock >= LAG_SAMPLE_SECONDS - EPS) {
-    state.lagClock = Math.max(0, state.lagClock - LAG_SAMPLE_SECONDS);
-    state.lagSamples.push(playerTile(maze, state.player.pos));
-    if (state.lagSamples.length > LAG_SAMPLES) state.lagSamples.shift();
   }
 }
 
