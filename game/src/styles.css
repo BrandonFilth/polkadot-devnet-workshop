@@ -1,6 +1,6 @@
-/* Polka-Man: paleta, safe areas, layout, joystick, menú y overlays. Nada se carga de internet.
-   Las medidas (--hud-h, --controls-h, --joy-r, --knob-r, --pause-size) las pone app.ts desde rules.ts;
-   los valores de aquí son solo respaldo. */
+/* Polka-Man: paleta, safe areas, layout, joystick flotante, menú y overlays. Nada se carga de internet.
+   Las medidas (--hud-h, --controls-h, --joy-r, --knob-r, --pause-size, --stick-fade) las pone app.ts desde
+   rules.ts; los valores de aquí son solo respaldo. */
 :root {
   --bg: #050505;
   --ink: #f2f2ef;
@@ -16,6 +16,7 @@
   --joy-r: 56px;
   --knob-r: 26px;
   --pause-size: 72px;
+  --stick-fade: 150ms;
   color-scheme: dark;
 }
 
@@ -29,7 +30,7 @@
 html, body { height: 100%; margin: 0; overflow: hidden; overscroll-behavior: none; }
 #app { position: fixed; inset: 0;
        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
-.stage, .controles, .joystick { touch-action: none; }
+.stage, .controles, .stick-zone { touch-action: none; }
 .controles button, .hud button { touch-action: manipulation; }
 .overlay { overflow-y: auto; touch-action: pan-y; overscroll-behavior: contain; }
 
@@ -345,14 +346,16 @@ body {
   display: block;
 }
 
-/* Controles estilo Atari: joystick a la izquierda, botón rojo de pausa a la derecha. Solo en táctil. */
+/* Controles estilo Atari: joystick flotante en toda la zona de abajo (aparece donde pones el pulgar y lo
+   sigue) y botón rojo de pausa en su propia columna a la derecha, fuera de esa zona. Solo en táctil. */
 .controles {
   display: none;
   align-items: center;
   justify-content: space-between;
   height: var(--controls-h);
-  padding: 0 24px;
+  padding: 0 24px 0 0;
   border-top: 1px solid var(--line);
+  overflow: visible;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -364,7 +367,7 @@ body {
 }
 
 /* Celular en vertical: el laberinto justo debajo del HUD (--maze-h lo calcula app.ts con portraitSplit)
-   y la zona de controles se queda con el resto; el joystick y la pausa van centrados en ella. */
+   y la zona de controles se queda con el resto: toda ella sirve para el joystick, salvo la columna de la pausa. */
 @media (pointer: coarse) and (orientation: portrait) {
   #app {
     grid-template-rows: var(--hud-h) var(--maze-h, minmax(0, 1fr)) minmax(var(--controls-h), 1fr);
@@ -380,20 +383,46 @@ body {
   display: none;
 }
 
-.joystick {
+/* Zona de activación: todo lo que queda a la izquierda de la pausa. Tocar en cualquier punto pone ahí la base. */
+.stick-zone {
   position: relative;
-  flex: none;
-  width: calc(var(--joy-r) * 2);
-  height: calc(var(--joy-r) * 2);
-  border: 2px solid var(--line);
-  border-radius: 50%;
-  background: radial-gradient(circle, #151515 0 55%, #0d0d0d 56% 100%);
+  flex: 1;
+  align-self: stretch;
+  min-width: 0;
+  touch-action: none;
   cursor: grab;
 }
 
+/* Base del joystick: invisible hasta que tocas; Controles.ts la mueve con transform. */
+.stick {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc(var(--joy-r) * 2);
+  height: calc(var(--joy-r) * 2);
+  border: 2px solid var(--muted);
+  border-radius: 50%;
+  background: radial-gradient(circle, #151515 0 55%, #0d0d0d 56% 100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--stick-fade) ease-out;
+  will-change: transform, opacity;
+}
+
+.stick--activo {
+  opacity: 1;
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stick {
+    transition: none;
+  }
+}
+
 /* Cruz de guía: las 4 direcciones del laberinto. */
-.joystick::before,
-.joystick::after {
+.stick::before,
+.stick::after {
   content: '';
   position: absolute;
   left: 50%;
@@ -402,17 +431,49 @@ body {
   transform: translate(-50%, -50%);
 }
 
-.joystick::before {
+.stick::before {
   width: 2px;
   height: 80%;
 }
 
-.joystick::after {
+.stick::after {
   width: 80%;
   height: 2px;
 }
 
-.joystick-knob {
+/* Pista en reposo: anillo punteado y «Toca y arrastra», solo al empezar (ver stickHintVisible). */
+.stick-hint {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: calc(var(--joy-r) * 2);
+  height: calc(var(--joy-r) * 2);
+  padding: 0 18px;
+  border: 2px dashed var(--line);
+  border-radius: 50%;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+  line-height: 1.2;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--stick-fade) ease-out;
+}
+
+.stick-zone--pista .stick-hint {
+  opacity: 0.7;
+}
+
+@media (pointer: fine) {
+  .stick-hint {
+    display: none;
+  }
+}
+
+.stick-knob {
   position: absolute;
   left: 50%;
   top: 50%;
@@ -426,12 +487,7 @@ body {
   pointer-events: none;
 }
 
-.joystick--activo {
-  border-color: var(--muted);
-  cursor: grabbing;
-}
-
-.joystick--activo .joystick-knob {
+.stick--activo .stick-knob {
   box-shadow: 0 2px 0 #6b6b67, 0 0 0 2px var(--accent);
 }
 

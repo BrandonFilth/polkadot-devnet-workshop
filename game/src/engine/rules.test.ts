@@ -22,8 +22,11 @@ import {
   MAX_EVENTS,
   CONTROLS_HEIGHT_PX,
   HUD_HEIGHT_PX,
-  JOYSTICK_DEAD_ZONE,
+  JOYSTICK_DEAD_ZONE_PX,
   JOYSTICK_DIAGONAL_HALF_DEG,
+  JOYSTICK_FADE_MS,
+  JOYSTICK_HAPTIC_MS,
+  JOYSTICK_HINT_ROUNDS,
   JOYSTICK_KNOB_RADIUS_PX,
   JOYSTICK_RADIUS_PX,
   KEYBOARD_MIN_PX,
@@ -91,7 +94,12 @@ describe('rules: dificultad', () => {
     expect(CONTROLS_HEIGHT_PX).toBe(132);
     expect(JOYSTICK_RADIUS_PX).toBe(56);
     expect(JOYSTICK_KNOB_RADIUS_PX).toBe(26);
-    expect(JOYSTICK_DEAD_ZONE).toBe(0.3);
+    expect(JOYSTICK_DEAD_ZONE_PX).toBe(10);
+    expect(JOYSTICK_FADE_MS).toBe(150);
+    expect(JOYSTICK_HINT_ROUNDS).toBe(1);
+    expect(JOYSTICK_HAPTIC_MS).toBe(10);
+    // La zona muerta es más chica que la perilla: un pequeño movimiento ya da dirección.
+    expect(JOYSTICK_DEAD_ZONE_PX).toBeLessThan(JOYSTICK_KNOB_RADIUS_PX);
     expect(PAUSE_BUTTON_PX).toBe(72);
     expect(KEYBOARD_MIN_PX).toBe(120);
     // El joystick y la pausa caben en la zona de controles.

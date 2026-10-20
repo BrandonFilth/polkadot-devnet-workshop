@@ -1,5 +1,5 @@
 // Joystick virtual: el desplazamiento de la perilla se convierte en direcciones del laberinto (8 sectores).
-import { JOYSTICK_DEAD_ZONE, JOYSTICK_DIAGONAL_HALF_DEG } from '../engine/rules';
+import { JOYSTICK_DEAD_ZONE_PX, JOYSTICK_DIAGONAL_HALF_DEG } from '../engine/rules';
 import type { Dir } from '../engine/types';
 
 /** Lo que pide un gesto: la dirección del eje dominante y, en diagonal, la del otro eje. */
@@ -26,15 +26,14 @@ export function sectorDirections(dx: number, dy: number, halfDeg = JOYSTICK_DIAG
   return ax >= ay ? { primary: horizontal, secondary: vertical } : { primary: vertical, secondary: horizontal };
 }
 
-/** Direcciones del joystick. Dentro de la zona muerta (deadZone × radio) da null. */
+/** Direcciones del joystick. A menos de `deadZonePx` px del centro de la base da null. */
 export function joystickDirections(
   dx: number,
   dy: number,
-  radius: number,
-  deadZone = JOYSTICK_DEAD_ZONE,
+  deadZonePx = JOYSTICK_DEAD_ZONE_PX,
   halfDeg = JOYSTICK_DIAGONAL_HALF_DEG,
 ): Wanted | null {
-  if (Math.hypot(dx, dy) < deadZone * radius) return null;
+  if (Math.hypot(dx, dy) < deadZonePx) return null;
   return sectorDirections(dx, dy, halfDeg);
 }
 
@@ -42,8 +41,8 @@ export function joystickDirections(
  * Dirección principal para un desplazamiento (dx, dy): gana el eje dominante; en el empate exacto
  * (45°) gana el horizontal, igual que el swipe. Dentro de la zona muerta da null.
  */
-export function joystickDirection(dx: number, dy: number, radius: number, deadZone = JOYSTICK_DEAD_ZONE): Dir | null {
-  return joystickDirections(dx, dy, radius, deadZone)?.primary ?? null;
+export function joystickDirection(dx: number, dy: number, deadZonePx = JOYSTICK_DEAD_ZONE_PX): Dir | null {
+  return joystickDirections(dx, dy, deadZonePx)?.primary ?? null;
 }
 
 /** Posición de la perilla: el mismo desplazamiento, pero sin salir del radio de la base. */

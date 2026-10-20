@@ -190,14 +190,26 @@ export const HUD_HEIGHT_PX = 44;
 /** Alto de la zona de controles táctiles (joystick y pausa), en px CSS. */
 export const CONTROLS_HEIGHT_PX = 132;
 
-/** Radio de la base del joystick, en px CSS. */
+/**
+ * Radio de la base del joystick flotante, en px CSS. Si el dedo se aleja más que esto, la base lo
+ * sigue para que la perilla quede en el borde.
+ */
 export const JOYSTICK_RADIUS_PX = 56;
 
 /** Radio de la perilla del joystick, en px CSS. */
 export const JOYSTICK_KNOB_RADIUS_PX = 26;
 
-/** Zona muerta del joystick, como fracción del radio: más cerca del centro no cambia la dirección. */
-export const JOYSTICK_DEAD_ZONE = 0.3;
+/** Zona muerta del joystick, en px CSS desde el centro de la base: más cerca no cambia la dirección. */
+export const JOYSTICK_DEAD_ZONE_PX = 10;
+
+/** Duración, en ms, del desvanecido del joystick al soltar el dedo. */
+export const JOYSTICK_FADE_MS = 150;
+
+/** Rondas de cada partida en las que se ve la pista «Toca y arrastra» mientras no hay dedo. */
+export const JOYSTICK_HINT_ROUNDS = 1;
+
+/** Vibración corta, en ms, al cambiar de dirección con el joystick (si el teléfono la tiene). */
+export const JOYSTICK_HAPTIC_MS = 10;
 
 /**
  * Media anchura, en grados, del sector diagonal del joystick (y del swipe) alrededor de cada 45°.

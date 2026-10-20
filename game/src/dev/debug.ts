@@ -29,16 +29,23 @@ export interface PolkaDebug {
   limpiar(): void;
   /** En 'jugando': pone un fantasma 'normal' encima de Polka-Man (muere en el siguiente paso). */
   morir(): void;
-  /** Manda al fantasma 0 a la casa a esperar `segundos` (por defecto houseCooldownSeconds de la ronda). */
-  casa(segundos?: number): void;
+  /** Manda al fantasma `id` (0 por defecto) a la casa a esperar `segundos` (por defecto houseCooldownSeconds de la ronda). */
+  casa(segundos?: number, id?: number): void;
   /** Cambia la ronda actual. */
   ronda(n: number): void;
   /** Pone una bolita especial bajo Polka-Man: el susto llega por el camino real (eat). */
   susto(): void;
   /** En susto: pone un fantasma asustado encima de Polka-Man (se lo come en el siguiente paso). */
   comer(): void;
-  /** Lectura para las comprobaciones: fase, ronda, susto y modo de cada fantasma. */
-  estado(): { phase: string; round: number; lives: number; frightTimer: number; ghosts: Array<{ mode: string; houseTimer: number }> };
+  /** Lectura para las comprobaciones: fase, ronda, susto, modo de cada fantasma y direcciones del jugador. */
+  estado(): {
+    phase: string;
+    round: number;
+    lives: number;
+    frightTimer: number;
+    ghosts: Array<{ mode: string; houseTimer: number }>;
+    player: { dir: string | null; nextDir: string | null; altDir: string | null; x: number; y: number };
+  };
   /** Estado del sonido (lo agrega attachAudioDebug). */
   sonido?(): AudioDebugState;
 }
@@ -132,8 +139,8 @@ export function withDebug(hub: Hub, state: GameState): Hub {
       g.houseTimer = 0;
       g.pos = { x: state.player.pos.x, y: state.player.pos.y };
     },
-    casa(segundos) {
-      const g = state.ghosts[0];
+    casa(segundos, id = 0) {
+      const g = state.ghosts[id];
       if (!g) return;
       g.mode = 'casa';
       g.houseTimer = segundos ?? houseCooldownSeconds(state.round);
@@ -164,6 +171,13 @@ export function withDebug(hub: Hub, state: GameState): Hub {
         lives: state.lives,
         frightTimer: state.frightTimer,
         ghosts: state.ghosts.map((g) => ({ mode: g.mode, houseTimer: g.houseTimer })),
+        player: {
+          dir: state.player.dir,
+          nextDir: state.player.nextDir,
+          altDir: state.player.altDir,
+          x: state.player.pos.x,
+          y: state.player.pos.y,
+        },
       };
     },
   };

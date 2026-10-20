@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { JOYSTICK_DEAD_ZONE, JOYSTICK_DIAGONAL_HALF_DEG, JOYSTICK_RADIUS_PX as R } from '../engine/rules';
+import { JOYSTICK_DEAD_ZONE_PX, JOYSTICK_DIAGONAL_HALF_DEG, JOYSTICK_RADIUS_PX as R } from '../engine/rules';
 import { joystickDirection, joystickDirections, knobOffset } from './joystick';
 
 /** Desplazamiento a `deg` grados (0 = derecha, 90 = abajo, en pantalla) y `dist` px del centro. */
@@ -9,11 +9,11 @@ const at = (deg: number, dist = 0.8 * R) => {
 };
 const dirAt = (deg: number, dist?: number) => {
   const [dx, dy] = at(deg, dist);
-  return joystickDirection(dx, dy, R);
+  return joystickDirection(dx, dy);
 };
 const dirsAt = (deg: number, dist?: number) => {
   const [dx, dy] = at(deg, dist);
-  return joystickDirections(dx, dy, R);
+  return joystickDirections(dx, dy);
 };
 
 describe('joystick: dirección', () => {
@@ -35,18 +35,18 @@ describe('joystick: dirección', () => {
   });
 
   it('el empate exacto a 45° y 135° gana el eje horizontal', () => {
-    expect(joystickDirection(30, 30, R)).toBe('derecha');
-    expect(joystickDirection(-30, 30, R)).toBe('izquierda');
-    expect(joystickDirection(-30, -30, R)).toBe('izquierda');
+    expect(joystickDirection(30, 30)).toBe('derecha');
+    expect(joystickDirection(-30, 30)).toBe('izquierda');
+    expect(joystickDirection(-30, -30)).toBe('izquierda');
   });
 
-  it('zona muerta: cerca del centro no hay dirección', () => {
-    expect(JOYSTICK_DEAD_ZONE).toBe(0.3);
-    expect(dirAt(0, 0.29 * R)).toBeNull();
-    expect(dirAt(90, 0.29 * R)).toBeNull();
-    expect(dirAt(0, 0.31 * R)).toBe('derecha');
-    expect(dirAt(270, 0.31 * R)).toBe('arriba');
-    expect(joystickDirection(0, 0, R)).toBeNull();
+  it('zona muerta en px: cerca del centro no hay dirección', () => {
+    expect(JOYSTICK_DEAD_ZONE_PX).toBe(10);
+    expect(dirAt(0, 9)).toBeNull();
+    expect(dirAt(90, 9)).toBeNull();
+    expect(dirAt(0, 11)).toBe('derecha');
+    expect(dirAt(270, 11)).toBe('arriba');
+    expect(joystickDirection(0, 0)).toBeNull();
   });
 
   it('más allá del radio sigue dando dirección', () => {
@@ -59,7 +59,7 @@ describe('joystick: 8 sectores', () => {
   /** `deg` medido desde el eje horizontal hacia ARRIBA-derecha (0 = derecha, 90 = arriba). */
   const upRight = (deg: number, dist?: number) => {
     const [dx, dy] = at(-deg, dist);
-    return joystickDirections(dx, dy, R);
+    return joystickDirections(dx, dy);
   };
 
   it('75° arriba-derecha → arriba con derecha de secundaria', () => {
@@ -77,15 +77,15 @@ describe('joystick: 8 sectores', () => {
   });
 
   it('dentro de la zona muerta → null', () => {
-    expect(upRight(75, 0.29 * R)).toBeNull();
-    expect(joystickDirections(0, 0, R)).toBeNull();
+    expect(upRight(75, 9)).toBeNull();
+    expect(joystickDirections(0, 0)).toBeNull();
   });
 
   it('las cuatro diagonales (45° gana el horizontal)', () => {
-    expect(joystickDirections(30, -30, R)).toEqual({ primary: 'derecha', secondary: 'arriba' });
-    expect(joystickDirections(30, 30, R)).toEqual({ primary: 'derecha', secondary: 'abajo' });
-    expect(joystickDirections(-30, 30, R)).toEqual({ primary: 'izquierda', secondary: 'abajo' });
-    expect(joystickDirections(-30, -30, R)).toEqual({ primary: 'izquierda', secondary: 'arriba' });
+    expect(joystickDirections(30, -30)).toEqual({ primary: 'derecha', secondary: 'arriba' });
+    expect(joystickDirections(30, 30)).toEqual({ primary: 'derecha', secondary: 'abajo' });
+    expect(joystickDirections(-30, 30)).toEqual({ primary: 'izquierda', secondary: 'abajo' });
+    expect(joystickDirections(-30, -30)).toEqual({ primary: 'izquierda', secondary: 'arriba' });
     expect(dirsAt(60)).toEqual({ primary: 'abajo', secondary: 'derecha' });
     expect(dirsAt(240)).toEqual({ primary: 'arriba', secondary: 'izquierda' });
   });
@@ -100,7 +100,7 @@ describe('joystick: 8 sectores', () => {
 
   it('la anchura del sector se puede ajustar', () => {
     const [dx, dy] = at(-75);
-    expect(joystickDirections(dx, dy, R, JOYSTICK_DEAD_ZONE, 22.5)).toEqual({ primary: 'arriba', secondary: null });
+    expect(joystickDirections(dx, dy, JOYSTICK_DEAD_ZONE_PX, 22.5)).toEqual({ primary: 'arriba', secondary: null });
   });
 });
 

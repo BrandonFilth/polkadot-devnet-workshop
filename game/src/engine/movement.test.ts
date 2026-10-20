@@ -163,6 +163,38 @@ describe('Polka-Man: diagonales (dos direcciones pedidas)', () => {
     expect(p.pos.y).toBe(17);
   });
 
+  it('75° subiendo con pasos que caen justo en los centros: gira a la derecha en (4, 13) y no lo deshace', () => {
+    // Desde (4, 14) cada paso de DT cae exacto en los centros; (5, 14) es pared y (5, 13) orbe.
+    const p: Player = createPlayer(maze);
+    p.pos = { x: 4, y: 14 };
+    p.dir = 'arriba' as Dir;
+    requestDirections(p, 'arriba', 'derecha');
+    let turnedAt: { x: number; y: number } | null = null;
+    for (let i = 0; i < 120 && !turnedAt; i++) {
+      updatePlayer(p, maze, DT);
+      if (p.dir === 'derecha') turnedAt = { x: Math.round(p.pos.x), y: Math.round(p.pos.y) };
+    }
+    expect(turnedAt).toEqual({ x: 4, y: 13 });
+    for (let i = 0; i < 5; i++) updatePlayer(p, maze, DT);
+    expect(p.dir).toBe('derecha');
+    expect(p.pos.x).toBeGreaterThan(4);
+    expect(p.pos.y).toBe(13);
+  });
+
+  it('en un centro, un pedido nuevo sí se decide otra vez', () => {
+    const p: Player = createPlayer(maze);
+    p.pos = { x: 4, y: 14 };
+    p.dir = 'arriba' as Dir;
+    requestDirections(p, 'arriba', 'derecha');
+    for (let i = 0; i < 120 && p.dir !== 'derecha'; i++) updatePlayer(p, maze, DT);
+    // Justo en (4, 13) se pide arriba sola: sube aunque ya se decidió ahí.
+    expect(p.pos).toEqual({ x: expect.closeTo(4, 9), y: 13 });
+    requestDirections(p, 'arriba', null);
+    updatePlayer(p, maze, DT);
+    expect(p.dir).toBe('arriba');
+    expect(p.pos.y).toBeLessThan(13);
+  });
+
   it('15° (derecha + arriba) subiendo: también gira a la derecha en (1, 17)', () => {
     expect(upColumn1('derecha', 'arriba').turnedAt).toEqual({ x: 1, y: 17 });
   });

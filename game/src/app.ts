@@ -19,6 +19,7 @@ import { MAZE, parseMaze } from './engine/maze';
 import {
   CONTROLS_HEIGHT_PX,
   HUD_HEIGHT_PX,
+  JOYSTICK_FADE_MS,
   JOYSTICK_KNOB_RADIUS_PX,
   JOYSTICK_RADIUS_PX,
   PAUSE_BUTTON_PX,
@@ -43,6 +44,7 @@ export function startApp(root: HTMLElement): void {
   root.style.setProperty('--joy-r', `${JOYSTICK_RADIUS_PX}px`);
   root.style.setProperty('--knob-r', `${JOYSTICK_KNOB_RADIUS_PX}px`);
   root.style.setProperty('--pause-size', `${PAUSE_BUTTON_PX}px`);
+  root.style.setProperty('--stick-fade', `${JOYSTICK_FADE_MS}ms`);
   root.style.setProperty('--ranking-max-h', `${RANKING_MAX_HEIGHT_PX}px`);
 
   const header = document.createElement('header');
@@ -55,7 +57,7 @@ export function startApp(root: HTMLElement): void {
   canvas.setAttribute('aria-label', 'Tablero de Polka-Man');
   stage.append(canvas);
 
-  // Joystick y botón de pausa estilo Atari (solo en pantallas táctiles, ver styles.css).
+  // Joystick flotante y botón de pausa estilo Atari (solo en pantallas táctiles, ver styles.css).
   const controles = createControles(state);
 
   // Aviso de giro: fuera del escenario, a pantalla completa y por encima de todo.

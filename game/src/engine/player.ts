@@ -15,6 +15,12 @@ export interface Player {
   mouth: number;
   /** Se movió en el último updatePlayer (false = quieto contra la pared o sin dirección). */
   moving: boolean;
+  /**
+   * Último centro donde se decidió la dirección y con qué pedido («principal|secundaria»). Si un paso
+   * termina justo en un centro, el siguiente vuelve a empezar en él: con el mismo pedido no se decide
+   * otra vez (en diagonal, la segunda decisión desharía el giro).
+   */
+  decided?: { col: number; row: number; key: string };
 }
 
 export function createPlayer(maze: Maze): Player {
@@ -80,7 +86,11 @@ export function updatePlayer(player: Player, maze: Maze, dt: number): void {
     canEnter,
     (c, r) => {
       const canGo = (d: Dir) => canEnter(c + DIR_VECTORS[d].x, r + DIR_VECTORS[d].y);
+      const key = `${player.nextDir}|${player.altDir}`;
+      const d = player.decided;
+      if (d && d.col === c && d.row === r && d.key === key && player.dir !== null && canGo(player.dir)) return;
       player.dir = chooseAtCenter(player.dir, player.nextDir, player.altDir, canGo);
+      player.decided = { col: c, row: r, key };
     },
     maze.width,
   );
