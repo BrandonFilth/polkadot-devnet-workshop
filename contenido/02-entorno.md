@@ -76,7 +76,7 @@ teléfono y te manda ahí cada firma
    | Linux | `polkadot-desktop-0.1.3-x86_64.AppImage` |
 
 2. Instálala. En Windows, si aparece "Windows protegió tu PC", toca **Más información → Ejecutar de
-   todas formas**.
+   todas formas**. En macOS la app aparece en *Aplicaciones* como **Polkadot Desktop Dev**.
 3. Ábrela. Te muestra un código QR.
 4. En la Polkadot App abre el escáner, apunta al QR y toca **Link**.
 5. Espera a que Desktop pase de *Completing pairing…* al tablero principal.

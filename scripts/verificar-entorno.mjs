@@ -3,7 +3,7 @@
 //   node scripts/verificar-entorno.mjs              revisión rápida
 //   node scripts/verificar-entorno.mjs --completo   también descarga y prueba pad y dotns (tarda ~1-2 min la primera vez)
 import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const completo = process.argv.includes('--completo');
@@ -35,6 +35,26 @@ function alMenos(v, minimo) {
   return true;
 }
 
+// Cómo instalar pnpm en cada sistema (el devEngines del proyecto baja después la 12.6.0).
+function instalarPnpm() {
+  if (windows) return 'Instala pnpm con: winget install -e --id pnpm.pnpm';
+  if (process.platform === 'darwin') return 'Instala pnpm con: brew install pnpm';
+  return 'Instala pnpm con: curl -fsSL https://get.pnpm.io/install.sh | sh -';
+}
+
+// Busca la app de Polkadot Desktop en macOS. Según la versión se llama "Polkadot Desktop.app" o
+// "Polkadot Desktop Dev.app", así que acepta cualquier "Polkadot Desktop*.app".
+function desktopEnMac() {
+  for (const carpeta of ['/Applications', join(process.env.HOME ?? '', 'Applications')]) {
+    try {
+      if (readdirSync(carpeta).some((n) => n.startsWith('Polkadot Desktop') && n.endsWith('.app'))) return true;
+    } catch {
+      // La carpeta no existe o no se puede leer: sigue con la otra.
+    }
+  }
+  return false;
+}
+
 // Node
 {
   const v = version(process.version);
@@ -46,7 +66,7 @@ function alMenos(v, minimo) {
 {
   const r = correr('pnpm --version');
   const v = r.ok ? version(r.salida) : null;
-  if (!v) anotar('mal', 'pnpm', 'no se encontró', 'Instala pnpm 12.6.0 y abre una terminal nueva. Ver "Paso 4".');
+  if (!v) anotar('mal', 'pnpm', 'no se encontró', `${instalarPnpm()} y abre una terminal nueva. Ver "Paso 4".`);
   else if (v[0] < 12) anotar('mal', 'pnpm', r.salida, 'Tu pnpm es viejo: instala pnpm 12.6.0 y quita el anterior del PATH.');
   else anotar('ok', 'pnpm', r.salida);
 }
@@ -100,13 +120,10 @@ if (windows) {
 
 // Polkadot Desktop
 {
-  const candidatos = windows
-    ? [join(process.env.LOCALAPPDATA ?? '', 'Programs', 'polkadot-desktop')]
-    : process.platform === 'darwin'
-      ? ['/Applications/Polkadot Desktop.app', join(process.env.HOME ?? '', 'Applications/Polkadot Desktop.app')]
-      : [];
-  if (candidatos.some((p) => existsSync(p))) anotar('ok', 'Polkadot Desktop', 'instalado');
-  else if (candidatos.length) anotar('mal', 'Polkadot Desktop', 'no se encontró', 'Instálalo desde el "Paso 3" del capítulo 2.');
+  const mac = process.platform === 'darwin';
+  const encontrado = windows ? existsSync(join(process.env.LOCALAPPDATA ?? '', 'Programs', 'polkadot-desktop')) : mac && desktopEnMac();
+  if (encontrado) anotar('ok', 'Polkadot Desktop', 'instalado');
+  else if (windows || mac) anotar('mal', 'Polkadot Desktop', 'no se encontró', 'Instálalo desde el "Paso 3" del capítulo 2.');
   // En Linux es un AppImage: puede estar en cualquier carpeta, así que no se puede detectar.
   else anotar('ojo', 'Polkadot Desktop', 'revísalo a mano', 'Abre el AppImage y confirma que ya está emparejado con tu teléfono.');
 }
