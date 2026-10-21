@@ -49,7 +49,7 @@ Cada capítulo tiene una guía para leer y unas diapositivas para seguir la clas
 | 4 | Programar con IA (vibe coding) | [04-vibe-coding.md](contenido/04-vibe-coding.md) | [04-vibe-coding.html](slides/04-vibe-coding.html) |
 | 5 | Tu primera app en Polkadot | [05-el-juego.md](contenido/05-el-juego.md) | [05-el-juego.html](slides/05-el-juego.html) |
 | 6 | Publica tu app | [06-publicar.md](contenido/06-publicar.md) | [06-publicar.html](slides/06-publicar.html) |
-| 7 | Hackatón | Próximamente | Próximamente |
+| 7 | Hackatón | [07-hackaton.md](contenido/07-hackaton.md) | [07-hackaton.html](slides/07-hackaton.html) |
 
 ## Cómo seguir el curso
 
