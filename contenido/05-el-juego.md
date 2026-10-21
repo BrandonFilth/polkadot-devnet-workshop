@@ -407,7 +407,7 @@ Reglas del dominio:
 
 Ni Polkadot Desktop ni la Polkadot App se conectan a `localhost`: para probar en el Host publicas el
 juego en tu `.dot`. **Es el mismo método con el que publicas tu app al final del hackatón**; el
-capítulo 6 (próximamente) amplía la compra del dominio, el manifest y la renovación. No necesitas
+[capítulo 6](./06-publicar.md) le suma el icono, el manifest y la renovación. No necesitas
 sesión, frase de recuperación ni keystore: en cada publicación la única firma es la de Save en
 Resolve, en tu teléfono.
 Fuente: la skill
@@ -419,10 +419,12 @@ Save → firmas → abres tu `.dot` en el Host. Cada build da un CID nuevo.
 
 Primero compra tu dominio ([subsección anterior](#compra-tu-dominio-dot-una-sola-vez)).
 
+Para la versión final con icono, nombre y descripción: [capítulo 6](./06-publicar.md).
+
 1. Desde la raíz de tu repo, `pnpm build`. El bundle queda en `dist`. En el repo del curso, la
    muestra deja su build en `game\dist` (`./game/dist` en macOS o Linux); cambia la carpeta en la
    línea `pad` si publicas la muestra.
-2. Desde la raíz del repo, sube el bundle (unos 3.5 minutos).
+2. Desde la raíz del repo, sube el bundle (unos 4 minutos).
 
    Windows (PowerShell):
 
@@ -465,7 +467,9 @@ Por qué cada parte:
 
 - `--env devnet`: sin él, `pad` usa otra red (`paseo-next-v2`).
 - `--js-merkle`: no necesitas el binario de IPFS Kubo.
-- `--no-manifest`: `pad` ignora cualquier `polkadot-app-deploy.config.ts` y usa el nombre que le das.
+- `--no-manifest`: `pad` no publica el manifest de `polkadot-app-deploy.config.*` y usa el nombre que
+  le das. Si tu proyecto ya tiene esa config (capítulo 6), usa el comando del
+  [capítulo 6](./06-publicar.md#5-sube-app-e-icono), también para las pruebas.
 - Nombre temporal: `pad` siempre registra el nombre que recibe; queda del worker compartido de `pad`
   y no se vuelve a usar.
 - Letras en lugar de dígitos: DotNS solo acepta 0 o 2 dígitos al final del nombre.
@@ -488,8 +492,8 @@ Notas:
 - La organización autorizó las 10 cuentas del pool con 1000 transacciones y 1000 MB cada una (unos
   10 GB en total).
 - Bulletin borra el contenido a los ~14 días: vuelve a publicar antes de la demo o la evaluación.
-- Icono y descripción (manifest) son opcionales y se ven en el capítulo 6: van en Profile → Edit →
-  Edit Profile Records → Custom Records → Add Record. Las claves están **POR VERIFICAR**.
+- Icono y descripción (manifest) son opcionales y se ven en el [capítulo 6](./06-publicar.md): van
+  en Profile → Edit → Edit Profile Records → Custom Records → Add Record, con la llave `manifest`.
 
 ---
 
@@ -535,8 +539,8 @@ textos los decides tú.
 Cada cuenta es un jugador distinto: tu `.dot`, un `.dot` temporal y MetaMask tienen cada uno su
 propio récord ([capítulo 3, sección 16](./03-smart-contracts.md#16-tus-tres-cuentas)). Más detalle en
 [`errores-comunes.md`](https://github.com/BrandonFilth/polkadot-products-devnet/blob/main/skills/polkadot-products-devnet/references/errores-comunes.md)
-de la skill. El comportamiento de los permisos dentro de Desktop 0.1.3 y de la Polkadot App está
-**POR VERIFICAR**.
+de la skill. Conectar, guardar un récord con una firma y cambiar el username dentro del Host:
+comprobado por la organización en polka-man.dot.
 
 **Reto opcional: username.** Si te sobra tiempo, el final de
 [`08-guarda-tu-record.md`](../prompts/08-guarda-tu-record.md) agrega un username: de 3 a 16
@@ -566,8 +570,8 @@ Animaciones al comer y al morir, efectos 8 bits y una música de fondo original,
 código con la Web Audio API, con los botones Música y Efectos
 ([prompt](../prompts/10-sonido-y-animaciones.md)). Piensa: ¿qué pasa si el Host no deja reproducir
 audio? Error típico: la música empieza antes del primer toque y el navegador la bloquea, copia la
-melodía de un juego conocido, o un solo botón apaga la Música y los Efectos a la vez. Que el sonido
-funcione dentro del Host y en un teléfono real está **POR VERIFICAR**.
+melodía de un juego conocido, o un solo botón apaga la Música y los Efectos a la vez. El sonido
+dentro del Host y en un teléfono: comprobado por la organización en polka-man.dot.
 
 ---
 
@@ -619,4 +623,4 @@ Sube por esta escalera, en orden:
 
 ---
 
-👉 Capítulo 6 · Publica tu app (próximamente)
+👉 [Capítulo 6 · Publica tu app](./06-publicar.md)

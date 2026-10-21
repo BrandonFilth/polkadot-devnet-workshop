@@ -31,6 +31,8 @@ Profile → Resolve → pega → Save → firma → abre tu `.dot`
 Desde tu repo la carpeta del build es `dist`; en el repo del curso, la muestra usa `game\dist`. Repite el ciclo cada vez que quieras probar algo
 dentro del Host; cada build da un CID nuevo.
 
+Para la versión final con icono, nombre y descripción, sigue el [capítulo 6](../contenido/06-publicar.md).
+
 ## Si no sabes
 
 ```text

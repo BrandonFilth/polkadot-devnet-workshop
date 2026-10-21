@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>06 · Publica tu app — Polkadot App Hackatón</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/deck.css">
+<style>
+/* Diagramas planos de este capítulo (prefijos j- del capítulo 5 y p6-, sin glow, texto de 18 px o más). */
+.title, .h { text-shadow: none; }
+.sub { color: #d6d3d1; }
+.foot, .term .bar span { font-size: 18px; }
+.slide *, .slide *::before, .slide *::after { font-variant-ligatures: none !important; }
+
+.j-mut { color: var(--muted); }
+.j-pink { color: var(--accent); }
+.j-ok { color: #9be7b0; }
+.j-code { font-family: var(--mono); }
+
+/* Ventana */
+.j-win { border: 2px solid #3a3a37; background: #0b0b0b; }
+.j-win .j-bar { height: 40px; border-bottom: 2px solid #3a3a37; display: flex; align-items: center; gap: 8px; padding: 0 14px; }
+.j-win .j-bar i { width: 10px; height: 10px; border-radius: 50%; background: #3a3a37; }
+.j-win .j-bar span { margin-left: 10px; font: 18px var(--mono); color: var(--muted); }
+.j-win .j-body { padding: 18px 24px; }
+
+/* Filas de llave y valor */
+.j-rows > div { display: grid; grid-template-columns: 300px 1fr; align-items: baseline; padding: 15px 0; border-bottom: 1px solid var(--line); font: 24px var(--display); }
+.j-rows > div:first-child { border-top: 1px solid var(--line); }
+.j-rows .k { font: 20px var(--mono); color: var(--muted); }
+.j-label { font: 18px var(--mono); color: var(--muted); letter-spacing: .2em; text-transform: uppercase; }
+
+/* Bloques numerados */
+.j-blk { padding: 18px 0; border-top: 1px solid #2a2a2a; }
+.j-blk:first-child { border-top: 0; padding-top: 0; }
+.j-blk b { display: block; font: 700 24px var(--display); text-transform: uppercase; }
+.j-blk b i { font-style: normal; color: var(--accent); margin-right: 12px; }
+.j-blk p { font: 20px/1.45 var(--mono); color: #d6d3d1; margin-top: 8px; }
+
+/* Ciclo en fila (5 cajas) */
+.j-cyc { display: grid; grid-template-columns: 1fr 40px 1fr 40px 1fr 40px 1fr 40px 1fr; align-items: stretch; }
+.j-cyc .a { font: 700 26px var(--display); color: var(--muted); display: grid; place-items: center; }
+.j-cyc .box { border: 2px solid #d6d3d1; background: #050505; padding: 16px 18px; }
+.j-cyc .box.pink { border-color: var(--accent); }
+.j-cyc .box .n { font: 18px var(--mono); color: var(--muted); letter-spacing: .2em; }
+.j-cyc .box b { display: block; font: 700 22px/1.2 var(--display); text-transform: uppercase; margin-top: 6px; }
+.j-cyc .box.pink b { color: var(--accent); }
+.j-cyc .box span { display: block; font: 18px/1.4 var(--mono); color: var(--muted); margin-top: 8px; }
+
+/* Fondo negro liso, sin textura */
+.slide.flat { background: #050505; }
+.slide.flat::before { display: none; }
+
+/* Partes en tarjetas */
+.j-parts { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.j-part { border: 1px solid #2a2a2a; border-left: 4px solid #d6d3d1; background: #000; padding: 22px 28px; }
+.j-part.pink { border-left-color: var(--accent); }
+.j-part b { display: block; font: 700 24px var(--display); text-transform: uppercase; }
+.j-part b i { font-style: normal; color: var(--accent); margin-right: 12px; }
+.j-part p { font: 20px/1.45 var(--mono); color: #d6d3d1; margin-top: 10px; }
+
+/* Portapapeles */
+.j-clip { border: 2px solid #d6d3d1; border-radius: 14px; background: #0b0b0b; padding: 56px 40px 26px; position: relative; }
+.j-clip-top { position: absolute; top: 0; left: 50%; width: 200px; height: 30px; margin-left: -100px; border: 2px solid #d6d3d1; border-top: 0; border-radius: 0 0 10px 10px; background: #000; }
+.j-checks div { display: grid; grid-template-columns: 44px 1fr; align-items: center; font: 22px var(--display); padding: 12px 0; border-bottom: 1px solid #2a2a2a; }
+.j-box { width: 22px; height: 22px; border: 2px solid var(--accent); }
+
+/* Comando y captura de DotNS */
+.term .body.j-cmd { white-space: pre-wrap; font-size: 18px; line-height: 1.6; padding: 20px 28px 22px; }
+.j-cmd > div { padding-left: 2ch; text-indent: -2ch; }
+.j-shot img { display: block; width: 100%; height: auto; object-fit: contain; }
+
+/* Lista de pasos */
+.j-steps > div { display: grid; grid-template-columns: 60px 1fr; column-gap: 22px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.j-steps > div:last-child { border-bottom: 0; }
+.j-steps .c { width: 52px; height: 52px; border-radius: 50%; border: 2px solid #d6d3d1; display: grid; place-items: center; font: 700 20px var(--display); }
+.j-steps .pink .c { border-color: var(--accent); color: var(--accent); }
+.j-steps b { display: block; font: 700 24px var(--display); text-transform: uppercase; }
+.j-steps span { display: block; font: 19px var(--mono); color: var(--muted); margin-top: 4px; }
+.j-steps .host { color: var(--accent); }
+
+/* Repaso: franja de publicar */
+.j-pub { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 18px; }
+.j-pub span { border: 2px solid #d6d3d1; padding: 10px 16px; font: 20px var(--mono); color: #d6d3d1; }
+.j-pub span.pink { border-color: var(--accent); color: var(--accent); }
+.j-pub i { font: 700 22px var(--display); font-style: normal; color: var(--muted); }
+
+/* ---------- Propias del capítulo 6 ---------- */
+/* Icono en la portada */
+.p6-tile { text-align: center; }
+.p6-tile img { display: block; width: 300px; height: 300px; margin: 0 auto; border-radius: 64px; border: 2px solid #3a3a37; }
+.p6-tile b { display: block; font: 700 30px var(--display); text-transform: uppercase; margin-top: 22px; }
+.p6-tile span { display: block; font: 20px var(--mono); color: var(--muted); margin-top: 6px; }
+
+/* Tarjeta de app dibujada */
+.p6-card { display: grid; grid-template-columns: 96px 1fr; column-gap: 22px; align-items: center; border: 2px solid #3a3a37; border-radius: 18px; background: #0b0b0b; padding: 22px 24px; }
+.p6-card .ic { width: 96px; height: 96px; border-radius: 22px; overflow: hidden; }
+.p6-card .ic img { display: block; width: 100%; height: 100%; }
+.p6-card .ic.none { border: 2px dashed #5a5a55; }
+.p6-card b { display: block; font: 700 26px var(--display); }
+.p6-card span { display: block; font: 18px/1.4 var(--mono); color: #d6d3d1; margin-top: 6px; }
+.p6-card span.j-mut { color: var(--muted); }
+.p6-card.pink { border-color: var(--accent); }
+.p6-col .j-label { margin-bottom: 18px; }
+.p6-list { margin-top: 22px; }
+.p6-list > div { font: 22px var(--mono); color: #d6d3d1; padding: 16px 0; border-bottom: 1px solid var(--line); }
+.p6-list > div:first-child { border-top: 1px solid var(--line); }
+.p6-arrow { font: 700 56px var(--display); color: var(--accent); }
+
+/* Icono a dos tamaños */
+.p6-sizes { display: grid; grid-template-columns: auto auto; column-gap: 34px; align-items: end; }
+.p6-sizes img { display: block; border-radius: 12px; }
+.p6-sizes span { display: block; font: 18px var(--mono); color: var(--muted); margin-top: 10px; }
+.p6-quote { border: 1px dashed #5a5a55; padding: 14px 18px; font: 19px/1.5 var(--mono); color: #d6d3d1; margin-top: 14px; }
+.p6-ol { margin: 14px 0 0 26px; font: 20px/1.5 var(--mono); color: #d6d3d1; }
+.p6-ol li { margin-top: 6px; }
+
+/* Anotaciones del archivo */
+.p6-notes > div { display: grid; grid-template-columns: 170px 1fr; column-gap: 18px; align-items: baseline; padding: 13px 0; border-bottom: 1px solid var(--line); }
+.p6-notes > div:first-child { border-top: 1px solid var(--line); }
+.p6-notes code { font: 19px var(--mono); color: var(--accent); }
+.p6-notes span { font: 19px/1.4 var(--mono); color: #d6d3d1; }
+
+/* Líneas que se copian */
+.p6-hi { color: var(--accent); background: rgba(255, 40, 103, .12); }
+
+/* Diálogo de Custom Records dibujado */
+.p6-dlg { border: 2px solid #3a3a37; border-radius: 18px; background: #141414; padding: 26px 30px 28px; }
+.p6-dlg .hd { display: flex; justify-content: space-between; align-items: center; font: 700 26px var(--display); }
+.p6-dlg .hd i { font-style: normal; color: var(--muted); font-size: 24px; }
+.p6-dlg .path { font: 18px var(--mono); color: var(--muted); margin-top: 8px; }
+.p6-dlg .lb { font: 18px var(--mono); color: #d6d3d1; margin-top: 20px; }
+.p6-dlg .in { border: 2px solid #3a3a37; border-radius: 10px; background: #0b0b0b; padding: 10px 14px; font: 19px/1.45 var(--mono); color: #d6d3d1; margin-top: 8px; }
+.p6-dlg .in.pink { border-color: var(--accent); color: var(--accent); }
+.p6-dlg .bt { display: flex; justify-content: space-between; margin-top: 22px; }
+.p6-dlg .bt span { border: 2px solid #3a3a37; border-radius: 10px; padding: 10px 20px; font: 18px var(--display); }
+.p6-dlg .bt span.pink { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 700; }
+
+/* JSON anotado */
+.p6-json > div { display: grid; grid-template-columns: 330px 1fr; column-gap: 20px; align-items: baseline; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.p6-json > div:last-child { border-bottom: 0; }
+.p6-json code { font: 20px var(--mono); color: #d6d3d1; }
+.p6-json code b { font-weight: 400; color: var(--accent); }
+.p6-json span { font: 19px/1.4 var(--mono); color: var(--muted); }
+
+/* Línea de 14 días */
+.p6-time { position: relative; height: 170px; }
+.p6-time .ln { position: absolute; left: 0; right: 0; top: 60px; height: 3px; background: #5a5a55; }
+.p6-time .ln.pink { right: auto; background: var(--accent); }
+.p6-time .mk { position: absolute; top: 0; width: 280px; margin-left: -140px; text-align: center; }
+.p6-time .mk i { display: block; width: 26px; height: 26px; margin: 48px auto 0; border-radius: 50%; border: 3px solid #d6d3d1; background: #050505; }
+.p6-time .mk.pink i { border-color: var(--accent); background: var(--accent); }
+.p6-time .mk .d { position: absolute; left: 0; right: 0; top: 0; font: 700 22px var(--display); text-transform: uppercase; }
+.p6-time .mk.pink .d { color: var(--accent); }
+.p6-time .mk span { display: block; font: 19px/1.35 var(--mono); color: #d6d3d1; margin-top: 14px; }
+
+/* Tres formas de compartir */
+.p6-share { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+.p6-share > div { border: 2px solid #d6d3d1; background: #050505; padding: 24px 26px; }
+.p6-share > div.pink { border-color: var(--accent); }
+.p6-share .j-label { display: block; }
+.p6-share b { display: block; font: 700 21px var(--mono); margin-top: 14px; }
+.p6-share .pink b { color: var(--accent); }
+.p6-share span { display: block; font: 19px/1.45 var(--mono); color: #d6d3d1; margin-top: 12px; }
+
+/* Rejilla de problemas */
+.p6-fix { display: grid; grid-template-columns: 1fr 1fr; column-gap: 40px; }
+.p6-fix > div { padding: 14px 0; border-bottom: 1px solid var(--line); }
+.p6-fix code { display: block; font: 19px/1.4 var(--mono); color: var(--accent); }
+.p6-fix span { display: block; font: 19px/1.4 var(--mono); color: #d6d3d1; margin-top: 4px; }
+.p6-note { border-left: 4px solid #8b8b86; padding: 10px 18px; font: 19px/1.45 var(--mono); color: #d6d3d1; background: #000; }
+</style>
+</head>
+<body>
+<main class="deck" id="deck" data-chapter="06" data-prev="05-el-juego.html">
+
+  <!-- 1 · Portada -->
+  <section class="slide" data-title="Publica tu app" style="--bgpos: 30% 70%;">
+    <div class="panel" style="left:110px; top:110px; width:820px; padding:46px 60px 50px;">
+      <div class="kicker">Capítulo 06</div>
+      <div class="title" style="font-size:80px;">Publica tu app</div>
+      <div class="sub">En tu dominio .dot, con icono, nombre y descripción</div>
+    </div>
+    <div class="item p6-tile" style="left:1060px; top:120px; width:380px;">
+      <img src="../game/assets/icono.png" alt="Icono de Polka-Man: un personaje redondo rosa comiendo dos bolitas sobre fondo negro">
+      <b>Polka-Man</b>
+      <span>polka-man.dot</span>
+    </div>
+    <div class="tape" style="left:170px; top:580px; transform:rotate(-4deg);">TU ICONO</div>
+    <div class="tape" style="left:1030px; top:620px; transform:rotate(5deg);">TU MANIFEST</div>
+    <div class="tape pink" style="left:560px; top:720px; transform:rotate(-3deg);">TU .DOT</div>
+  </section>
+
+  <!-- 2 · De probar a publicar -->
+  <section class="slide plain" data-title="De probar a publicar">
+    <div class="item" style="left:110px; top:70px;"><div class="h">De probar a publicar</div></div>
+    <div class="item p6-col" style="left:110px; top:190px; width:600px;">
+      <div class="j-label">Capítulo 5 · probar</div>
+      <div class="p6-card">
+        <div class="ic none"></div>
+        <div><b>tu-app.dot</b><span class="j-mut">sin icono ni descripción</span></div>
+      </div>
+      <div class="p6-list">
+        <div>pad con <span class="j-pink">--no-manifest</span></div>
+        <div>copias el CID</div>
+        <div>Resolve en tu dominio</div>
+      </div>
+    </div>
+    <div class="item p6-arrow" style="left:760px; top:250px;" aria-hidden="true">→</div>
+    <div class="item p6-col" style="left:890px; top:190px; width:600px;">
+      <div class="j-label">Capítulo 6 · publicar</div>
+      <div class="p6-card pink">
+        <div class="ic"><img src="../game/assets/icono.png" alt=""></div>
+        <div><b>Polka-Man</b><span>Juego de laberinto en Polkadot: come bolitas, esquiva fantasmas…</span></div>
+      </div>
+      <div class="p6-list">
+        <div>config + <span class="j-pink">APP_DOT</span></div>
+        <div>pad sube la app y el icono</div>
+        <div>Resolve + registro <span class="j-pink">manifest</span></div>
+      </div>
+    </div>
+    <div class="item lead" style="left:110px; top:640px; width:1380px; font-size:24px;">Mismo dominio, mismo Resolve. Solo sumas un icono, un archivo y un registro.</div>
+  </section>
+
+  <!-- 3 · Antes de publicar -->
+  <section class="slide grid" data-title="Antes de publicar">
+    <div class="item" style="left:110px; top:70px;"><div class="h">Antes de publicar</div></div>
+    <div class="item j-clip" style="left:110px; top:180px; width:800px;">
+      <div class="j-clip-top"></div>
+      <div class="j-checks">
+        <div><span class="j-box"></span><span>La dirección de tu contrato, no la de la muestra</span></div>
+        <div><span class="j-box"></span><span>Sin datos de prueba ni atajos de depuración</span></div>
+        <div><span class="j-box"></span><span>Se ve bien en un teléfono, sin partes cortadas</span></div>
+        <div><span class="j-box"></span><span>Sin secretos: ni .env ni frases de recuperación</span></div>
+        <div><span class="j-box"></span><span>git status limpio: todo con commit</span></div>
+        <div style="border-bottom:0;"><span class="j-box"></span><span>pnpm build pasa</span></div>
+      </div>
+    </div>
+    <div class="panel" style="left:970px; top:180px; width:520px; padding:30px 36px;">
+      <div class="j-blk"><b><i>01</i>Pide la revisión</b><p>El prompt de la fase 7: el agente revisa sin cambiar archivos.</p></div>
+      <div class="j-blk"><b><i>02</i>Corre</b><p>pnpm test<br>pnpm build<br>git status</p></div>
+      <div class="j-blk"><b><i>03</i>Haz commit</b><p>Publicas lo que está en tu repo.</p></div>
+    </div>
+    <div class="item lead j-mut" style="left:110px; top:740px; width:1380px; font-size:20px;">Lo que subes es público: cualquiera puede descargar tu bundle.</div>
+  </section>
+
+  <!-- 4 · Tu icono -->
+  <section class="slide" data-title="Tu icono" style="--bgpos: 75% 25%;">
+    <div class="panel" style="left:110px; top:50px; width:1380px; padding:30px 52px 34px;">
+      <div class="h">Tu icono</div>
+      <div class="lead" style="font-size:22px; margin-top:12px;">512 x 512 px, cuadrado, png o jpeg. Guárdalo como <span class="j-code j-pink">assets/icono.png</span>.</div>
+    </div>
+    <div class="panel" style="left:110px; top:250px; width:420px; height:420px; padding:30px 34px;">
+      <div class="p6-sizes">
+        <div><img src="../game/assets/icono.png" alt="Icono de Polka-Man en grande" width="240" height="240"><span>512 px</span></div>
+        <div><img src="../game/assets/icono.png" alt="El mismo icono a 48 px" width="48" height="48" style="border-radius:8px;"><span>48 px</span></div>
+      </div>
+      <div class="j-mut" style="font:19px/1.45 var(--mono); margin-top:18px;">Que se lea en chico: una figura, sin texto.</div>
+    </div>
+    <div class="panel" style="left:580px; top:250px; width:440px; height:420px; padding:30px 34px;">
+      <div class="j-label">A · Con IA</div>
+      <div class="p6-quote">Icono cuadrado de app para un juego de laberinto: un personaje redondo rosa comiendo bolitas, fondo negro liso, estilo plano, sin texto, 512 x 512.</div>
+      <div class="j-mut" style="font:19px/1.45 var(--mono); margin-top:14px;">Cambia la figura por la de tu app.</div>
+    </div>
+    <div class="panel" style="left:1070px; top:250px; width:420px; height:420px; padding:30px 34px;">
+      <div class="j-label">B · Ya tienes una</div>
+      <ol class="p6-ol">
+        <li>Recórtala a cuadrado</li>
+        <li><span class="j-pink">iloveimg.com</span> → Redimensionar</li>
+        <li>En píxeles: 512 x 512</li>
+        <li>Descarga y renombra</li>
+      </ol>
+      <div class="j-mut" style="font:19px/1.45 var(--mono); margin-top:18px;">Si no es cuadrada, recórtala antes; si no, se deforma.</div>
+    </div>
+  </section>
+
+  <!-- 5 · El archivo de publicación -->
+  <section class="slide grid" data-title="El archivo de publicación">
+    <div class="item" style="left:110px; top:70px;"><div class="h">El archivo de publicación</div></div>
+    <div class="item j-win" style="left:110px; top:170px; width:880px;">
+      <div class="j-bar"><i></i><i></i><i></i><span>polkadot-app-deploy.config.mjs</span></div>
+      <div class="j-body code" style="font-size:18px;"><span class="kw">export default</span> {
+  domain: process.env.<span class="kw">APP_DOT</span>,
+  displayName: <span class="ty">'Polka-Man'</span>,
+  description: <span class="ty">'Juego de laberinto en Polkadot: …'</span>,
+  icon: { path: <span class="ty">'./assets/icono.png'</span>, format: <span class="ty">'png'</span> },
+  executables: [{ kind: <span class="ty">'app'</span>, path: <span class="ty">'./dist'</span>, appVersion: [1, 0, 0] }],
+};</div>
+    </div>
+    <div class="item j-win" style="left:110px; top:500px; width:880px;">
+      <div class="j-bar"><i></i><i></i><i></i><span>tu proyecto</span></div>
+      <div class="j-body code" style="font-size:18px;">├── assets/icono.png
+├── dist/                            <span class="cm">pnpm build</span>
+├── <span class="kw">polkadot-app-deploy.config.mjs</span>   <span class="cm">junto a dist/</span>
+└── src/</div>
+    </div>
+    <div class="item p6-notes" style="left:1040px; top:170px; width:450px;">
+      <div><code>domain</code><span>sale de APP_DOT; no lo escribas</span></div>
+      <div><code>displayName</code><span>nombre en la tarjeta</span></div>
+      <div><code>description</code><span>una frase</span></div>
+      <div><code>icon</code><span>ruta desde este archivo</span></div>
+      <div><code>executables</code><span>tu build: ./dist</span></div>
+    </div>
+    <div class="item lead" style="left:1040px; top:600px; width:450px; font-size:20px;">Lo escribes una vez y va en tu commit.</div>
+  </section>
+
+  <!-- 6 · Sube app e icono -->
+  <section class="slide plain" data-title="Sube app e icono">
+    <div class="item" style="left:110px; top:60px;"><div class="h">Sube app e icono</div></div>
+    <div class="item term" style="left:110px; top:160px; width:1380px;">
+      <div class="bar"><i></i><i></i><i></i><span>PowerShell · carpeta de tu proyecto</span></div>
+      <div class="body code j-cmd"><div><span class="kw">function</span> pad { $env:PAD_UPDATE_CHECK = '0'; pnpm dlx --ignore-scripts @polkadot-community-foundation/polkadot-app-deploy@0.16.7 @args }</div><div><span class="kw">pnpm</span> build</div><div>$env:APP_DOT = 'tmp' + (-join ((Get-Date -Format 'yyyyMMddHHmmss').ToCharArray() | ForEach-Object { [char](97 + [int]"$_") })) + '.dot'</div><div><span class="kw">pad</span> .\dist $env:APP_DOT --env devnet --js-merkle</div><div class="cm">…</div><div class="p6-hi">CID: bafybei…</div><div class="cm">  Loaded config: …\polkadot-app-deploy.config.mjs</div><div class="cm">  Icon CID: bafk2bza…</div><div class="p6-hi">   Verified text[manifest]: {"$v":1,"displayName":"Polka-Man",…}</div></div>
+    </div>
+    <div class="item j-parts" style="left:110px; top:590px; width:1380px; grid-template-columns:1fr 1fr 1fr;">
+      <div class="j-part pink"><b><i>01</i>Copia el CID</b><p>La línea CID: bafy…, para Resolve.</p></div>
+      <div class="j-part pink"><b><i>02</i>Copia el JSON</b><p>Todo lo que sigue a Verified text[manifest]:</p></div>
+      <div class="j-part"><b><i>03</i>Espera</b><p>Unos 4 min hasta el CID, unos 6 en total.</p></div>
+    </div>
+  </section>
+
+  <!-- 7 · Pégalo en tu dominio -->
+  <section class="slide" data-title="Pégalo en tu dominio" style="--bgpos: 20% 40%;">
+    <div class="panel" style="left:110px; top:50px; width:1380px; padding:30px 52px 34px;">
+      <div class="h">Pégalo en tu dominio</div>
+      <div class="lead" style="font-size:22px; margin-top:12px;">En tu dominio principal, el del capítulo 5. El mismo Resolve de siempre.</div>
+    </div>
+    <div class="panel j-steps" style="left:110px; top:250px; width:640px; padding:20px 40px;">
+      <div><span class="c">01</span><div><b>dotns.dot</b><span>Profile → My Domains</span></div></div>
+      <div><span class="c">02</span><div><b>Resolve</b><span>en la fila de tu dominio</span></div></div>
+      <div><span class="c">03</span><div><b>Pega el CID</b><span>bafy… en IPFS Hash</span></div></div>
+      <div><span class="c">04</span><div><b>Save</b><span>guarda</span></div></div>
+      <div class="pink"><span class="c">05</span><div><b>Firma</b><span class="host">en tu teléfono</span></div></div>
+    </div>
+    <div class="item j-win j-shot" style="left:800px; top:250px; width:690px;">
+      <div class="j-bar"><i></i><i></i><i></i><span>dotns.dot · Resolve</span></div>
+      <img src="../img/dotns.png" alt="Diálogo Resolve to IPFS de DotNS: campo IPFS Hash or Gateway URL, botones Cancel y Save">
+    </div>
+  </section>
+
+  <!-- 8 · Custom Records -->
+  <section class="slide flat" data-title="El registro manifest">
+    <div class="item" style="left:110px; top:60px;"><div class="h">El registro manifest</div></div>
+    <div class="item p6-dlg" style="left:110px; top:170px; width:620px;">
+      <div class="hd"><span>Custom Records</span><i aria-hidden="true">✕</i></div>
+      <div class="path">Edit → Edit Profile Records → Add Record</div>
+      <div class="lb">Key</div>
+      <div class="in pink">manifest</div>
+      <div class="lb">Value</div>
+      <div class="in">{"$v":1,<br>"displayName":"Polka-Man",<br>"description":"Juego de laberinto…",<br>"icon":{"cid":"bafk2bza…","format":"png"}}</div>
+      <div class="bt"><span>Cancel</span><span class="pink">Save</span></div>
+    </div>
+    <div class="item p6-json" style="left:780px; top:180px; width:710px;">
+      <div><code>"<b>$v</b>": 1</code><span>versión del formato; déjala así</span></div>
+      <div><code>"<b>displayName</b>"</code><span>nombre en la tarjeta</span></div>
+      <div><code>"<b>description</b>"</code><span>la frase de tu config</span></div>
+      <div><code>"icon": { "<b>cid</b>" }</code><span>empieza con bafk2bza; un bafybei… sale en blanco</span></div>
+      <div><code>"icon": { "<b>format</b>" }</code><span>png o jpeg</span></div>
+    </div>
+    <div class="item lead" style="left:780px; top:560px; width:710px; font-size:20px;">Pega el JSON completo de la línea Verified text[manifest]. Save y firma en tu teléfono.</div>
+  </section>
+
+  <!-- 9 · Mantenerla viva -->
+  <section class="slide plain" data-title="Mantenerla viva">
+    <div class="item" style="left:110px; top:70px;"><div class="h">Mantenerla viva</div></div>
+    <div class="item lead" style="left:110px; top:160px; width:1380px; font-size:22px;">Bulletin borra lo que subes a los ~14 días: la app y el icono.</div>
+    <div class="item p6-time" style="left:250px; top:250px; width:1100px;">
+      <div class="ln"></div>
+      <div class="ln pink" style="width:79%;"></div>
+      <div class="mk" style="left:0;"><div class="d">Día 0</div><i></i><span>publicas</span></div>
+      <div class="mk pink" style="left:79%;"><div class="d">Antes de la demo</div><i></i><span>vuelve a publicar</span></div>
+      <div class="mk" style="left:100%;"><div class="d">Día 14</div><i></i><span>se borra</span></div>
+    </div>
+    <div class="item j-parts" style="left:110px; top:500px; width:1380px; grid-template-columns:1fr 1fr 1fr 1fr;">
+      <div class="j-part pink"><b><i>01</i>Corre pad</b><p>Las 4 líneas: APP_DOT nuevo.</p></div>
+      <div class="j-part pink"><b><i>02</i>CID nuevo</b><p>Resolve → Save → firma.</p></div>
+      <div class="j-part"><b><i>03</i>El manifest</b><p>Se queda si no cambiaste icono, nombre ni descripción.</p></div>
+      <div class="j-part"><b><i>04</i>Versión</b><p>Una marca como v1.1 en tu app: sabes qué build abrió.</p></div>
+    </div>
+  </section>
+
+  <!-- 10 · Compártela -->
+  <section class="slide grid" data-title="Compártela">
+    <div class="item" style="left:110px; top:70px;"><div class="h">Compártela</div></div>
+    <div class="item p6-share" style="left:110px; top:180px; width:1380px;">
+      <div class="pink"><span class="j-label">En el Host</span><b>tu-app.dot</b><span>Polkadot App o Desktop: búscala por su nombre.</span></div>
+      <div><span class="j-label">En el navegador</span><b>https://tu-app.dev-dot.li</b><span>Para verla sin el Host; Conectar y firmar no van ahí.</span></div>
+      <div><span class="j-label">El código</span><b>github.com/tu-usuario/tu-app</b><span>Tu repo, con un README corto.</span></div>
+    </div>
+    <div class="item j-win" style="left:110px; top:470px; width:880px;">
+      <div class="j-bar"><i></i><i></i><i></i><span>README.md</span></div>
+      <div class="j-body code" style="font-size:19px;"><span class="kw"># Tu app</span>
+Qué es, en una frase.
+Ábrela: tu-app.dot en la Polkadot App
+Contrato: 0x…  <span class="cm">(Blockscout)</span>
+Correrla: pnpm install · pnpm dev</div>
+    </div>
+    <div class="panel" style="left:1040px; top:470px; width:450px; padding:28px 34px;">
+      <div class="j-label">Antes de compartir</div>
+      <div style="font:20px/1.5 var(--mono); color:#d6d3d1; margin-top:14px;">Ábrela desde otro teléfono, con otra cuenta, y guarda un récord.</div>
+    </div>
+  </section>
+
+  <!-- 11 · Si algo falla -->
+  <section class="slide" data-title="Si algo falla" style="--bgpos: 60% 55%;">
+    <div class="panel" style="left:110px; top:50px; width:1380px; padding:28px 52px 30px;"><div class="h">Si algo falla</div></div>
+    <div class="panel p6-fix" style="left:110px; top:200px; width:1380px; padding:14px 52px 20px;">
+      <div><code>pool account N … not authorized</code><span>Corre otra vez la línea pad.</span></div>
+      <div><code>El nombre ya tiene dueño</code><span>Corre otra vez la línea de APP_DOT.</span></div>
+      <div><code>domain required · Invalid product config</code><span>APP_DOT no existe en esta terminal: defínela.</span></div>
+      <div><code>Config domain … does not match</code><span>Pásale $env:APP_DOT a pad y repite.</span></div>
+      <div><code>Icono en blanco</code><span>icon.cid debe empezar con bafk2bza.</span></div>
+      <div><code>Abre la versión anterior</code><span>Cierra la app y vuelve a abrirla.</span></div>
+      <div style="border-bottom:0;"><code>A newer version … is available</code><span>Ignóralo: la versión está fija.</span></div>
+      <div style="border-bottom:0;"><code>Falla con tu propio dominio</code><span>A pad, solo el nombre temporal.</span></div>
+    </div>
+    <div class="item p6-note" style="left:110px; top:630px; width:1380px;">Android: si la app ya estaba en tus marcadores, puede mostrar la tarjeta anterior. Quita el marcador, búscala otra vez y agrégala.</div>
+  </section>
+
+  <!-- 12 · Repaso -->
+  <section class="slide flat" data-title="Repaso y lo que sigue">
+    <div class="item" style="left:110px; top:70px;"><div class="h">Repaso y lo que sigue</div></div>
+    <div class="item j-cyc" style="left:110px; top:180px; width:1380px;">
+      <div class="box"><div class="n">01</div><b>Icono</b><span>512 x 512</span></div>
+      <div class="a">→</div>
+      <div class="box"><div class="n">02</div><b>Config</b><span>una vez, en tu commit</span></div>
+      <div class="a">→</div>
+      <div class="box"><div class="n">03</div><b>pad</b><span>CID y JSON</span></div>
+      <div class="a">→</div>
+      <div class="box"><div class="n">04</div><b>Resolve</b><span>pega el CID</span></div>
+      <div class="a">→</div>
+      <div class="box pink"><div class="n">05</div><b>manifest</b><span>Custom Record con el JSON</span></div>
+    </div>
+    <div class="item lead" style="left:110px; top:390px; width:1380px; font-size:22px;">Icono y config: una vez. pad y Resolve: en cada versión. El registro manifest: solo si cambia.</div>
+    <div class="panel" style="left:110px; top:500px; width:900px; padding:28px 40px;">
+      <div class="j-label">Cada cambio y antes de la demo</div>
+      <div class="j-pub"><span>pnpm build</span><i>→</i><span>pad</span><i>→</i><span>CID</span><i>→</i><span>Resolve</span><i>→</i><span class="pink">abre tu .dot</span></div>
+    </div>
+    <div class="panel" style="left:1060px; top:500px; width:430px; padding:30px 44px;">
+      <div class="kicker">Capítulo 07</div>
+      <div class="h" style="font-size:44px; margin-top:12px;">Hackatón</div>
+      <div class="lead j-mut" style="font-size:20px; margin-top:12px;">Tu idea, con el mismo método.</div>
+    </div>
+  </section>
+
+  <div class="progress" id="progress"></div>
+  <footer class="foot">
+    <a href="../contenido/06-publicar.md">Guía: contenido/06-publicar.md</a>
+    <span><span id="count">01 / 12</span></span>
+  </footer>
+</main>
+<script src="assets/deck.js"></script>
+</body>
+</html>
