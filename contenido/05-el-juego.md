@@ -492,7 +492,9 @@ Notas:
 - Nunca le pases tu propio dominio a `pad`; solo el nombre temporal.
 - La organización autorizó las 10 cuentas del pool con 1000 transacciones y 1000 MB cada una (unos
   10 GB en total).
-- Bulletin borra el contenido a los ~14 días: vuelve a publicar antes de la demo o la evaluación.
+- Bulletin borra el contenido a los ~14 días: vuelve a publicar cuando necesites renovar el
+  almacenamiento (antes de los ~14 días) o publicar una versión nueva
+  ([capítulo 6, sección 8](./06-publicar.md#8-mantenerla-viva)).
 - Icono y descripción (manifest) son opcionales y se ven en el [capítulo 6](./06-publicar.md): van
   en Profile → Edit → Edit Profile Records → Custom Records → Add Record, con la llave `manifest`.
 

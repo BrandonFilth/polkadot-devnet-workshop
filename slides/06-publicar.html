@@ -127,17 +127,10 @@
 /* Líneas que se copian */
 .p6-hi { color: var(--accent); background: rgba(255, 40, 103, .12); }
 
-/* Diálogo de Custom Records dibujado */
-.p6-dlg { border: 2px solid #3a3a37; border-radius: 18px; background: #141414; padding: 26px 30px 28px; }
-.p6-dlg .hd { display: flex; justify-content: space-between; align-items: center; font: 700 26px var(--display); }
-.p6-dlg .hd i { font-style: normal; color: var(--muted); font-size: 24px; }
-.p6-dlg .path { font: 18px var(--mono); color: var(--muted); margin-top: 8px; }
-.p6-dlg .lb { font: 18px var(--mono); color: #d6d3d1; margin-top: 20px; }
-.p6-dlg .in { border: 2px solid #3a3a37; border-radius: 10px; background: #0b0b0b; padding: 10px 14px; font: 19px/1.45 var(--mono); color: #d6d3d1; margin-top: 8px; }
-.p6-dlg .in.pink { border-color: var(--accent); color: var(--accent); }
-.p6-dlg .bt { display: flex; justify-content: space-between; margin-top: 22px; }
-.p6-dlg .bt span { border: 2px solid #3a3a37; border-radius: 10px; padding: 10px 20px; font: 18px var(--display); }
-.p6-dlg .bt span.pink { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 700; }
+/* Captura real de DotNS, recortada al diálogo Edit Profile Records */
+.p6-shot { width: 404px; height: 600px; background: #000 url(../img/cap6/manifest.png) no-repeat; background-size: 1577px auto; background-position: -609px -113px; }
+.p6-notes.p6-wide > div { grid-template-columns: 220px 1fr; }
+.p6-notes span.pink { color: var(--accent); }
 
 /* JSON anotado */
 .p6-json > div { display: grid; grid-template-columns: 330px 1fr; column-gap: 20px; align-items: baseline; padding: 12px 0; border-bottom: 1px solid var(--line); }
@@ -343,37 +336,38 @@
   <!-- 8 · Custom Records -->
   <section class="slide flat" data-title="El registro manifest">
     <div class="item" style="left:110px; top:60px;"><div class="h">El registro manifest</div></div>
-    <div class="item p6-dlg" style="left:110px; top:170px; width:620px;">
-      <div class="hd"><span>Custom Records</span><i aria-hidden="true">✕</i></div>
-      <div class="path">Edit → Edit Profile Records → Add Record</div>
-      <div class="lb">Key</div>
-      <div class="in pink">manifest</div>
-      <div class="lb">Value</div>
-      <div class="in">{"$v":1,<br>"displayName":"Polka-Man",<br>"description":"Juego de laberinto…",<br>"icon":{"cid":"bafk2bza…","format":"png"}}</div>
-      <div class="bt"><span>Cancel</span><span class="pink">Save</span></div>
+    <div class="item j-win" style="left:110px; top:160px; width:408px;"><div class="j-bar"><i></i><i></i><i></i><span>dotns.dot · Edit</span></div><div class="p6-shot" role="img" aria-label="Captura de DotNS: diálogo Edit Profile Records; abajo, Custom Records con Add Record, los campos key y value, y los botones Cancel y Save"></div></div>
+    <div class="item" style="left:570px; top:170px; width:920px;">
+      <div class="p6-notes p6-wide">
+        <div><code>Edit</code><span>Edit Profile Records</span></div>
+        <div><code>Custom Records</code><span>abajo: Add Record</span></div>
+        <div><code>key</code><span class="pink">manifest</span></div>
+        <div><code>value</code><span>el JSON de Verified text[manifest]</span></div>
+        <div><code>Save</code><span>firma en tu teléfono</span></div>
+      </div>
+      <div class="j-label" style="margin-top:30px;">El JSON</div>
+      <div class="p6-json" style="margin-top:10px;">
+        <div><code>"<b>$v</b>": 1</code><span>versión del formato; déjala así</span></div>
+        <div><code>"<b>displayName</b>"</code><span>nombre en la tarjeta</span></div>
+        <div><code>"<b>description</b>"</code><span>la frase de tu config</span></div>
+        <div><code>"icon": { "<b>cid</b>" }</code><span>empieza con bafk2bza; un bafybei… sale en blanco</span></div>
+        <div><code>"icon": { "<b>format</b>" }</code><span>png o jpeg</span></div>
+      </div>
     </div>
-    <div class="item p6-json" style="left:780px; top:180px; width:710px;">
-      <div><code>"<b>$v</b>": 1</code><span>versión del formato; déjala así</span></div>
-      <div><code>"<b>displayName</b>"</code><span>nombre en la tarjeta</span></div>
-      <div><code>"<b>description</b>"</code><span>la frase de tu config</span></div>
-      <div><code>"icon": { "<b>cid</b>" }</code><span>empieza con bafk2bza; un bafybei… sale en blanco</span></div>
-      <div><code>"icon": { "<b>format</b>" }</code><span>png o jpeg</span></div>
-    </div>
-    <div class="item lead" style="left:780px; top:560px; width:710px; font-size:20px;">Pega el JSON completo de la línea Verified text[manifest]. Save y firma en tu teléfono.</div>
   </section>
 
   <!-- 9 · Mantenerla viva -->
   <section class="slide plain" data-title="Mantenerla viva">
     <div class="item" style="left:110px; top:70px;"><div class="h">Mantenerla viva</div></div>
-    <div class="item lead" style="left:110px; top:160px; width:1380px; font-size:22px;">Bulletin borra lo que subes a los ~14 días: la app y el icono.</div>
-    <div class="item p6-time" style="left:250px; top:250px; width:1100px;">
+    <div class="item lead" style="left:110px; top:160px; width:1380px; font-size:22px;">Bulletin borra lo que subes a los ~14 días. Vuelve a publicar solo para renovarlo antes de esa fecha o cuando tengas una versión nueva.</div>
+    <div class="item p6-time" style="left:250px; top:280px; width:1100px;">
       <div class="ln"></div>
       <div class="ln pink" style="width:79%;"></div>
       <div class="mk" style="left:0;"><div class="d">Día 0</div><i></i><span>publicas</span></div>
-      <div class="mk pink" style="left:79%;"><div class="d">Antes de la demo</div><i></i><span>vuelve a publicar</span></div>
+      <div class="mk pink" style="left:79%;"><div class="d">Día 11</div><i></i><span>vuelve a publicar (antes del día 14)</span></div>
       <div class="mk" style="left:100%;"><div class="d">Día 14</div><i></i><span>se borra</span></div>
     </div>
-    <div class="item j-parts" style="left:110px; top:500px; width:1380px; grid-template-columns:1fr 1fr 1fr 1fr;">
+    <div class="item j-parts" style="left:110px; top:530px; width:1380px; grid-template-columns:1fr 1fr 1fr 1fr;">
       <div class="j-part pink"><b><i>01</i>Corre pad</b><p>Las 4 líneas: APP_DOT nuevo.</p></div>
       <div class="j-part pink"><b><i>02</i>CID nuevo</b><p>Resolve → Save → firma.</p></div>
       <div class="j-part"><b><i>03</i>El manifest</b><p>Se queda si no cambiaste icono, nombre ni descripción.</p></div>
@@ -386,7 +380,7 @@
     <div class="item" style="left:110px; top:70px;"><div class="h">Compártela</div></div>
     <div class="item p6-share" style="left:110px; top:180px; width:1380px;">
       <div class="pink"><span class="j-label">En el Host</span><b>tu-app.dot</b><span>Polkadot App o Desktop: búscala por su nombre.</span></div>
-      <div><span class="j-label">En el navegador</span><b>https://tu-app.dev-dot.li</b><span>Para verla sin el Host; Conectar y firmar no van ahí.</span></div>
+      <div><span class="j-label">En el navegador</span><b>https://tu-app.dev-dot.li</b><span>Cualquiera la abre para verla. Conectar la cuenta y firmar: en la Polkadot App o Desktop.</span></div>
       <div><span class="j-label">El código</span><b>github.com/tu-usuario/tu-app</b><span>Tu repo, con un README corto.</span></div>
     </div>
     <div class="item j-win" style="left:110px; top:470px; width:880px;">
@@ -433,9 +427,9 @@ Correrla: pnpm install · pnpm dev</div>
       <div class="a">→</div>
       <div class="box pink"><div class="n">05</div><b>manifest</b><span>Custom Record con el JSON</span></div>
     </div>
-    <div class="item lead" style="left:110px; top:390px; width:1380px; font-size:22px;">Icono y config: una vez. pad y Resolve: en cada versión. El registro manifest: solo si cambia.</div>
+    <div class="item lead" style="left:110px; top:390px; width:1380px; font-size:22px;">Icono y config: una vez. pad y Resolve: en cada versión nueva y al renovar. El registro manifest: solo si cambia.</div>
     <div class="panel" style="left:110px; top:500px; width:900px; padding:28px 40px;">
-      <div class="j-label">Cada cambio y antes de la demo</div>
+      <div class="j-label">Versión nueva o renovar antes de ~14 días</div>
       <div class="j-pub"><span>pnpm build</span><i>→</i><span>pad</span><i>→</i><span>CID</span><i>→</i><span>Resolve</span><i>→</i><span class="pink">abre tu .dot</span></div>
     </div>
     <div class="panel" style="left:1060px; top:500px; width:430px; padding:30px 44px;">

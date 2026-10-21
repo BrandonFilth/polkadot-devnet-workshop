@@ -20,6 +20,7 @@ Escribe tus respuestas en `SPEC.md`.
 ```text
 Lee SPEC.md (y el spec de esta parte si existe). Usa la skill polkadot-products-devnet.
 Crea un proyecto Vite + TypeScript con las versiones que indica la skill.
+En vite.config usa base './' y el plugin de la skill que deja solo el descriptor del devnet.
 Crea el proyecto en esta misma carpeta, sin borrar ni reemplazar SPEC.md, .agents/ ni
 skills-lock.json.
 Crea AGENTS.md con las reglas de SPEC.md y esta: "Todos los números del juego en un solo

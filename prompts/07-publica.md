@@ -47,7 +47,7 @@ lenguaje simple con 3 ejemplos de mi juego. No escribas código.
 - Tu `.dot` abre el juego en Polkadot Desktop o en la Polkadot App.
 - El ranking carga dentro del Host.
 - El juego se ve bien en el celular, sin barras ni partes cortadas.
-- Anota la fecha: Bulletin borra lo publicado a los ~14 días; vuelve a publicar antes de la demo.
+- Anota la fecha: Bulletin borra lo publicado a los ~14 días. Vuelve a publicar antes de esa fecha para renovarlo, o cuando tengas una versión nueva.
 
 Esta fase no cambia código, así que no hay commit. Si el agente corrigió algo antes de publicar,
 haz un commit con ese cambio:

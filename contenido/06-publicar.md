@@ -4,7 +4,7 @@
 
 En el [capítulo 5](./05-el-juego.md) publicaste tu juego en tu `.dot` para probarlo dentro del Host.
 Aquí haces la versión final: la misma app, en el mismo dominio, ahora con **icono, nombre y
-descripción** en su tarjeta. Al final sabes mantenerla viva hasta la demo y compartirla.
+descripción** en su tarjeta. Al final sabes mantenerla publicada y compartirla.
 
 Comprobado con `pad` 0.16.7 en Products Devnet, con Polka-Man en `polka-man.dot`, en Polkadot Desktop
 y en la Polkadot App para Android.
@@ -104,7 +104,7 @@ export default {
 | `executables` | Tu build: `./dist`, la carpeta que deja `pnpm build`. `kind` y `appVersion` déjalos así |
 
 Lo escribes **una vez** y va en tu commit. `pad` lo encuentra solo: lo busca en la carpeta del build y
-en las de arriba. Antes de subir nada, revisa que el dominio sea válido y que el icono exista.
+en las de arriba. Antes de subir nada, `pad` revisa que el dominio sea válido y que el icono exista.
 
 ---
 
@@ -175,10 +175,13 @@ dominio.
 
 ![El registro manifest: la llave manifest y el JSON que copiaste](../img/cap6/custom-records.png)
 
-1. En la misma fila, toca Edit → Edit Profile Records → pestaña Custom Records → Add Record.
-2. Llave (key): `manifest`.
-3. Valor (value): el JSON que copiaste, completo.
-4. Guarda y firma en el teléfono.
+1. En la misma fila, toca Edit. Se abre "Edit Profile Records": abajo, en Custom Records, toca Add Record.
+
+   ![Edit Profile Records en DotNS: abajo, Custom Records con Add Record y los campos key y value](../img/cap6/manifest.png "Custom Records: Add Record, key y value")
+
+2. En key: `manifest`.
+3. En value: el JSON que copiaste, completo.
+4. Toca Save y firma en el teléfono.
 
 El JSON de la muestra:
 
@@ -212,10 +215,13 @@ guardar un récord con una firma.
 
 ## 8. Mantenerla viva
 
-![Mantenerla viva: vuelve a publicar antes de que Bulletin borre el contenido a los 14 días](../img/cap6/mantenerla-viva.png)
+![Mantenerla viva: por ejemplo el día 11, vuelve a publicar antes de que Bulletin lo borre a los 14 días](../img/cap6/mantenerla-viva.png)
 
-Bulletin borra lo que subes a los ~14 días: el bundle y el icono. Vuelve a publicar antes de la
-demo o la evaluación, y cada vez que cambies tu app:
+Bulletin borra lo que subes a los ~14 días: el bundle y el icono. Vuelve a publicar solo cuando haga
+falta: para renovar el almacenamiento antes de que pasen los ~14 días (por ejemplo, el día 11) o para
+publicar una versión nueva. Si publicaste hace pocos días y no cambiaste nada, tu app sigue ahí.
+
+Cada vez:
 
 1. Corre las cuatro líneas de la [sección 5](#5-sube-app-e-icono). La tercera da un `APP_DOT` nuevo.
 2. Pega el CID nuevo con Resolve, Save y firma ([sección 6](#6-pégalo-en-tu-dominio)).
@@ -235,8 +241,8 @@ del capítulo 5. `pad` lee la config aunque pases `--no-manifest`; sin `APP_DOT`
 ## 9. Compártela
 
 - **En el Host:** `tu-app.dot`, en la Polkadot App o en Desktop.
-- **En el navegador:** `https://tu-app.dev-dot.li`, para verla sin el Host. Conectar y firmar solo
-  funcionan dentro del Host.
+- **En el navegador:** `https://tu-app.dev-dot.li`. Cualquiera la abre en el navegador para verla. Para
+  conectar la cuenta y firmar se necesita el Host: la Polkadot App o Desktop.
 - **El código:** tu repo en GitHub, con un `README.md` corto: qué es tu app en una frase, cómo
   abrirla (`tu-app.dot`), la dirección de tu contrato con su enlace a
   [Blockscout](https://blockscout-testnet.polkadot.io/) y cómo correrla (`pnpm install`, `pnpm dev`).

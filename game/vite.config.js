@@ -6,6 +6,8 @@ const STUB = '\0descriptor-sin-usar:';
 // @parity/product-sdk-chain-client importa de forma dinámica los metadatos de todas las cadenas
 // (presets de getChainAPI) aunque el juego solo usa devnet-asset-hub. En el build se cambian los
 // demás descriptores por un módulo vacío para que no terminen en dist.
+// Solo aplica en el build: si el juego llega a importar otra cadena, en pnpm dev y en los tests
+// funciona, pero en dist queda vacía. Agrega su subruta a la condición de resolveId.
 export function soloDescriptorDevnet() {
   return {
     name: 'solo-descriptor-devnet',
