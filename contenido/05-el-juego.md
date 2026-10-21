@@ -422,8 +422,9 @@ Primero compra tu dominio ([subsección anterior](#compra-tu-dominio-dot-una-sol
 Para la versión final con icono, nombre y descripción: [capítulo 6](./06-publicar.md).
 
 1. Desde la raíz de tu repo, `pnpm build`. El bundle queda en `dist`. En el repo del curso, la
-   muestra deja su build en `game\dist` (`./game/dist` en macOS o Linux); cambia la carpeta en la
-   línea `pad` si publicas la muestra.
+   muestra deja su build en `game\dist` (`./game/dist` en macOS o Linux) y ya trae su archivo de
+   publicación: para publicarla usa el comando del [capítulo 6](./06-publicar.md#5-sube-app-e-icono)
+   con `.\game\dist`.
 2. Desde la raíz del repo, sube el bundle (unos 4 minutos).
 
    Windows (PowerShell):

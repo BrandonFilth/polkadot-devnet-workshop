@@ -28,7 +28,9 @@ Si dice que falta algo, pídeselo en otro prompt corto y vuelve a correr este. C
 publica con el ciclo de la guía: `pnpm build` → sube con `pad` → copia el CID → `dotns.dot` →
 Profile → Resolve → pega → Save → firma → abre tu `.dot`
 ([Probar dentro del Host: publica en tu .dot](../contenido/05-el-juego.md#probar-dentro-del-host-publica-en-tu-dot)).
-Desde tu repo la carpeta del build es `dist`; en el repo del curso, la muestra usa `game\dist`. Repite el ciclo cada vez que quieras probar algo
+Desde tu repo la carpeta del build es `dist`; en el repo del curso, la muestra usa `game\dist` y se
+publica con el comando del [capítulo 6](../contenido/06-publicar.md#5-sube-app-e-icono) porque ya trae
+su archivo de publicación. Repite el ciclo cada vez que quieras probar algo
 dentro del Host; cada build da un CID nuevo.
 
 Para la versión final con icono, nombre y descripción, sigue el [capítulo 6](../contenido/06-publicar.md).
