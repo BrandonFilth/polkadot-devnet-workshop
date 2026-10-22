@@ -128,8 +128,7 @@ bestScore[msg.sender] = 1240;
 ```
 
 Un mapping tiene un límite importante: **no se puede recorrer** ni saber cuántos elementos tiene.
-No puedes listar las llaves de un mapping; por eso el contrato también guarda una lista. Si
-preguntas por una llave que nunca se guardó, devuelve el valor vacío (`0`, `""`, `false`). Por
+Si preguntas por una llave que nunca se guardó, devuelve el valor vacío (`0`, `""`, `false`). Por
 eso `Leaderboard` usa las dos cosas: el mapping para buscar rápido el puntaje de alguien, y la lista
 para saber quiénes han jugado.
 

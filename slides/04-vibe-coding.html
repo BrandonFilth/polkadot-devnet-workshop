@@ -155,14 +155,6 @@
 .v-gwt .a { font: 700 24px var(--display); color: var(--muted); text-align: center; }
 .v-gwt .code { font-size: 20px; color: var(--accent); white-space: normal; }
 
-/* Pasos verticales compactos (repaso en dos columnas) */
-.v-steps.mini { position: absolute; }
-.v-steps.mini::before { left: 21px; top: 30px; bottom: 30px; }
-.v-steps.mini .v-st { padding: 8px 0; column-gap: 20px; grid-template-columns: 44px 1fr; }
-.v-steps.mini .v-st .c { width: 44px; height: 44px; font-size: 16px; }
-.v-steps.mini .v-st b { font-size: 21px; }
-.v-steps.mini .v-st span { font-size: 18px; margin-top: 2px; }
-
 /* Carga progresiva: etapas en fila */
 .v-flow { display: grid; grid-template-columns: 1fr 30px 1fr 30px 1fr 30px 1.25fr; }
 .v-flow .v-arrow { font: 700 24px var(--display); color: var(--muted); display: grid; place-items: center; }
@@ -275,17 +267,16 @@
   <!-- 3 · Un ejemplo -->
   <section class="slide grid" data-title="Un ejemplo">
     <div class="item" style="left:110px; top:90px;"><div class="h">Un ejemplo</div></div>
-    <div class="item j-cc big" style="left:110px; top:220px; width:880px;">
+    <div class="item j-cc big" style="left:110px; top:270px; width:880px;">
       <div class="j-bar"><svg width="26" height="26" aria-hidden="true"><use href="#j-cc"/></svg><span>Claude Code</span><em>~/mi-juego</em></div>
-      <div class="j-body">
+      <div class="j-body" style="font-size:27px; gap:22px; padding:30px 34px 34px;">
         <div class="u">Agrega un botón «Guardar récord» que llame submitScore del contrato Leaderboard. Simula con .query() antes de pedir la firma.</div>
         <div class="a">Leo src/contract/leaderboard.abi.json</div>
         <div class="a">Edito src/components/FinDePartida.ts</div>
         <div class="a">Corro pnpm build <span class="j-ok">✔</span></div>
-        <div class="a">Listo. Cambié 1 archivo; pruébalo con pnpm dev.</div>
       </div>
     </div>
-    <div class="panel" style="left:1030px; top:220px; width:460px; padding:32px 36px; border-color:var(--accent);">
+    <div class="panel" style="left:1030px; top:270px; width:460px; padding:32px 36px; border-color:var(--accent);">
       <div class="kicker pink">Tú revisas</div>
       <div class="marks" style="margin-top:14px;">
         <div class="si" style="font-size:22px;"><span>git diff: solo los archivos que modificó</span></div>

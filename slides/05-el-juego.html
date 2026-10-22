@@ -13,7 +13,7 @@
 .title, .h { text-shadow: none; }
 .sub { color: #d6d3d1; }
 .chip { box-shadow: none; }
-.foot, .term .bar span { font-size: 18px; }
+.foot { font-size: 18px; }
 .slide *, .slide *::before, .slide *::after { font-variant-ligatures: none !important; }
 
 .j-mut { color: var(--muted); }
@@ -130,9 +130,7 @@
 .j-checks div { display: grid; grid-template-columns: 44px 1fr; align-items: center; font: 22px var(--display); padding: 12px 0; border-bottom: 1px solid #2a2a2a; }
 .j-box { width: 22px; height: 22px; border: 2px solid var(--accent); }
 
-/* Comando de publicación y captura de DotNS */
-.term .body.j-cmd { white-space: pre-wrap; font-size: 18px; line-height: 1.6; padding: 20px 28px 22px; }
-.j-cmd > div { padding-left: 2ch; text-indent: -2ch; }
+/* Captura de DotNS */
 .j-shot img { display: block; width: 100%; height: auto; object-fit: contain; }
 .j-url { font: 18px var(--mono); color: var(--accent); text-align: center; margin-bottom: 10px; }
 .j-empty { font: 18px/1.45 var(--mono); color: var(--muted); text-align: center; padding: 26px 6px; border: 1px dashed #3a3a37; margin-top: 10px; }
@@ -323,7 +321,7 @@
     <div class="item" style="left:110px; top:70px;"><div class="h">Tu repo</div></div>
     <div class="panel j-steps" style="left:110px; top:170px; width:960px; padding:10px 40px;">
       <div><span class="c">01</span><div><b>Crea la carpeta</b><span>mi-juego, junto al clon del curso</span></div></div>
-      <div><span class="c">02</span><div><b>git init</b><span>empieza el historial</span></div></div>
+      <div><span class="c">02</span><div><b>Inicia Git</b><span>empieza el historial</span></div></div>
       <div><span class="c">03</span><div><b>Instala la skill</b><span>polkadot-products-devnet</span></div></div>
       <div><span class="c">04</span><div><b>Primer commit</b><span>la skill queda guardada</span></div></div>
       <div class="pink"><span class="c">05</span><div><b>Crea el repo en GitHub</b><span>y sube el commit</span></div></div>
