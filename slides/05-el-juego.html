@@ -165,6 +165,30 @@
 .j-steps b { display: block; font: 700 24px var(--display); text-transform: uppercase; }
 .j-steps span { display: block; font: 19px var(--mono); color: var(--muted); margin-top: 4px; }
 .j-steps .host { color: var(--accent); }
+
+/* Portada: del prompt al contrato y a tu .dot */
+.j-link { position: absolute; z-index: 2; height: 0; border-top: 3px dashed #8b8b86; }
+.j-link::after { content: ''; position: absolute; right: -4px; top: -10px; border: 8.5px solid transparent; border-left: 13px solid #8b8b86; border-right: 0; }
+.j-ctr { border: 2px solid #d6d3d1; background: #050505; padding: 22px 28px; }
+.j-ctr b { display: block; font: 700 32px var(--display); margin-top: 8px; }
+.j-ctr span { display: block; font: 19px var(--mono); color: #d6d3d1; margin-top: 8px; }
+.j-mini-ph { padding: 36px 12px 18px; border-radius: 34px; }
+.j-mini-ph img { height: 250px; object-fit: cover; object-position: 50% 30%; }
+
+/* Ilustración de pad → CID → Resolve */
+.j-pad { display: grid; grid-template-columns: 250px 70px 250px 1fr; align-items: center; }
+.j-pad .a { font: 700 30px var(--display); color: var(--muted); text-align: center; }
+.j-pad .t { border: 2px solid #3a3a37; background: #0b0b0b; }
+.j-pad .t .j-bar { height: 34px; border-bottom: 2px solid #3a3a37; display: flex; align-items: center; gap: 7px; padding: 0 12px; }
+.j-pad .t .j-bar i { width: 9px; height: 9px; border-radius: 50%; background: #3a3a37; }
+.j-pad .t .p { font: 700 44px var(--mono); color: #d6d3d1; padding: 18px 22px 22px; }
+.j-pad .cid { border: 2px solid var(--accent); background: #050505; padding: 18px 22px; display: grid; grid-template-columns: 56px 1fr; column-gap: 16px; align-items: center; }
+.j-pad .cid svg { width: 56px; height: 56px; fill: none; stroke: var(--accent); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+.j-pad .cid b { display: block; font: 700 26px var(--display); color: var(--accent); }
+.j-pad .cid span { display: block; font: 20px var(--mono); color: #d6d3d1; margin-top: 4px; }
+.j-pad .lb { grid-row: 2; font: 19px/1.4 var(--mono); color: #d6d3d1; margin-top: 14px; }
+.j-pad .go { position: relative; height: 0; border-top: 3px dashed #8b8b86; margin-left: 24px; margin-right: -30px; }
+.j-pad .go::after { content: ''; position: absolute; right: -4px; top: -10px; border: 8.5px solid transparent; border-left: 13px solid #8b8b86; border-right: 0; }
 </style>
 </head>
 <body>
@@ -194,9 +218,20 @@
       <svg style="position:absolute; left:370px; top:70px; width:110px; height:110px; color:#9be7b0;"><use href="#j-ghost"/></svg>
       <div style="position:absolute; left:200px; top:122px; width:18px; height:18px; border-radius:50%; background:#d6d3d1;"></div>
     </div>
-    <div class="tape" style="left:1040px; top:520px; transform:rotate(5deg);">TU CONTRATO</div>
-    <div class="tape" style="left:170px; top:560px; transform:rotate(-4deg);">TU REPO</div>
-    <div class="tape pink" style="left:640px; top:690px; transform:rotate(-3deg);">TU .DOT</div>
+    <div class="item j-cc" style="left:110px; top:540px; width:500px;">
+      <div class="j-bar"><svg width="22" height="22" aria-hidden="true"><use href="#j-cc"/></svg><span>Claude Code</span><em>~/mi-juego</em></div>
+      <div class="j-body"><div class="u">Haz un juego tipo Pac-Man para celular…</div></div>
+    </div>
+    <div class="j-link" style="left:620px; top:612px; width:70px;" aria-hidden="true"></div>
+    <div class="item j-ctr" style="left:700px; top:540px; width:380px;">
+      <div class="j-label">contrato</div>
+      <b>Leaderboard</b>
+      <span>guarda el mejor puntaje</span>
+    </div>
+    <div class="j-link" style="left:1090px; top:612px; width:90px;" aria-hidden="true"></div>
+    <div class="item" style="left:1190px; top:450px; width:260px;">
+      <div class="j-phone j-mini-ph"><div class="j-url">tu-juego.dot</div><img src="../img/cap5/polka-man-movil.png" alt="Polka-Man en el celular: el laberinto con Polka-Man rosa y los fantasmas"></div>
+    </div>
   </section>
 
   <!-- 2 · Qué vas a construir -->
@@ -286,9 +321,12 @@
   <!-- 6 · Tu repo -->
   <section class="slide plain" data-title="Tu repo">
     <div class="item" style="left:110px; top:70px;"><div class="h">Tu repo</div></div>
-    <div class="item term" style="left:110px; top:170px; width:960px;">
-      <div class="bar"><i></i><i></i><i></i><span>PowerShell, macOS o Linux</span></div>
-      <div class="body code j-cmd" style="font-size:20px;"><div><span class="kw">cd</span> polkadot-devnet-workshop   <span class="cm"># el clon del capítulo 2</span></div><div><span class="kw">cd</span> ..</div><div><span class="kw">mkdir</span> mi-juego</div><div><span class="kw">cd</span> mi-juego</div><div><span class="kw">git</span> init</div><div><span class="kw">npx</span> skills@1.7.2 add https://github.com/BrandonFilth/polkadot-products-devnet --skill polkadot-products-devnet</div><div><span class="kw">git</span> add .</div><div><span class="kw">git</span> commit -m <span class="ty">"skill del hackatón"</span></div><div><span class="kw">gh</span> repo create mi-juego --public --source=. --push</div></div>
+    <div class="panel j-steps" style="left:110px; top:170px; width:960px; padding:10px 40px;">
+      <div><span class="c">01</span><div><b>Crea la carpeta</b><span>mi-juego, junto al clon del curso</span></div></div>
+      <div><span class="c">02</span><div><b>git init</b><span>empieza el historial</span></div></div>
+      <div><span class="c">03</span><div><b>Instala la skill</b><span>polkadot-products-devnet</span></div></div>
+      <div><span class="c">04</span><div><b>Primer commit</b><span>la skill queda guardada</span></div></div>
+      <div class="pink"><span class="c">05</span><div><b>Crea el repo en GitHub</b><span>y sube el commit</span></div></div>
     </div>
     <div class="item j-win" style="left:1120px; top:170px; width:370px;">
       <div class="j-bar"><i></i><i></i><i></i><span>tu carpeta</span></div>
@@ -299,7 +337,7 @@
     └── skills-lock.json</div>
     </div>
     <div class="item lead" style="left:1120px; top:470px; width:370px; font-size:20px;"><span class="j-code">mi-juego</span> queda junto a <span class="j-code">polkadot-devnet-workshop</span>.</div>
-    <div class="panel" style="left:110px; top:650px; width:1380px; padding:24px 52px;">
+    <div class="panel" style="left:110px; top:690px; width:1380px; padding:24px 52px;">
       <div class="lead" style="font-size:24px;">Después: define tu juego → <span class="j-code j-pink">SPEC.md</span> → commit + push. Luego, una fase por commit.</div>
     </div>
   </section>
@@ -413,17 +451,11 @@
       <div class="a">→</div>
       <div class="j-stage pink"><div class="n">03</div><b>Un solo archivo</b><span>la dirección vive en un solo lugar de tu juego</span></div>
     </div>
-    <div class="item j-rows" style="left:110px; top:430px; width:880px;">
-      <div style="grid-template-columns:260px 1fr;"><span class="k">Contrato nuevo</span><span>tu ranking empieza vacío</span></div>
-      <div style="grid-template-columns:260px 1fr;"><span class="k">MetaMask</span><span>es otro jugador</span></div>
-      <div style="grid-template-columns:260px 1fr;"><span class="k">Leer</span><span>sin firma: se prueba con pnpm dev</span></div>
-      <div style="grid-template-columns:260px 1fr;"><span class="k">El contrato</span><span>no sabe si el puntaje es legítimo</span></div>
-    </div>
-    <div class="item j-win" style="left:1060px; top:430px; width:430px;">
-      <div class="j-bar"><i></i><i></i><i></i><span>Top 10</span></div>
-      <div class="j-body">
-        <div class="j-empty">Todavía no hay récords.<br>Juega y sé el primero.</div>
-      </div>
+    <div class="item j-rows" style="left:110px; top:430px; width:1380px;">
+      <div style="grid-template-columns:300px 1fr; padding:20px 0;"><span class="k">Contrato nuevo</span><span>tu ranking empieza vacío</span></div>
+      <div style="grid-template-columns:300px 1fr; padding:20px 0;"><span class="k">MetaMask</span><span>es otro jugador</span></div>
+      <div style="grid-template-columns:300px 1fr; padding:20px 0;"><span class="k">Leer</span><span>sin firma: se prueba con pnpm dev</span></div>
+      <div style="grid-template-columns:300px 1fr; padding:20px 0;"><span class="k">El contrato</span><span>no sabe si el puntaje es legítimo</span></div>
     </div>
   </section>
 
@@ -465,9 +497,14 @@
       <div class="a">→</div>
       <div class="box pink"><div class="n">05</div><b>Abre tu .dot</b><span>en el Host y prueba</span></div>
     </div>
-    <div class="item term" style="left:110px; top:450px; width:880px;">
-      <div class="bar"><i></i><i></i><i></i><span>PowerShell · raíz de tu repo</span></div>
-      <div class="body code j-cmd"><div><span class="kw">function</span> pad { $env:PAD_UPDATE_CHECK = '0'; pnpm dlx --ignore-scripts @polkadot-community-foundation/polkadot-app-deploy@0.16.7 @args }</div><div>$tmp = 'tmp' + (-join ((Get-Date -Format 'yyyyMMddHHmmss').ToCharArray() | ForEach-Object { [char](97 + [int]"$_") })) + '.dot'</div><div><span class="kw">pad</span> .\dist $tmp --env devnet --js-merkle --no-manifest</div></div>
+    <div class="item j-pad" style="left:110px; top:450px; width:880px;">
+      <div class="t"><div class="j-bar"><i></i><i></i><i></i></div><div class="p">&gt;_</div></div>
+      <div class="a" aria-hidden="true">→</div>
+      <div class="cid"><svg viewBox="0 0 56 56" aria-hidden="true"><rect x="20" y="18" width="28" height="32" rx="4"/><path d="M38 18V10a4 4 0 0 0-4-4H12a4 4 0 0 0-4 4v26a4 4 0 0 0 4 4h8"/></svg><div><b>CID</b><span>bafy…</span></div></div>
+      <div class="go" aria-hidden="true"></div>
+      <div class="lb" style="grid-column:1;">pad sube tu build a Bulletin</div>
+      <div class="lb" style="grid-column:3;">cópialo de la terminal</div>
+      <div class="lb" style="grid-column:4; padding-left:24px;">pégalo en Resolve</div>
     </div>
     <div class="item lead" style="left:110px; top:720px; width:880px; font-size:20px;"><span class="j-pink">La muestra y la versión final con icono, nombre y descripción: capítulo 6</span></div>
     <div class="item j-win j-shot" style="left:1040px; top:450px; width:450px;">

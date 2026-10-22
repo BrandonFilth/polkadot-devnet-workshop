@@ -88,12 +88,30 @@
 .j-pub span.pink { border-color: var(--accent); color: var(--accent); }
 .j-pub i { font: 700 22px var(--display); font-style: normal; color: var(--muted); }
 
+/* Teléfono */
+.j-phone { border: 2px solid #d6d3d1; border-radius: 42px; padding: 40px 14px 22px; background: #050505; position: relative; }
+.j-phone::before { content: ''; position: absolute; top: 18px; left: 50%; width: 80px; height: 8px; margin-left: -40px; border-radius: 4px; background: #2a2a2a; }
+
 /* ---------- Propias del capítulo 6 ---------- */
-/* Icono en la portada */
-.p6-tile { text-align: center; }
-.p6-tile img { display: block; width: 300px; height: 300px; margin: 0 auto; border-radius: 64px; border: 2px solid #3a3a37; }
-.p6-tile b { display: block; font: 700 30px var(--display); text-transform: uppercase; margin-top: 22px; }
-.p6-tile span { display: block; font: 20px var(--mono); color: var(--muted); margin-top: 6px; }
+/* Portada: la tarjeta de tu app sube a tu dominio */
+.p6-app { text-align: center; padding: 34px 18px 30px; }
+.p6-app img { display: block; width: 150px; height: 150px; margin: 0 auto; border-radius: 34px; border: 2px solid #3a3a37; }
+.p6-app b { display: block; font: 700 30px var(--display); margin-top: 22px; }
+.p6-app span { display: block; font: 19px/1.4 var(--mono); color: #d6d3d1; margin-top: 8px; }
+.p6-app i { display: block; font: 700 20px var(--display); font-style: normal; background: var(--accent); color: #000; padding: 12px 0; margin-top: 26px; text-transform: uppercase; }
+.p6-dom { border: 2px solid var(--accent); background: #050505; color: var(--accent); font: 700 26px var(--mono); padding: 14px 20px; text-align: center; }
+.p6-up { position: absolute; z-index: 2; width: 0; border-left: 3px dashed var(--accent); }
+.p6-up::before { content: ''; position: absolute; left: -10px; top: -4px; border: 8.5px solid transparent; border-bottom: 13px solid var(--accent); border-top: 0; }
+.p6-cloud { position: absolute; z-index: 2; width: 64px; height: 64px; fill: none; stroke: #d6d3d1; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Antes y después: la tarjeta a escala de slide, con callouts */
+.p6-card.big { grid-template-columns: 140px 1fr; column-gap: 28px; padding: 32px 34px; border-radius: 24px; }
+.p6-card.big .ic { width: 140px; height: 140px; border-radius: 30px; }
+.p6-card.big b { font-size: 36px; }
+.p6-card.big span { font-size: 22px; margin-top: 8px; }
+.p6-call { position: absolute; z-index: 2; font: 700 20px var(--mono); color: var(--accent); text-transform: uppercase; letter-spacing: .1em; white-space: nowrap; transform: translateX(-50%); }
+.p6-line { position: absolute; z-index: 3; width: 0; border-left: 2px solid var(--accent); }
+.p6-line::after { content: ''; position: absolute; left: -6px; bottom: -6px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
 
 /* Tarjeta de app dibujada */
 .p6-card { display: grid; grid-template-columns: 96px 1fr; column-gap: 22px; align-items: center; border: 2px solid #3a3a37; border-radius: 18px; background: #0b0b0b; padding: 22px 24px; }
@@ -104,10 +122,6 @@
 .p6-card span { display: block; font: 18px/1.4 var(--mono); color: #d6d3d1; margin-top: 6px; }
 .p6-card span.j-mut { color: var(--muted); }
 .p6-card.pink { border-color: var(--accent); }
-.p6-col .j-label { margin-bottom: 18px; }
-.p6-list { margin-top: 22px; }
-.p6-list > div { font: 22px var(--mono); color: #d6d3d1; padding: 16px 0; border-bottom: 1px solid var(--line); }
-.p6-list > div:first-child { border-top: 1px solid var(--line); }
 .p6-arrow { font: 700 56px var(--display); color: var(--accent); }
 
 /* Icono a dos tamaños */
@@ -172,75 +186,48 @@
 
   <!-- 1 · Portada -->
   <section class="slide" data-title="Publica tu app" style="--bgpos: 30% 70%;">
-    <div class="panel" style="left:110px; top:110px; width:820px; padding:46px 60px 50px;">
+    <div class="panel" style="left:110px; top:290px; width:820px; padding:46px 60px 50px;">
       <div class="kicker">Capítulo 06</div>
       <div class="title" style="font-size:80px;">Publica tu app</div>
       <div class="sub">En tu dominio .dot, con icono, nombre y descripción</div>
     </div>
-    <div class="item p6-tile" style="left:1060px; top:120px; width:380px;">
-      <img src="../game/assets/icono.png" alt="Icono de Polka-Man: un personaje redondo rosa comiendo dos bolitas sobre fondo negro">
-      <b>Polka-Man</b>
-      <span>polka-man.dot</span>
+    <div class="item p6-dom" style="left:1110px; top:110px; width:340px;">polka-man.dot</div>
+    <div class="p6-up" style="left:1280px; top:196px; height:88px;" aria-hidden="true"></div>
+    <svg class="p6-cloud" style="left:1310px; top:208px;" viewBox="0 0 64 64" aria-hidden="true"><path d="M20 46H16a12 12 0 0 1-1-24A16 16 0 0 1 46 20a11 11 0 0 1 2 26h-4"/><path d="M32 52V32M24 40l8-8l8 8"/></svg>
+    <div class="item" style="left:1130px; top:300px; width:300px;">
+      <div class="j-phone"><div class="p6-app">
+        <img src="../game/assets/icono.png" alt="Icono de Polka-Man: un personaje redondo rosa comiendo dos bolitas sobre fondo negro">
+        <b>Polka-Man</b>
+        <span>Juego de laberinto en Polkadot</span>
+        <i>Abrir</i>
+      </div></div>
     </div>
-    <div class="tape" style="left:170px; top:580px; transform:rotate(-4deg);">TU ICONO</div>
-    <div class="tape" style="left:1030px; top:620px; transform:rotate(5deg);">TU MANIFEST</div>
-    <div class="tape pink" style="left:560px; top:720px; transform:rotate(-3deg);">TU .DOT</div>
   </section>
 
   <!-- 2 · De probar a publicar -->
   <section class="slide plain" data-title="De probar a publicar">
     <div class="item" style="left:110px; top:70px;"><div class="h">De probar a publicar</div></div>
-    <div class="item p6-col" style="left:110px; top:190px; width:600px;">
-      <div class="j-label">Capítulo 5 · probar</div>
-      <div class="p6-card">
-        <div class="ic none"></div>
-        <div><b>tu-app.dot</b><span class="j-mut">sin icono ni descripción</span></div>
-      </div>
-      <div class="p6-list">
-        <div>pad con <span class="j-pink">--no-manifest</span></div>
-        <div>copias el CID</div>
-        <div>Resolve en tu dominio</div>
-      </div>
+    <div class="item p6-card big" style="left:110px; top:360px; width:600px;">
+      <div class="ic none"></div>
+      <div><b>tu-app.dot</b><span class="j-mut">No description</span></div>
     </div>
-    <div class="item p6-arrow" style="left:760px; top:250px;" aria-hidden="true">→</div>
-    <div class="item p6-col" style="left:890px; top:190px; width:600px;">
-      <div class="j-label">Capítulo 6 · publicar</div>
-      <div class="p6-card pink">
-        <div class="ic"><img src="../game/assets/icono.png" alt=""></div>
-        <div><b>Polka-Man</b><span>Juego de laberinto en Polkadot: come bolitas, esquiva fantasmas…</span></div>
-      </div>
-      <div class="p6-list">
-        <div>config + <span class="j-pink">APP_DOT</span></div>
-        <div>pad sube la app y el icono</div>
-        <div>Resolve + registro <span class="j-pink">manifest</span></div>
-      </div>
+    <div class="item p6-arrow" style="left:762px; top:410px; font-size:80px;" aria-hidden="true">→</div>
+    <div class="p6-call" style="left:996px; top:256px;">Icono</div>
+    <div class="p6-line" style="left:996px; top:292px; height:96px;" aria-hidden="true"></div>
+    <div class="p6-call" style="left:1150px; top:256px;">Nombre</div>
+    <div class="p6-line" style="left:1150px; top:292px; height:102px;" aria-hidden="true"></div>
+    <div class="p6-call" style="left:1350px; top:256px;">Descripción</div>
+    <div class="p6-line" style="left:1350px; top:292px; height:158px;" aria-hidden="true"></div>
+    <div class="item p6-card big pink" style="left:890px; top:360px; width:600px;">
+      <div class="ic"><img src="../game/assets/icono.png" alt="Icono de Polka-Man"></div>
+      <div><b>Polka-Man</b><span>Juego de laberinto en Polkadot</span></div>
     </div>
-    <div class="item lead" style="left:110px; top:640px; width:1380px; font-size:24px;">Mismo dominio, mismo Resolve. Solo sumas un icono, un archivo y un registro.</div>
+    <div class="item j-label" style="left:110px; top:600px;">Antes · capítulo 5, probar</div>
+    <div class="item j-label" style="left:890px; top:600px;">Después · capítulo 6, publicar</div>
+    <div class="item lead" style="left:110px; top:680px; width:1380px; font-size:24px;">Los tres salen del registro <span class="j-pink">manifest</span> de tu dominio.</div>
   </section>
 
-  <!-- 3 · Antes de publicar -->
-  <section class="slide grid" data-title="Antes de publicar">
-    <div class="item" style="left:110px; top:70px;"><div class="h">Antes de publicar</div></div>
-    <div class="item j-clip" style="left:110px; top:180px; width:800px;">
-      <div class="j-clip-top"></div>
-      <div class="j-checks">
-        <div><span class="j-box"></span><span>La dirección de tu contrato, no la de la muestra</span></div>
-        <div><span class="j-box"></span><span>Sin datos de prueba ni atajos de depuración</span></div>
-        <div><span class="j-box"></span><span>Se ve bien en un teléfono, sin partes cortadas</span></div>
-        <div><span class="j-box"></span><span>Sin secretos: ni .env ni frases de recuperación</span></div>
-        <div><span class="j-box"></span><span>git status limpio: todo con commit</span></div>
-        <div style="border-bottom:0;"><span class="j-box"></span><span>pnpm build pasa</span></div>
-      </div>
-    </div>
-    <div class="panel" style="left:970px; top:180px; width:520px; padding:30px 36px;">
-      <div class="j-blk"><b><i>01</i>Pide la revisión</b><p>El prompt de la fase 7: el agente revisa sin cambiar archivos.</p></div>
-      <div class="j-blk"><b><i>02</i>Corre</b><p>pnpm test<br>pnpm build<br>git status</p></div>
-      <div class="j-blk"><b><i>03</i>Haz commit</b><p>Publicas lo que está en tu repo.</p></div>
-    </div>
-    <div class="item lead j-mut" style="left:110px; top:740px; width:1380px; font-size:20px;">Lo que subes es público: cualquiera puede descargar tu bundle.</div>
-  </section>
-
-  <!-- 4 · Tu icono -->
+  <!-- 3 · Tu icono -->
   <section class="slide" data-title="Tu icono" style="--bgpos: 75% 25%;">
     <div class="panel" style="left:110px; top:50px; width:1380px; padding:30px 52px 34px;">
       <div class="h">Tu icono</div>
@@ -270,7 +257,7 @@
     </div>
   </section>
 
-  <!-- 5 · El archivo de publicación -->
+  <!-- 4 · El archivo de publicación -->
   <section class="slide grid" data-title="El archivo de publicación">
     <div class="item" style="left:110px; top:70px;"><div class="h">El archivo de publicación</div></div>
     <div class="item j-win" style="left:110px; top:170px; width:880px;">
@@ -300,7 +287,7 @@
     <div class="item lead" style="left:1040px; top:600px; width:450px; font-size:20px;">Lo escribes una vez y va en tu commit.</div>
   </section>
 
-  <!-- 6 · Sube app e icono -->
+  <!-- 5 · Sube app e icono -->
   <section class="slide plain" data-title="Sube app e icono">
     <div class="item" style="left:110px; top:60px;"><div class="h">Sube app e icono</div></div>
     <div class="item term" style="left:110px; top:160px; width:1380px;">
@@ -314,7 +301,7 @@
     </div>
   </section>
 
-  <!-- 7 · Pégalo en tu dominio -->
+  <!-- 6 · Pégalo en tu dominio -->
   <section class="slide" data-title="Pégalo en tu dominio" style="--bgpos: 20% 40%;">
     <div class="panel" style="left:110px; top:50px; width:1380px; padding:30px 52px 34px;">
       <div class="h">Pégalo en tu dominio</div>
@@ -333,7 +320,7 @@
     </div>
   </section>
 
-  <!-- 8 · Custom Records -->
+  <!-- 7 · Custom Records -->
   <section class="slide flat" data-title="El registro manifest">
     <div class="item" style="left:110px; top:60px;"><div class="h">El registro manifest</div></div>
     <div class="item j-win" style="left:110px; top:160px; width:408px;"><div class="j-bar"><i></i><i></i><i></i><span>dotns.dot · Edit</span></div><div class="p6-shot" role="img" aria-label="Captura de DotNS: diálogo Edit Profile Records; abajo, Custom Records con Add Record, los campos key y value, y los botones Cancel y Save"></div></div>
@@ -356,7 +343,7 @@
     </div>
   </section>
 
-  <!-- 9 · Mantenerla viva -->
+  <!-- 8 · Mantenerla viva -->
   <section class="slide plain" data-title="Mantenerla viva">
     <div class="item" style="left:110px; top:70px;"><div class="h">Mantenerla viva</div></div>
     <div class="item lead" style="left:110px; top:160px; width:1380px; font-size:22px;">Bulletin borra lo que subes a los ~14 días. Vuelve a publicar solo para renovarlo antes de esa fecha o cuando tengas una versión nueva.</div>
@@ -375,7 +362,7 @@
     </div>
   </section>
 
-  <!-- 10 · Compártela -->
+  <!-- 9 · Compártela -->
   <section class="slide grid" data-title="Compártela">
     <div class="item" style="left:110px; top:70px;"><div class="h">Compártela</div></div>
     <div class="item p6-share" style="left:110px; top:180px; width:1380px;">
@@ -397,7 +384,7 @@ Correrla: pnpm install · pnpm dev</div>
     </div>
   </section>
 
-  <!-- 11 · Si algo falla -->
+  <!-- 10 · Si algo falla -->
   <section class="slide" data-title="Si algo falla" style="--bgpos: 60% 55%;">
     <div class="panel" style="left:110px; top:50px; width:1380px; padding:28px 52px 30px;"><div class="h">Si algo falla</div></div>
     <div class="panel p6-fix" style="left:110px; top:200px; width:1380px; padding:14px 52px 20px;">
@@ -413,7 +400,7 @@ Correrla: pnpm install · pnpm dev</div>
     <div class="item p6-note" style="left:110px; top:630px; width:1380px;">Android: si la app ya estaba en tus marcadores, puede mostrar la tarjeta anterior. Quita el marcador, búscala otra vez y agrégala.</div>
   </section>
 
-  <!-- 12 · Repaso -->
+  <!-- 11 · Repaso -->
   <section class="slide flat" data-title="Repaso y lo que sigue">
     <div class="item" style="left:110px; top:70px;"><div class="h">Repaso y lo que sigue</div></div>
     <div class="item j-cyc" style="left:110px; top:180px; width:1380px;">
@@ -442,7 +429,7 @@ Correrla: pnpm install · pnpm dev</div>
   <div class="progress" id="progress"></div>
   <footer class="foot">
     <a href="../contenido/06-publicar.md">Guía: contenido/06-publicar.md</a>
-    <span><span id="count">01 / 12</span></span>
+    <span><span id="count">01 / 11</span></span>
   </footer>
 </main>
 <script src="assets/deck.js"></script>
