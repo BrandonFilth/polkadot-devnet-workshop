@@ -120,12 +120,6 @@
 .v-card span { display: block; font: 15px/1.35 var(--mono); color: var(--muted); margin-top: 4px; }
 .v-card.pink { border-color: var(--accent); }
 .v-card.pink b { color: var(--accent); }
-.v-err { border: 1px solid #2a2a2a; border-left: 4px solid var(--accent); background: #000; padding: 26px 28px; }
-.v-err .x { font: 700 24px var(--display); }
-.v-err .x::before { content: '✘  '; color: var(--accent); }
-.v-err .fix { font: 18px/1.5 var(--mono); color: #d6d3d1; margin-top: 18px; padding-top: 16px; border-top: 1px dashed #3a3a37; }
-.v-err .fix::before { content: '→ '; color: var(--muted); }
-.v-err .code { font-size: 18px; white-space: normal; }
 
 /* Piezas de interfaz dentro de una pantalla */
 .v-ui { position: relative; }
@@ -797,23 +791,10 @@ Usa <span class="fn">getScores</span>(offset, limit) para leer a los jugadores.<
     </div>
   </section>
 
-  <!-- 21 · Errores comunes en este stack -->
-  <section class="slide" data-title="Errores comunes en este stack" style="--bgpos: 85% 50%;">
-    <div class="panel" style="left:110px; top:50px; width:1250px; padding:34px 52px 38px;"><div class="h">Errores comunes en este stack</div></div>
-    <div class="item v-cards" style="left:110px; top:230px; width:1380px; grid-template-columns:repeat(3, 1fr); gap:24px;">
-      <div class="v-err"><div class="x">Inventa funciones</div><div class="fix">Solo la ABI y la skill; si no, «no verificado»</div></div>
-      <div class="v-err"><div class="x">Usa otra red</div><div class="fix"><span class="code">chainId 420420417 · devnet_asset_hub</span></div></div>
-      <div class="v-err"><div class="x">Actualiza las versiones</div><div class="fix">No cambies package.json</div></div>
-      <div class="v-err"><div class="x">Usa npm o yarn</div><div class="fix">Solo pnpm</div></div>
-      <div class="v-err"><div class="x">Conecta con getChainAPI()</div><div class="fix"><span class="code">createChainClient + devnet_asset_hub</span></div></div>
-      <div class="v-err"><div class="x pink">.tx() sin .query()</div><div class="fix">Simula primero y muestra el error</div></div>
-    </div>
-  </section>
-
   <div class="progress" id="progress"></div>
   <footer class="foot">
     <a href="../contenido/04-vibe-coding.md">Guía: contenido/04-vibe-coding.md</a>
-    <span><span id="count">01 / 21</span></span>
+    <span><span id="count">01 / 20</span></span>
   </footer>
 </main>
 <script src="assets/deck.js"></script>

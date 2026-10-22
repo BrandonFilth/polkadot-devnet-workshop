@@ -30,46 +30,36 @@ Qué es una app en el Host y por qué corre en un `.dot`: [capítulo 1](./01-com
 
 ## 2. El proyecto de muestra
 
-![El proyecto de muestra: su estructura en carpetas](../img/cap5/proyecto-de-muestra.png)
+![El proyecto de muestra: qué tiene cada parte y por qué](../img/cap5/proyecto-de-muestra.png)
 
-Es solo una muestra de un proyecto terminado. Úsalo como ejemplo para construir el tuyo: sigue su
-estructura, sus versiones compatibles y sus reglas para el agente (`game/AGENTS.md`). No lo copias;
-construyes el tuyo en tu repo. El juego terminado, Polka-Man, vive en la carpeta `game/` del curso:
-lo lees, lo juegas y lo comparas con el tuyo.
+El juego terminado, Polka-Man, vive en la carpeta `game/` del curso. Úsalo como ejemplo para
+construir el tuyo en tu repo: lo lees, lo juegas y lo comparas con el tuyo. Esto tiene cada parte y
+por qué:
 
-```text
-polkadot-devnet-workshop/
-├── package.json            scripts dev, build, test y test:red (llaman a game/)
-├── pnpm-workspace.yaml     packages: [game] y el override de @parity/truapi 0.13.1
-├── contrato/               Leaderboard.sol y sus pruebas (capítulo 3)
-├── prompts/                prompts de ejemplo, de 00-define-tu-juego.md a revision.md
-└── game/
-    ├── AGENTS.md           reglas para el agente
-    ├── index.html, vite.config.js
-    └── src/
-        ├── engine/         lógica del juego sin pantalla: laberinto, reglas, fantasmas
-        ├── render/         dibuja en el canvas
-        ├── input/          teclado, swipe y joystick
-        ├── audio/          música y efectos con Web Audio, sin archivos
-        ├── components/     inicio, HUD, menú, ranking, fin de partida, username y estados de firma
-        ├── contract/       dirección, ABI y lecturas del contrato
-        ├── hub/            conexión con el Host: cuenta, gas y firmas
-        └── lib/            mensajes de error y formato
-```
+| Archivo o carpeta | Qué tiene | Por qué |
+|---|---|---|
+| `package.json` | Los scripts `dev`, `build`, `typecheck`, `test` y `test:red` (llaman a `game/`) y pnpm 12.6.0 en `devEngines` | Todos corren los mismos comandos desde la raíz |
+| `pnpm-workspace.yaml` | `packages: [game]` y el override de `@parity/truapi` 0.13.1 | Es la versión que entienden Polkadot Desktop 0.1.3 y la Polkadot App del devnet; 0.16 o posterior no |
+| `contrato/` | `Leaderboard.sol`, sus tests en `test/` y el script que genera la ABI | El contrato se prueba aparte, sin la app ([capítulo 3](./03-smart-contracts.md)) |
+| `prompts/` | Un prompt por fase, de `00-define-tu-juego.md` a `10-sonido-y-animaciones.md`, y `revision.md` | Es el camino que sigues, fase por fase |
+| `game/AGENTS.md` | Reglas para el agente: red, versiones, pnpm, reglas del juego, SDK, Vite, secretos y comandos | Para que no cambie versiones ni red |
+| `game/package.json` | Las dependencias con versiones fijas, sin `^` ni `~` | Todos instalan lo mismo: las versiones compatibles de la skill |
+| `game/index.html`, `game/vite.config.js` | La página y Vite con `base: './'` | La app carga sus archivos junto a ella dentro del Host, no desde la raíz |
+| `game/polkadot-app-deploy.config.mjs` | Nombre, descripción, icono y la carpeta `dist/` que se publica | Es lo que el Host muestra de tu app ([capítulo 6](./06-publicar.md)) |
+| `game/assets/` | `icono.png` | El icono de la app |
+| `src/engine/` | Lógica pura: laberinto, movimiento, fantasmas y `rules.ts` con todos los números | Se prueba sin pantalla; cambiar la dificultad es cambiar una línea |
+| `src/render/` | Dibujo en el canvas, animaciones y efectos | Solo pinta lo que calcula `engine/` |
+| `src/input/` | Teclado, swipe y joystick flotante | Convierte gestos y teclas en direcciones |
+| `src/audio/` | Música y efectos 8 bits con Web Audio y las preferencias de sonido | Sin archivos de audio |
+| `src/components/` | Inicio, HUD, menú, ranking, fin de partida, username y estados de firma | Cada pantalla por separado |
+| `src/contract/` | Dirección (`config.ts`), ABI y lecturas del contrato por ETH-RPC | Cambias la dirección de tu contrato en un solo lugar |
+| `src/hub/` | Conexión con el Host: cuenta, gas y firmas | Todo lo que se firma pasa por aquí |
+| `src/lib/` | Mensajes de error de las transacciones, formato y la regla del username | Un fallo se explica en un solo lugar |
 
-Por qué está así:
-
-- **La lógica no toca la pantalla.** `engine/` solo calcula; así se prueba con tests sin abrir el
-  navegador.
-- **Todos los números en un archivo.** Vidas, velocidades y puntaje viven en `engine/rules.ts`.
-  Cambiar la dificultad es cambiar una línea.
-- **El laberinto es texto.** Un arreglo de filas con `#` para paredes, `.` para bolitas y `o` para
-  bolitas especiales. Se lee a ojo, la IA lo edita sin errores y el diff se entiende. Un test revisa
-  que no haya callejones sin salida, porque los fantasmas no dan media vuelta.
-- **La dificultad sube por ronda con tope.** Los fantasmas van 5 % más rápido cada ronda, pero
-  nunca tan rápido como el jugador: con control táctil sería imposible escapar en una recta.
-- **El contrato va aparte y con tests.** `contract/`, `hub/` y `lib/` tienen sus propias pruebas con
-  datos falsos, sin red.
+El laberinto es texto en `engine/maze.ts`: `#` para paredes, `.` para bolitas y `o` para bolitas
+especiales. Se lee a ojo, la IA lo edita sin errores y el diff se entiende. Cada carpeta de `src/`
+tiene sus tests al lado (`*.test.ts`); `pnpm test` no usa la red y las pruebas de red van aparte en
+`pnpm test:red`.
 
 `game/AGENTS.md` le dice al agente qué puede tocar en la muestra
 ([capítulo 4, sección 10](./04-vibe-coding.md#10-agentsmd)). Tu `AGENTS.md` lo arma tu agente en la
@@ -308,8 +298,8 @@ Así se reparte este juego en fases. Cada fase es una vuelta del ciclo de la
 | 10 | [Sonido, música y animaciones](../prompts/10-sonido-y-animaciones.md) | Animaciones, efectos 8 bits y música original con Música y Efectos | Navegador | 30–40 min |
 
 En total, de 4.5 a 6 horas (estimado: la tabla suma de 265 a 345 min; aún no se mide en un ensayo). Un commit y un `git push` por fase.
-Los errores típicos de la IA en este stack están en el
-[capítulo 4, sección 15](./04-vibe-coding.md#15-errores-comunes-de-la-ia-en-este-stack).
+Antes de cada commit, revisa lo que te entrega la IA con la lista del
+[capítulo 4, sección 14](./04-vibe-coding.md#14-cómo-supervisar-a-la-ia).
 
 ### Fase 1 · Tu proyecto
 
@@ -625,7 +615,7 @@ Sube por esta escalera, en orden:
   ([sección 8](#probar-dentro-del-host-publica-en-tu-dot)). El Host no se conecta a `localhost`.
 - **La IA cambió `package.json`, `pnpm-lock.yaml` o `pnpm-workspace.yaml`.** Descarta esos cambios
   con `git restore package.json pnpm-lock.yaml pnpm-workspace.yaml` y pídele que no los toque
-  ([capítulo 4, sección 15](./04-vibe-coding.md#15-errores-comunes-de-la-ia-en-este-stack)).
+  ([capítulo 4, sección 14](./04-vibe-coding.md#14-cómo-supervisar-a-la-ia)).
 - **Los tests de una fase anterior fallan después de un prompt.** No dejes que la IA los borre o
   los salte. Pídele la causa y que corrija el código.
 - **`pnpm dev` dice que el puerto 5173 está ocupado.** Cierra la otra

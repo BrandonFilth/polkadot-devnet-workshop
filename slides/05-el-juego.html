@@ -27,6 +27,12 @@
 .j-win .j-bar i { width: 10px; height: 10px; border-radius: 50%; background: #3a3a37; }
 .j-win .j-bar span { margin-left: 10px; font: 18px var(--mono); color: var(--muted); }
 .j-win .j-body { padding: 18px 24px; }
+.j-win .j-tree { padding: 14px 24px; }
+.j-tree > div { display: grid; grid-template-columns: 450px 1fr; column-gap: 20px; font: 19px/1.55 var(--mono); }
+.j-tree .p { white-space: pre; color: #d6d3d1; }
+.j-tree .w { color: #d6d3d1; }
+.j-tree .w i { font-style: normal; color: var(--muted); }
+.j-tree .kw { color: var(--accent); }
 .j-phone { border: 2px solid #d6d3d1; border-radius: 42px; padding: 40px 14px 22px; background: #050505; position: relative; }
 .j-phone::before { content: ''; position: absolute; top: 18px; left: 50%; width: 80px; height: 8px; margin-left: -40px; border-radius: 4px; background: #2a2a2a; }
 .j-phone img { display: block; width: 100%; border-radius: 6px; }
@@ -145,7 +151,6 @@
 .j-mid { position: absolute; left: 280px; top: 230px; width: 300px; text-align: center; }
 .j-mid div { font: 700 48px/1 var(--display); color: var(--accent); }
 .j-mid span { display: block; font: 20px var(--mono); color: #d6d3d1; margin-top: 10px; }
-.j-mini { display: grid; grid-template-columns: 1fr 1fr; column-gap: 18px; row-gap: 10px; margin-top: 18px; font: 19px var(--mono); color: #d6d3d1; }
 
 /* Repaso: flecha de regreso y franja de publicar */
 .j-back { border: 2px solid #8b8b86; border-top: 0; border-radius: 0 0 18px 18px; }
@@ -251,30 +256,29 @@
   <!-- 3 · El proyecto de muestra -->
   <section class="slide grid" data-title="El proyecto de muestra">
     <div class="item" style="left:110px; top:70px;"><div class="h">El proyecto de muestra · game/</div></div>
-    <div class="item lead" style="left:110px; top:160px; width:1380px; font-size:22px;"><span class="j-pink">Es solo una muestra.</span> Úsalo como ejemplo para construir el tuyo: sigue su estructura, sus versiones compatibles y sus reglas para el agente.</div>
-    <div class="item j-win" style="left:110px; top:260px; width:740px;">
+    <div class="item j-win" style="left:110px; top:160px; width:1380px;">
       <div class="j-bar"><i></i><i></i><i></i><span>polkadot-devnet-workshop/</span></div>
-      <div class="j-body code" style="font-size:20px; line-height:1.55;">├── package.json          <span class="cm">pnpm dev · test · build</span>
-├── pnpm-workspace.yaml   <span class="cm">packages: [game]</span>
-├── contrato/             <span class="cm">capítulo 3</span>
-├── prompts/              <span class="cm">prompts de ejemplo</span>
-└── game/
-    ├── <span class="kw">AGENTS.md</span>
-    └── src/
-        ├── engine/       <span class="cm">lógica pura, sin DOM</span>
-        ├── render/       <span class="cm">canvas</span>
-        ├── input/        <span class="cm">teclado, swipe, joystick</span>
-        ├── audio/        <span class="cm">música y efectos, Web Audio</span>
-        ├── components/   <span class="cm">inicio, menú, HUD, ranking</span>
-        ├── <span class="kw">contract/</span>     <span class="cm">dirección y ABI</span>
-        ├── <span class="kw">hub/</span>          <span class="cm">Host, gas, firmas</span>
-        └── <span class="kw">lib/</span>          <span class="cm">errores y formato</span></div>
-    </div>
-    <div class="panel" style="left:910px; top:260px; width:580px; padding:30px 36px;">
-      <div class="j-blk"><b><i>01</i>Estructura</b><p>Una carpeta por responsabilidad; la lógica sin pantalla.</p></div>
-      <div class="j-blk"><b><i>02</i>Versiones compatibles</b><p>Las de la skill, fijas, sin ^ ni ~.</p></div>
-      <div class="j-blk"><b><i>03</i>Reglas para el agente</b><p>game/AGENTS.md. El tuyo lo arma tu agente.</p></div>
-      <div class="j-blk"><b><i>04</i>Contrato aparte</b><p>contract/, hub/ y lib/ con sus propios tests.</p></div>
+      <div class="j-body j-tree">
+        <div><span class="p">├── package.json</span><span class="w">scripts dev, test y build <i>· todos corren lo mismo desde la raíz</i></span></div>
+        <div><span class="p">├── pnpm-workspace.yaml</span><span class="w">packages: [game] y truapi 0.13.1 <i>· la versión que entiende el Host</i></span></div>
+        <div><span class="p">├── contrato/</span><span class="w">Leaderboard.sol y sus tests <i>· el contrato se prueba aparte</i></span></div>
+        <div><span class="p">├── prompts/</span><span class="w">un prompt por fase, de 00 a 10 <i>· el camino que vas a seguir</i></span></div>
+        <div><span class="p">└── game/</span><span class="w">el juego terminado <i>· lo lees, lo juegas y lo comparas</i></span></div>
+        <div><span class="p">    ├── <span class="kw">AGENTS.md</span></span><span class="w">reglas para tu agente <i>· que no cambie versiones ni red</i></span></div>
+        <div><span class="p">    ├── package.json</span><span class="w">dependencias con versiones fijas <i>· todos instalan lo mismo</i></span></div>
+        <div><span class="p">    ├── polkadot-app-deploy.config.mjs</span><span class="w">nombre, descripción e icono <i>· lo que el Host muestra</i></span></div>
+        <div><span class="p">    ├── vite.config.js</span><span class="w">base './' <i>· la app carga sus archivos dentro del Host</i></span></div>
+        <div><span class="p">    ├── assets/</span><span class="w">icono.png <i>· el icono de tu app</i></span></div>
+        <div><span class="p">    └── src/</span><span class="w">el código, una carpeta por tarea <i>· cada una con sus tests</i></span></div>
+        <div><span class="p">        ├── engine/</span><span class="w">reglas puras: laberinto, fantasmas, rules.ts <i>· se prueban sin pantalla</i></span></div>
+        <div><span class="p">        ├── render/</span><span class="w">dibuja en el canvas <i>· solo pinta lo que calcula engine/</i></span></div>
+        <div><span class="p">        ├── input/</span><span class="w">teclado, swipe y joystick <i>· gestos convertidos en direcciones</i></span></div>
+        <div><span class="p">        ├── audio/</span><span class="w">música y efectos con Web Audio <i>· sin archivos de sonido</i></span></div>
+        <div><span class="p">        ├── components/</span><span class="w">inicio, HUD, menú, ranking, firma <i>· cada pantalla aparte</i></span></div>
+        <div><span class="p">        ├── <span class="kw">contract/</span></span><span class="w">dirección y ABI de tu contrato <i>· un solo lugar para cambiarla</i></span></div>
+        <div><span class="p">        ├── <span class="kw">hub/</span></span><span class="w">conexión con el Host, gas y firmas <i>· todo lo que se firma pasa aquí</i></span></div>
+        <div><span class="p">        └── <span class="kw">lib/</span></span><span class="w">mensajes de error y formato <i>· un fallo se explica una sola vez</i></span></div>
+      </div>
     </div>
   </section>
 
@@ -406,8 +410,7 @@
   <!-- 11 · El ciclo de trabajo -->
   <section class="slide flat" data-title="El ciclo de trabajo">
     <div class="item" style="left:110px; top:70px;"><div class="h">El ciclo de trabajo</div></div>
-    <div class="item lead" style="left:110px; top:160px; width:1380px; font-size:22px;">Sirve para este juego y para tu app del hackatón.</div>
-    <div class="item j-ring" style="left:110px; top:250px; width:860px; height:560px;">
+    <div class="item j-ring" style="left:305px; top:165px; width:860px; height:560px; transform:scale(1.15); transform-origin:0 0;">
       <svg viewBox="0 0 860 560" width="860" height="560" aria-hidden="true">
         <defs><marker id="j-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#d6d3d1"/></marker></defs>
         <g fill="none" stroke="#8b8b86" stroke-width="2.5">
@@ -424,18 +427,6 @@
       <div class="j-node" style="left:134px; top:416px;"><i>04</i><b>Bugs + cambios</b></div>
       <div class="j-node pink" style="left:25px; top:170px;"><i>05</i><b>Commit</b></div>
       <div class="j-mid"><div>↻</div><span>repite hasta terminar</span></div>
-    </div>
-    <div class="panel" style="left:1000px; top:250px; width:490px; padding:28px 30px;">
-      <div class="j-label">Ejemplo: así se reparte este juego en fases</div>
-      <div class="j-mini" style="font-size:18px;">
-        <span>00 Define tu juego</span><span>06 Contrato</span>
-        <span>01 Proyecto</span><span class="j-pink">07 Publica</span>
-        <span>02 Laberinto</span><span class="j-pink">08 Récord</span>
-        <span>03 Bolitas</span><span>09 Inicio y menú</span>
-        <span>04 Fantasmas</span><span>10 Sonido y música</span>
-        <span>05 Especiales</span><span></span>
-      </div>
-      <div class="j-mut" style="font:18px/1.45 var(--mono); margin-top:18px;">Cada fase, una vuelta del ciclo. Archivos en prompts/.</div>
     </div>
   </section>
 

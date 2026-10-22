@@ -1,8 +1,7 @@
 # Prompts de revisión
 
 Prompts cortos para revisar el trabajo del agente. Úsalos en cualquier fase. Antes de cada commit
-sigue la lista del [capítulo 4, sección 14](../contenido/04-vibe-coding.md#14-cómo-supervisar-a-la-ia)
-y revisa los [errores comunes de la sección 15](../contenido/04-vibe-coding.md#15-errores-comunes-de-la-ia-en-este-stack).
+sigue la lista del [capítulo 4, sección 14](../contenido/04-vibe-coding.md#14-cómo-supervisar-a-la-ia).
 
 ## 1. Qué decidió la IA
 

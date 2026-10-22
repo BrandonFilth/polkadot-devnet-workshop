@@ -748,36 +748,6 @@ Después, antes de cada commit:
 - [ ] **Puedes volver atrás:** hiciste commit antes de cada paso
       ([capítulo 2](./02-entorno.md#tu-primer-commit)).
 
-En este proyecto, revisa además los errores de la [sección 15](#15-errores-comunes-de-la-ia-en-este-stack).
-
----
-
-## 15. Errores comunes de la IA en este stack
-
-| Lo que hace la IA | Por qué falla | Qué pedirle |
-|---|---|---|
-| Inventa funciones del SDK o del contrato | No tiene la ABI ni la documentación | *"Usa solo funciones de la ABI y de la skill; si no existe, dime 'no verificado'."* |
-| Usa otra red: `paseo`, Paseo Next v2, PassetHub 420420422 o Asset Hub Next 1500 | Copia ejemplos de otras redes | *"Solo Products Devnet: chainId `420420417` y `devnet_asset_hub`."* |
-| "Actualiza" las versiones fijas | Con `@parity/product-sdk` 0.28 o posterior, Polkadot Desktop 0.1.3 registra `Transport error` y `unsupported frame (0, 0)` sin parar | *"No cambies versiones de `package.json`."* |
-| Quita el override de `@parity/truapi` en `pnpm-workspace.yaml` | Con `@parity/truapi` 0.16 o posterior, Polkadot Desktop 0.1.3 registra los mismos errores | *"Deja el override de `@parity/truapi` 0.13.1 en `pnpm-workspace.yaml`."* |
-| Usa npm o yarn | El proyecto declara pnpm en `devEngines` y falla con `EBADDEVENGINES` | *"Solo pnpm."* |
-| Conecta con `getChainAPI()` | La app se queda esperando en Polkadot Desktop 0.1.3 | *"Conecta con `createChainClient` y `devnet_asset_hub`."* |
-| Cambia el pragma o propone PolkaVM, `resolc`, Hardhat o Foundry | Sigue indicaciones de otras skills | *"`pragma solidity 0.8.28;`, Remix y MetaMask."* |
-| Escribe OpenZeppelin 4 (`_beforeTokenTransfer`, `Ownable()` sin argumento) | El proyecto usa OpenZeppelin 5.6.1 | *"Usa OpenZeppelin 5: `_update` y `Ownable(msg.sender)`."* |
-| Olvida `base: './'` en Vite | El bundle pide sus archivos desde la raíz y no junto a la app | *"Pon `base: './'` en `vite.config`."* |
-| Pide varias firmas a la vez | El Host atiende una a la vez; la segunda nunca llega al teléfono | *"Una firma a la vez; espera a que termine la anterior."* |
-| Llama `.tx()` sin `.query()` | El revert solo aparece al firmar | *"Simula con `.query()` y muestra el error antes de pedir la firma."* |
-
-Fuentes: [`errores-comunes.md`](https://github.com/BrandonFilth/polkadot-products-devnet/blob/main/skills/polkadot-products-devnet/references/errores-comunes.md),
-[`versiones.md`](https://github.com/BrandonFilth/polkadot-products-devnet/blob/main/skills/polkadot-products-devnet/references/versiones.md)
-y [`red-devnet.md`](https://github.com/BrandonFilth/polkadot-products-devnet/blob/main/skills/polkadot-products-devnet/references/red-devnet.md)
-de la skill. Los comportamientos de Polkadot Desktop 0.1.3 de esta tabla salen de pruebas del
-equipo. La muestra funciona en Polkadot Desktop 0.1.3 y en la Polkadot App con estas versiones fijas
-(comprobado por la organización el 2026-10-21). Si tu Desktop es de otra versión, dilo al pedir ayuda.
-
-Si aparece un error que no está aquí, pega el texto exacto y pide que cite su fuente o que diga "no
-verificado".
-
 ---
 
 👉 [Capítulo 5](./05-el-juego.md)
