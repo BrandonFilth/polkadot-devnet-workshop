@@ -95,7 +95,7 @@
 .j-part b i { font-style: normal; color: var(--accent); margin-right: 12px; }
 .j-part p { font: 20px/1.45 var(--mono); color: #d6d3d1; margin-top: 10px; }
 .j-part .ex { font: 19px/1.45 var(--mono); color: var(--muted); margin-top: 10px; }
-.j-parts.tall .j-part { min-height: 220px; padding: 30px 34px; }
+.j-parts.tall .j-part { min-height: 220px; padding: 26px 34px; }
 .j-parts.tall .j-part p { font-size: 22px; }
 .j-parts.tall .j-part .ex { font-size: 20px; margin-top: 18px; border: 1px dashed #3a3a37; padding: 10px 14px; }
 .j-parts.mid .j-part { min-height: 200px; padding: 28px 32px; }
@@ -171,7 +171,7 @@
 .j-ctr b { display: block; font: 700 32px var(--display); margin-top: 8px; }
 .j-ctr span { display: block; font: 19px var(--mono); color: #d6d3d1; margin-top: 8px; }
 .j-mini-ph { padding: 36px 12px 18px; border-radius: 34px; }
-.j-mini-ph img { height: 250px; object-fit: cover; object-position: 50% 30%; }
+.j-mini-ph img { height: auto; aspect-ratio: 1170 / 1395; object-fit: cover; object-position: 50% 0; }
 
 /* Ilustración de pad → CID → Resolve */
 .j-pad { display: grid; grid-template-columns: 250px 70px 250px 1fr; align-items: center; }
@@ -228,7 +228,7 @@
     </div>
     <div class="j-link" style="left:1090px; top:612px; width:90px;" aria-hidden="true"></div>
     <div class="item" style="left:1190px; top:450px; width:260px;">
-      <div class="j-phone j-mini-ph"><div class="j-url">tu-juego.dot</div><img src="../img/cap5/polka-man-movil.png" alt="Polka-Man en el celular: el laberinto con Polka-Man rosa y los fantasmas"></div>
+      <div class="j-phone j-mini-ph"><div class="j-url">tu-juego.dot</div><img src="../img/cap5/polka-man-movil.png" alt="Polka-Man en el celular: HUD con puntaje, ronda y vidas, y el laberinto con Polka-Man rosa y los fantasmas"></div>
     </div>
   </section>
 
@@ -394,11 +394,11 @@
   <!-- 10 · Un archivo de fase -->
   <section class="slide grid" data-title="Un archivo de fase">
     <div class="item" style="left:110px; top:70px;"><div class="h">Un archivo de fase</div></div>
-    <div class="item lead j-mut" style="left:110px; top:160px; width:1380px; font-size:22px;">prompts/04-fantasmas.md · las mismas cuatro partes en todas las fases</div>
+    <div class="item lead j-mut" style="left:110px; top:160px; width:1380px; font-size:22px;">Así están hechos los archivos de prompts/ · las mismas cuatro partes en cada fase</div>
     <div class="item j-parts tall" style="left:110px; top:230px; width:1380px;">
-      <div class="j-part"><b><i>01</i>Antes de pedir</b><p>2 a 4 decisiones que te tocan a ti.</p><div class="ex">¿Cuántas vidas? p. ej. 3</div></div>
-      <div class="j-part pink"><b><i>02</i>El prompt</b><p>12 líneas o menos. Sin números: están en tus specs.</p><div class="ex">Lee SPEC.md (y el spec de esta parte)…</div></div>
-      <div class="j-part"><b><i>03</i>Si no sabes</b><p>Opciones concretas con un pro y un contra, sin código.</p><div class="ex">Dame 3 opciones concretas, con números…</div></div>
+      <div class="j-part"><b><i>01</i>Antes de pedir</b><p>Escribe tus decisiones y tu idea inicial.</p><div class="ex">Qué quieres, qué no, y los números que ya sabes.</div></div>
+      <div class="j-part pink"><b><i>02</i>El prompt</b><p>Si el prompt o la idea es demasiado larga, trabaja con tu agente para crear una spec.</p><div class="ex">Cambio chico: un prompt. Cambio grande: un archivo spec.</div></div>
+      <div class="j-part"><b><i>03</i>Si no sabes</b><p>Pide opciones con pros y contras: el modelo puede darte un enfoque que no habías considerado.</p><div class="ex">Dame 3 opciones con un pro y un contra, sin código.</div></div>
       <div class="j-part"><b><i>04</i>Al terminar, revisa</b><p>Pruebas a mano, tests, casos raros y commit.</p><div class="ex">Después dime 3 casos raros que no consideré.</div></div>
     </div>
   </section>

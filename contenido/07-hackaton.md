@@ -19,17 +19,17 @@ resuelve y por qué Polkadot hace mejor la solución.
 
 ## 2. Los tracks
 
-![Tracks del hackatón: siete tracks con ejemplos e ideas](../img/cap7/tracks.png)
+![Tracks del hackatón: siete tracks con sus ejemplos](../img/cap7/tracks.png)
 
-| Track | Ejemplos del programa | Una idea con lo del curso |
-| :---- | :---- | :---- |
-| Identidad y Proof of Personhood | Votaciones donde cada persona vota una sola vez, acceso justo a recursos limitados | Encuesta del salón donde cada quien vota una vez, contada en tu contrato. |
-| Credenciales y registros digitales | Constancias, diplomas o membresías que no se pueden falsificar | Constancia de un taller que cualquiera verifica desde tu .dot. |
-| Comunidad y gobernanza | Decisiones y fondos compartidos de grupos estudiantiles o clubes | Propuestas de un club que se votan y quedan en la blockchain. |
-| Pagos y comercio local | Pagos entre amigos, recompensas para negocios locales | Puntos para la cafetería de la facultad, guardados en tu contrato. |
-| Gaming y experiencias interactivas | Juegos con recompensas o activos digitales | Un juego como Polka-Man, con récords y premios en tu contrato. |
-| IA + Polkadot | Asistentes o herramientas de aprendizaje con información verificable | Quiz de estudio con IA, con resultados guardados en tu contrato. |
-| Track abierto | Cualquier producto que use Polkadot de forma significativa | Tu idea, con app, contrato y dominio .dot. |
+| Track | Ejemplos del programa |
+| :---- | :---- |
+| Identidad y Proof of Personhood | Votaciones donde cada persona vota una sola vez, acceso justo a recursos limitados |
+| Credenciales y registros digitales | Constancias, diplomas o membresías que no se pueden falsificar |
+| Comunidad y gobernanza | Decisiones y fondos compartidos de grupos estudiantiles o clubes |
+| Pagos y comercio local | Pagos entre amigos, recompensas para negocios locales |
+| Gaming y experiencias interactivas | Juegos con recompensas o activos digitales |
+| IA + Polkadot | Asistentes o herramientas de aprendizaje con información verificable |
+| Track abierto | Cualquier producto que use Polkadot de forma significativa |
 
 ---
 

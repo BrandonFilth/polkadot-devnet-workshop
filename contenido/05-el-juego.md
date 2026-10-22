@@ -161,10 +161,12 @@ Casi todos los prompts llevan tres frases. Son el hábito que practicas:
 
 Cada archivo de [`prompts/`](../prompts/) tiene cuatro partes:
 
-- **Antes de pedir:** 2 a 4 decisiones que te tocan a ti, con un ejemplo de respuesta.
-- **El prompt:** 12 líneas o menos. Los números del juego no van en el prompt: están en tus specs.
-- **Si no sabes:** un prompt para pedir opciones concretas, con números, cada una con un pro y un
-  contra, sin código.
+- **Antes de pedir:** escribe tus decisiones y tu idea inicial: qué quieres, qué no, y los números
+  que ya sabes.
+- **El prompt:** si el prompt o la idea es demasiado larga, trabaja con tu agente para crear una
+  spec. Los cambios chicos van como prompt; los grandes, en un archivo spec.
+- **Si no sabes:** pide opciones con pros y contras; el modelo puede darte un enfoque que no habías
+  considerado.
 - **Al terminar, revisa:** pruebas a mano, el prompt de tests y el commit.
 
 Si no sabes algo, no lo dejes al azar: pídele opciones. Y después de cada fase, usa los prompts de
