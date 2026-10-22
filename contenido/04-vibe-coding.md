@@ -246,7 +246,7 @@ No tienes que escribirla solo. Es el mismo enfoque de
 
 ### Púlela con la skill
 
-La skill del hackatón ([sección 12](#12-skills)) conoce las versiones, la red y las reglas de
+La skill del hackatón ([sección 11](#11-skills)) conoce las versiones, la red y las reglas de
 publicación. Pídele que revise la spec antes de escribir código:
 
 ```text
@@ -296,6 +296,7 @@ Casos de la app:
 | Dado | Cuando | Entonces |
 |---|---|---|
 | Un récord de 300 | El jugador intenta guardar 200 | `.query()` falla y la app muestra "ese puntaje no supera tu récord", sin pedir firma ([capítulo 3, sección 15](./03-smart-contracts.md#15-simular-antes-de-enviar)) |
+| Otra cuenta ya tiene el username `ana` | Pido `ana` | La app muestra que ya está tomado (`UsernameTaken`) sin pedir firma y conserva lo que escribí |
 | La app abierta en un navegador normal | Carga | Muestra un aviso para abrirla dentro de Polkadot Desktop o la Polkadot App, comprobado con `isInsideContainer()` ([skill, `app-sdk.md`](https://github.com/BrandonFilth/polkadot-products-devnet/blob/main/skills/polkadot-products-devnet/references/app-sdk.md)) |
 
 Pon los casos en el prompt. Si la IA cambia algo y un caso deja de cumplirse, lo ves enseguida. El
@@ -363,6 +364,13 @@ Tu frase es tu cuenta ([capítulo 2, paso 2](./02-entorno.md)) y la llave privad
 ([capítulo 3, sección 16](./03-smart-contracts.md#16-tus-tres-cuentas)). El
 [`.gitignore`](../.gitignore) del tutorial ya excluye `.env`, `.env.*`, `*.key` y `*.pem` para que no
 terminen en GitHub.
+
+### La ventana de contexto
+
+La ventana de contexto es la cantidad de texto que el agente puede tener en mente a la vez: los
+archivos que leyó, la conversación y sus respuestas. Cuando se llena, lo más viejo se resume o se
+pierde. Por eso las decisiones grandes van en un archivo spec, y para un tema nuevo empiezas un chat
+nuevo.
 
 ---
 
@@ -484,30 +492,7 @@ Polkadot Product (Vite + TypeScript) que corre dentro de Polkadot Desktop o la P
 
 ---
 
-## 11. MCP
-
-MCP (Model Context Protocol) es un estándar abierto para conectar apps de IA con sistemas externos:
-datos, herramientas y flujos de trabajo
-([modelcontextprotocol.io](https://modelcontextprotocol.io/docs/getting-started/intro)). El agente
-es el cliente y habla con servidores MCP; cada servidor le da herramientas nuevas, como consultar
-una base de datos o un servicio.
-
-| | Skill | Servidor MCP |
-|---|---|---|
-| Qué es | Archivos de instrucciones (y a veces scripts) | Un programa que expone herramientas |
-| Cómo lo usa el agente | Lo lee cuando tu pedido coincide con su descripción | Llama sus herramientas mientras trabaja |
-| Qué agrega | Conocimiento y reglas | Acciones y datos externos |
-
-Un servidor MCP local es un programa que corre en tu computadora con tus permisos. Uno remoto corre
-en otro lado y recibe lo que el agente le mande
-([arquitectura de MCP](https://modelcontextprotocol.io/docs/learn/architecture)). Instalar uno es
-como instalar cualquier programa: revisa quién lo publica antes.
-
-Para este hackatón no necesitas ningún servidor MCP.
-
----
-
-## 12. Skills
+## 11. Skills
 
 ### Qué es una skill
 
@@ -648,9 +633,34 @@ Si el agente lo propone, recházalo: revisa la skill con la lista de arriba y co
 
 ---
 
+## 12. MCP vs skills
+
+Ya sabes qué es una skill; un servidor MCP es otra forma de extender al agente.
+
+MCP (Model Context Protocol) es un estándar abierto para conectar apps de IA con sistemas externos:
+datos, herramientas y flujos de trabajo
+([modelcontextprotocol.io](https://modelcontextprotocol.io/docs/getting-started/intro)). El agente
+es el cliente y habla con servidores MCP; cada servidor le da herramientas nuevas, como consultar
+una base de datos o un servicio.
+
+| | Skill | Servidor MCP |
+|---|---|---|
+| Qué es | Archivos de instrucciones (y a veces scripts) | Un programa que expone herramientas |
+| Cómo lo usa el agente | Lo lee cuando tu pedido coincide con su descripción | Llama sus herramientas mientras trabaja |
+| Qué agrega | Conocimiento y reglas | Acciones y datos externos |
+
+Un servidor MCP local es un programa que corre en tu computadora con tus permisos. Uno remoto corre
+en otro lado y recibe lo que el agente le mande
+([arquitectura de MCP](https://modelcontextprotocol.io/docs/learn/architecture)). Instalar uno es
+como instalar cualquier programa: revisa quién lo publica antes.
+
+Para este hackatón no necesitas ningún servidor MCP.
+
+---
+
 ## 13. Skills recomendadas
 
-Instálalas desde la raíz de tu proyecto. Cada comando abre el menú de la sección 12: elige tu(s)
+Instálalas desde la raíz de tu proyecto. Cada comando abre el menú de la sección 11: elige tu(s)
 agente(s) y el scope **Project**.
 
 ```bash

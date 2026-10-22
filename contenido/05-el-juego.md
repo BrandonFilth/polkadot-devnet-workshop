@@ -204,7 +204,7 @@ git init
 pueden decir "el proyecto de muestra está en `../polkadot-devnet-workshop/game`". Abre `mi-juego` en
 Kiro.
 
-Instala la skill del hackatón ([capítulo 4, sección 12](./04-vibe-coding.md#12-skills) y
+Instala la skill del hackatón ([capítulo 4, sección 11](./04-vibe-coding.md#11-skills) y
 [sección 13](./04-vibe-coding.md#13-skills-recomendadas)) y haz tu primer commit:
 
 ```bash

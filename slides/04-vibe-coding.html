@@ -188,10 +188,36 @@
 .v-blk b i { font-style: normal; color: var(--accent); margin-right: 12px; }
 .v-blk p { font: 18px/1.45 var(--display); color: #d6d3d1; margin-top: 8px; }
 
+.j-pink { color: var(--accent); }
+.j-ok { color: #9be7b0; }
+
+/* Sesión de terminal tipo Claude Code */
+.j-cc { border: 2px solid #3a3a37; background: #0b0b0b; }
+.j-cc .j-bar { height: 44px; border-bottom: 2px solid #3a3a37; display: flex; align-items: center; gap: 10px; padding: 0 16px; }
+.j-cc .j-bar span { font: 700 18px var(--display); color: #d6d3d1; }
+.j-cc .j-bar em { margin-left: auto; font: 18px var(--mono); font-style: normal; color: var(--muted); }
+.j-cc .j-body { padding: 16px 22px 18px; display: flex; flex-direction: column; gap: 12px; font: 19px/1.45 var(--mono); color: #d6d3d1; white-space: normal; }
+.j-cc .u { background: #151515; padding: 8px 12px 8px 36px; text-indent: -24px; }
+.j-cc .u::before { content: '> '; color: #d97757; }
+.j-cc .a { padding-left: 24px; text-indent: -24px; }
+.j-cc .a::before { content: '● '; color: #d97757; }
+.j-cc ol { margin: 4px 0 0 26px; text-indent: 0; }
+
+/* Ventana de Claude Code en grande, para leerse desde lejos */
+.j-cc.big .j-bar { height: 52px; }
+.j-cc.big .j-body { font-size: 24px; line-height: 1.45; gap: 14px; padding: 22px 30px 24px; }
+.j-cc.big .j-bar span, .j-cc.big .j-bar em { font-size: 22px; }
+.j-cc .j-op { padding-left: 24px; }
+
 .slide *, .slide *::before, .slide *::after { font-variant-ligatures: none !important; }
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="j-cc" viewBox="-12 -12 24 24"><path d="M0 -11V11M-11 0H11M-7.8 -7.8L7.8 7.8M-7.8 7.8L7.8 -7.8" stroke="#d97757" stroke-width="3.2" stroke-linecap="round"/></symbol>
+  </defs>
+</svg>
 <main class="deck" id="deck" data-chapter="04" data-prev="03-smart-contracts.html" data-next="05-el-juego.html">
 
   <!-- 1 · Portada -->
@@ -208,9 +234,20 @@
 <span class="kw">Restricciones:</span> no cambies el contrato.
 <span class="kw">Comprobación:</span> <span class="ty">900, 300, 40, 15</span></div>
     </div>
-    <div class="tape" style="right:70px; top:140px; transform:rotate(6deg);">AGENTS.MD</div>
-    <div class="tape" style="right:60px; top:420px; transform:rotate(-4deg);">SKILLS</div>
-    <div class="tape pink" style="left:120px; top:620px; transform:rotate(-5deg);">SPECS</div>
+    <div class="item v-laptop" style="left:1050px; top:100px; width:440px;">
+      <div class="v-screen">
+        <div class="j-cc">
+          <div class="j-bar"><svg width="22" height="22" aria-hidden="true"><use href="#j-cc"/></svg><span>Claude Code</span><em>~/mi-juego</em></div>
+          <div class="j-body">
+            <div class="u">Agrega el ranking de los 10 mejores.</div>
+            <div class="a">Edito Ranking.ts:<div class="code" style="font-size:18px; line-height:1.5; text-indent:0; margin-top:6px;"><span class="kw">const</span> top = scores
+  .<span class="fn">sort</span>((a, b) =&gt; b - a)
+  .<span class="fn">slice</span>(<span class="ty">0</span>, <span class="ty">10</span>);</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="v-base"></div>
+    </div>
   </section>
 
   <!-- 2 · Qué es vibe coding -->
@@ -237,22 +274,18 @@
 
   <!-- 3 · Un ejemplo -->
   <section class="slide grid" data-title="Un ejemplo">
-    <div class="item" style="left:110px; top:80px;"><div class="h">Un ejemplo</div></div>
-    <div class="item v-laptop" style="left:110px; top:190px; width:880px;">
-      <div class="v-screen">
-        <div class="v-win">
-          <div class="v-bar"><i></i><i></i><i></i><span>Agente</span></div>
-          <div class="v-body v-chat">
-            <div class="v-who r">Tú</div>
-            <div class="v-msg me" style="max-width:640px;">Agrega un botón «Guardar récord» que llame submitScore del contrato Leaderboard. Simula con .query() antes de pedir la firma.</div>
-            <div class="v-who">Agente</div>
-            <div class="v-msg ai"><span class="muted">Leo</span>    src/contract/leaderboard.abi.json<br><span class="muted">Edito</span>  src/components/FinDePartida.ts<br><span class="muted">Corro</span>  pnpm build · <span style="color:#9be7b0;">✔</span></div>
-          </div>
-        </div>
+    <div class="item" style="left:110px; top:90px;"><div class="h">Un ejemplo</div></div>
+    <div class="item j-cc big" style="left:110px; top:220px; width:880px;">
+      <div class="j-bar"><svg width="26" height="26" aria-hidden="true"><use href="#j-cc"/></svg><span>Claude Code</span><em>~/mi-juego</em></div>
+      <div class="j-body">
+        <div class="u">Agrega un botón «Guardar récord» que llame submitScore del contrato Leaderboard. Simula con .query() antes de pedir la firma.</div>
+        <div class="a">Leo src/contract/leaderboard.abi.json</div>
+        <div class="a">Edito src/components/FinDePartida.ts</div>
+        <div class="a">Corro pnpm build <span class="j-ok">✔</span></div>
+        <div class="a">Listo. Cambié 1 archivo; pruébalo con pnpm dev.</div>
       </div>
-      <div class="v-base"></div>
     </div>
-    <div class="panel" style="left:1030px; top:190px; width:460px; padding:32px 36px; border-color:var(--accent);">
+    <div class="panel" style="left:1030px; top:220px; width:460px; padding:32px 36px; border-color:var(--accent);">
       <div class="kicker pink">Tú revisas</div>
       <div class="marks" style="margin-top:14px;">
         <div class="si" style="font-size:22px;"><span>git diff: solo los archivos que modificó</span></div>
@@ -372,12 +405,15 @@ Usa <span class="fn">getScores</span>(offset, limit) para leer a los jugadores.<
     <div class="item lead" style="left:110px; top:160px; width:1380px;">Lo chico va en el chat; lo grande, en un archivo.</div>
     <div class="item" style="left:110px; top:250px; width:620px;">
       <div class="kicker">Prompt · cambios pequeños</div>
-      <div class="v-win" style="margin-top:16px;">
-        <div class="v-bar"><i></i><i></i><i></i><span>Chat</span></div>
-        <div class="v-body v-chat">
-          <div class="v-msg me" style="font-size:21px;">Mueve el botón Guardar abajo.</div>
-          <div class="v-msg me" style="font-size:21px;">Cambia el color del HUD.</div>
-          <div class="v-msg me" style="font-size:21px;">Arregla este error: &lt;texto exacto&gt;</div>
+      <div class="j-cc" style="margin-top:16px;">
+        <div class="j-bar"><svg width="22" height="22" aria-hidden="true"><use href="#j-cc"/></svg><span>Claude Code</span><em>~/mi-juego</em></div>
+        <div class="j-body">
+          <div class="u">Mueve el botón Guardar abajo.</div>
+          <div class="a">Listo · 1 archivo</div>
+          <div class="u">Cambia el color del HUD.</div>
+          <div class="a">Listo · 1 archivo</div>
+          <div class="u">Arregla este error: &lt;texto exacto&gt;</div>
+          <div class="a">Corregido · 1 archivo</div>
         </div>
       </div>
     </div>
@@ -392,7 +428,7 @@ Usa <span class="fn">getScores</span>(offset, limit) para leer a los jugadores.<
 <span class="cm"># el agente relee el archivo cada vez</span></div>
       </div>
     </div>
-    <div class="panel" style="left:110px; top:650px; width:1380px; padding:26px 40px;">
+    <div class="panel" style="left:110px; top:690px; width:1380px; padding:26px 40px;">
       <div class="lead" style="font-size:22px;">Entrevista → spec-&lt;tema&gt;.md → la revisas → <span class="pink">púlela con la skill</span> → commit</div>
     </div>
   </section>
@@ -404,7 +440,7 @@ Usa <span class="fn">getScores</span>(offset, limit) para leer a los jugadores.<
       <span class="kicker">Dado</span><span></span><span class="kicker">Cuando</span><span></span><span class="kicker">Entonces</span>
       <div class="c">Sin puntaje</div><div class="a">→</div><div class="c">Envía 120</div><div class="a">→</div><div class="c">Récord 120</div>
       <div class="c">Récord 300</div><div class="a">→</div><div class="c">Envía 300</div><div class="a">→</div><div class="c"><span class="code">ScoreNotHigher</span></div>
-      <div class="c">Cualquiera</div><div class="a">→</div><div class="c">Pide «Ana»</div><div class="a">→</div><div class="c"><span class="code">InvalidUsername</span></div>
+      <div class="c">Otra cuenta tiene «ana»</div><div class="a">→</div><div class="c">Pides «ana»</div><div class="a">→</div><div class="c">Ya está tomado · <span class="code">UsernameTaken</span>, sin firma; conserva lo escrito</div>
       <div class="c">Navegador normal</div><div class="a">→</div><div class="c">Carga</div><div class="a">→</div><div class="c">Aviso · <span class="code" style="color:#d6d3d1; font-size:18px;">isInsideContainer()</span></div>
     </div>
     <div class="item term" style="left:1160px; top:210px; width:330px;">
@@ -452,16 +488,24 @@ Usa <span class="fn">getScores</span>(offset, limit) para leer a los jugadores.<
         <div class="v-att">src/components/Ranking.ts</div>
       </div>
     </div>
-    <div class="panel" style="left:600px; top:300px; width:890px; padding:32px 48px; border-color:var(--accent);">
+    <div class="panel" style="left:600px; top:270px; width:890px; padding:24px 40px; border-color:var(--accent);">
       <div class="kicker pink">Nunca</div>
-      <div class="marks" style="margin-top:14px;">
-        <div class="no" style="font-size:28px;">Tu frase de recuperación</div>
-        <div class="no" style="font-size:28px;">Llaves privadas</div>
-        <div class="no" style="font-size:28px;">.env con secretos</div>
+      <div class="marks" style="margin-top:8px;">
+        <div class="no" style="font-size:23px; padding:8px 0;">Tu frase de recuperación</div>
+        <div class="no" style="font-size:23px; padding:8px 0;">Llaves privadas</div>
+        <div class="no" style="font-size:23px; padding:8px 0;">.env con secretos</div>
       </div>
+      <div class="lead muted" style="font-size:20px; margin-top:12px;">Tu frase es tu cuenta. La llave privada firma por ti.</div>
     </div>
-    <div class="panel" style="left:600px; top:650px; width:890px; padding:24px 48px;">
-      <div class="lead muted" style="font-size:21px;">Tu frase es tu cuenta. La llave privada firma por ti.</div>
+    <div class="panel" style="left:600px; top:574px; width:890px; padding:24px 40px;">
+      <div class="kicker">Ventana de contexto</div>
+      <div style="display:flex; justify-content:space-between; margin-top:12px; font:18px var(--mono); color:var(--muted);"><span class="pink">← se resume o se pierde</span><span>lo más nuevo →</span></div>
+      <div style="display:grid; grid-template-columns:270px 300px 1fr; gap:6px; margin-top:8px; font:18px var(--mono); text-align:center;">
+        <div style="border:2px dashed #6b6b66; color:var(--muted); padding:14px 8px; background:repeating-linear-gradient(135deg, #1c1c1c 0 8px, #050505 8px 16px);">archivos que leyó</div>
+        <div style="border:2px solid #d6d3d1; color:#d6d3d1; background:#050505; padding:14px 8px;">la conversación</div>
+        <div style="border:2px solid var(--accent); color:#d6d3d1; background:#050505; padding:14px 8px;">sus respuestas</div>
+      </div>
+      <div class="lead" style="font-size:21px; margin-top:16px;">Decisiones grandes → archivo spec · tema nuevo → chat nuevo</div>
     </div>
   </section>
 
@@ -469,60 +513,41 @@ Usa <span class="fn">getScores</span>(offset, limit) para leer a los jugadores.<
   <section class="slide plain" data-title="Agentes">
     <div class="item" style="left:110px; top:60px;"><div class="h">Agentes</div></div>
     <div class="item lead" style="left:110px; top:152px; width:1380px;">Un chat te responde. Un agente <span class="pink">trabaja en tu proyecto</span>.</div>
-    <div class="item" style="left:110px; top:232px; width:490px;">
-      <div class="v-win">
+    <div class="item" style="left:110px; top:232px; width:630px;">
+      <div class="kicker">Un chat</div>
+      <div class="v-win" style="margin-top:14px;">
         <div class="v-bar"><i></i><i></i><i></i><span>Chat</span></div>
         <div class="v-body v-chat" style="padding:18px 22px;">
-          <div class="v-msg me" style="font-size:19px;">¿Cómo agrego un botón «Guardar récord»?</div>
-          <div class="v-msg ai" style="font-size:18px; line-height:1.55;">Pega esto en FinDePartida.ts:<br><span style="color:var(--accent);">boton.onclick = guardar;</span></div>
+          <div class="v-msg me" style="font-size:21px;">¿Cómo agrego un botón «Guardar récord»?</div>
+          <div class="v-msg ai" style="font-size:20px; line-height:1.55;">Pega esto en FinDePartida.ts:<br><span style="color:var(--accent);">boton.onclick = guardar;</span></div>
         </div>
       </div>
       <div class="v-cap" style="text-align:left;">tú copias, pegas y corres</div>
     </div>
-    <div class="item" style="left:110px; top:556px; width:520px;">
+    <div class="item" style="left:110px; top:564px; width:630px;">
       <div class="v-set mini on"><div class="v-row"><div class="v-toggle on"></div><b>Supervisado</b></div><p>apruebas cada cambio</p></div>
       <div class="v-set mini" style="margin-top:14px;"><div class="v-row"><div class="v-toggle"></div><b>Autónomo</b></div><p>trabaja solo, revisas el resultado</p></div>
     </div>
-    <div class="item v-laptop" style="left:660px; top:232px; width:830px;">
-      <div class="v-screen">
-        <div class="v-split">
-          <div class="v-win">
-            <div class="v-bar"><i></i><i></i><i></i><span>Editor · src/</span></div>
-            <div class="v-body">
-              <div class="v-file">contract/leaderboard.abi.json</div>
-              <div class="v-file hi">components/FinDePartida.ts</div>
-              <div class="v-file">game/guardar.ts</div>
-            </div>
-          </div>
-          <div class="v-win">
-            <div class="v-bar"><i></i><i></i><i></i><span>Terminal</span></div>
-            <div class="v-body">
-              <div><span class="muted">&gt;</span> pnpm build <span style="color:#9be7b0;">✔</span></div>
-              <div><span class="muted">&gt;</span> pnpm test <span style="color:#9be7b0;">✔</span></div>
-              <div><span class="muted">&gt;</span> git diff <span class="muted">· 1 archivo</span></div>
-            </div>
-          </div>
+    <div class="item" style="left:800px; top:232px; width:690px;">
+      <div class="kicker pink">Un agente</div>
+      <div style="position:relative; margin-top:14px;">
+        <div class="v-cyc" style="grid-template-columns:1fr; width:440px;">
+          <div class="box" style="display:flex; align-items:center; gap:18px; height:52px; padding:0 20px; text-align:left;"><div class="n">01</div><b style="margin-top:0;">Leer</b></div>
+          <div class="v-arrow" style="height:26px; line-height:26px;">↓</div>
+          <div class="box" style="display:flex; align-items:center; gap:18px; height:52px; padding:0 20px; text-align:left;"><div class="n">02</div><b style="margin-top:0;">Planear</b></div>
+          <div class="v-arrow" style="height:26px; line-height:26px;">↓</div>
+          <div class="box pink" style="display:flex; align-items:center; gap:18px; height:52px; padding:0 20px; text-align:left;"><div class="n">03</div><b style="margin-top:0;">Editar</b></div>
+          <div class="v-arrow" style="height:26px; line-height:26px;">↓</div>
+          <div class="box" style="display:flex; align-items:center; gap:18px; height:52px; padding:0 20px; text-align:left;"><div class="n">04</div><b style="margin-top:0;">Ejecutar</b></div>
+          <div class="v-arrow" style="height:26px; line-height:26px;">↓</div>
+          <div class="box" style="display:flex; align-items:center; gap:18px; height:52px; padding:0 20px; text-align:left;"><div class="n">05</div><b style="margin-top:0;">Revisar</b></div>
         </div>
+        <svg width="50" height="364" viewBox="0 0 50 364" style="position:absolute; left:440px; top:0;" aria-hidden="true">
+          <path d="M0 338 H36 V26 H6" fill="none" stroke="#6b6b66" stroke-width="2"/>
+          <path d="M16 19 L6 26 L16 33" fill="none" stroke="#6b6b66" stroke-width="2"/>
+        </svg>
+        <div class="v-axis" style="position:absolute; left:510px; top:150px; width:180px; font-size:18px; line-height:1.5;">↺ repite hasta terminar</div>
       </div>
-      <div class="v-base"></div>
-    </div>
-    <div class="item" style="left:660px; top:548px; width:830px;">
-      <div class="v-cyc">
-        <div class="box"><div class="n">01</div><b>Leer</b></div>
-        <div class="v-arrow">→</div>
-        <div class="box"><div class="n">02</div><b>Planear</b></div>
-        <div class="v-arrow">→</div>
-        <div class="box pink"><div class="n">03</div><b>Editar</b></div>
-        <div class="v-arrow">→</div>
-        <div class="box"><div class="n">04</div><b>Ejecutar</b></div>
-        <div class="v-arrow">→</div>
-        <div class="box"><div class="n">05</div><b>Revisar</b></div>
-      </div>
-      <svg width="830" height="44" viewBox="0 0 830 44" style="display:block;" aria-hidden="true">
-        <path d="M761 0 V30 H69 V6" fill="none" stroke="#6b6b66" stroke-width="2"/>
-        <path d="M62 14 L69 4 L76 14" fill="none" stroke="#6b6b66" stroke-width="2"/>
-      </svg>
-      <div class="v-axis" style="text-align:center; font-size:18px; margin-top:4px;">↺ repite hasta terminar</div>
     </div>
     <div class="item lead muted" style="left:110px; top:784px; width:1380px; font-size:20px;">Kiro · Claude Code · Cursor · GitHub Copilot · Codex · Gemini CLI</div>
   </section>
@@ -568,41 +593,7 @@ Usa <span class="fn">getScores</span>(offset, limit) para leer a los jugadores.<
     <div class="item lead muted" style="left:110px; top:760px; width:1380px; font-size:21px;">Pídeselo así: «Lee AGENTS.md y dime qué reglas vas a seguir antes de empezar.»</div>
   </section>
 
-  <!-- 14 · MCP vs skills -->
-  <section class="slide" data-title="MCP vs skills" style="--bgpos: 60% 60%;">
-    <div class="panel" style="left:110px; top:50px; width:1000px; padding:34px 52px 36px;">
-      <div class="h">MCP vs skills</div>
-      <div class="lead" style="margin-top:12px;">MCP conecta al agente con herramientas y datos externos.</div>
-    </div>
-    <div class="panel" style="left:110px; top:290px; width:460px; padding:30px 38px;">
-      <div class="kicker">Skill</div>
-      <div class="marks" style="margin-top:12px;">
-        <div class="si" style="font-size:21px;"><span>Archivos de instrucciones</span></div>
-        <div class="si" style="font-size:21px;"><span>Lo lee si tu pedido coincide</span></div>
-        <div class="si" style="font-size:21px;"><span>Agrega conocimiento y reglas</span></div>
-      </div>
-    </div>
-    <div class="item" style="left:610px; top:330px; width:380px;">
-      <div style="display:flex; justify-content:space-between; font:700 22px var(--display); color:var(--ink);"><span>← lee</span><span>llama →</span></div>
-      <div style="margin-top:18px; border:2px solid #d6d3d1; background:#000; height:150px; display:grid; place-items:center;">
-        <b style="font:700 40px var(--display); letter-spacing:.06em;">AGENTE</b>
-      </div>
-      <div class="v-axis" style="text-align:center; margin-top:14px;">Kiro, Claude Code, Cursor…</div>
-    </div>
-    <div class="panel" style="left:1030px; top:290px; width:460px; padding:30px 38px;">
-      <div class="kicker">Servidor MCP</div>
-      <div class="marks" style="margin-top:12px;">
-        <div class="si" style="font-size:21px;"><span>Un programa con herramientas</span></div>
-        <div class="si" style="font-size:21px;"><span>Llama sus herramientas</span></div>
-        <div class="si" style="font-size:21px;"><span>Agrega acciones y datos externos</span></div>
-      </div>
-    </div>
-    <div class="panel" style="left:110px; top:680px; width:1380px; padding:26px 52px; border-color:var(--accent);">
-      <div class="lead">Para este hackatón no necesitas <span class="pink">ningún servidor MCP</span>.</div>
-    </div>
-  </section>
-
-  <!-- 15 · Qué es una skill -->
+  <!-- 14 · Qué es una skill -->
   <section class="slide plain" data-title="Qué es una skill">
     <div class="item" style="left:110px; top:80px;"><div class="h">Qué es una skill</div></div>
     <div class="item v-win" style="left:110px; top:190px; width:760px;">
@@ -641,7 +632,7 @@ Usa <span class="fn">getScores</span>(offset, limit) para leer a los jugadores.<
     <div class="item lead muted" style="left:110px; top:720px; width:1380px; font-size:21px;">Formato abierto: Agent Skills · agentskills.io/specification</div>
   </section>
 
-  <!-- 16 · Cómo la usa el agente -->
+  <!-- 15 · Cómo la usa el agente -->
   <section class="slide" data-title="Cómo la usa el agente" style="--bgpos: 40% 70%;">
     <div class="panel" style="left:110px; top:50px; width:1000px; padding:30px 52px 32px;">
       <div class="h">Cómo la usa el agente</div>
@@ -669,6 +660,40 @@ Usa <span class="fn">getScores</span>(offset, limit) para leer a los jugadores.<
         <div class="v-arrow">+</div>
         <div class="v-loc"><b>skills-lock.json</b><span>en la raíz: qué se instaló</span></div>
       </div>
+    </div>
+  </section>
+
+  <!-- 16 · MCP vs skills -->
+  <section class="slide plain" data-title="MCP vs skills">
+    <div class="panel" style="left:110px; top:50px; width:1000px; padding:34px 52px 36px;">
+      <div class="h">MCP vs skills</div>
+      <div class="lead" style="margin-top:12px;">MCP conecta al agente con herramientas y datos externos.</div>
+    </div>
+    <div class="panel" style="left:110px; top:290px; width:460px; padding:30px 38px;">
+      <div class="kicker">Skill</div>
+      <div class="marks" style="margin-top:12px;">
+        <div class="si" style="font-size:21px;"><span>Archivos de instrucciones</span></div>
+        <div class="si" style="font-size:21px;"><span>Lo lee si tu pedido coincide</span></div>
+        <div class="si" style="font-size:21px;"><span>Agrega conocimiento y reglas</span></div>
+      </div>
+    </div>
+    <div class="item" style="left:610px; top:330px; width:380px;">
+      <div style="display:flex; justify-content:space-between; font:700 22px var(--display); color:var(--ink);"><span>← lee</span><span>llama →</span></div>
+      <div style="margin-top:18px; border:2px solid #d6d3d1; background:#000; height:150px; display:grid; place-items:center;">
+        <b style="font:700 40px var(--display); letter-spacing:.06em;">AGENTE</b>
+      </div>
+      <div class="v-axis" style="text-align:center; margin-top:14px;">Kiro, Claude Code, Cursor…</div>
+    </div>
+    <div class="panel" style="left:1030px; top:290px; width:460px; padding:30px 38px;">
+      <div class="kicker">Servidor MCP</div>
+      <div class="marks" style="margin-top:12px;">
+        <div class="si" style="font-size:21px;"><span>Un programa con herramientas</span></div>
+        <div class="si" style="font-size:21px;"><span>Llama sus herramientas</span></div>
+        <div class="si" style="font-size:21px;"><span>Agrega acciones y datos externos</span></div>
+      </div>
+    </div>
+    <div class="panel" style="left:110px; top:680px; width:1380px; padding:26px 52px; border-color:var(--accent);">
+      <div class="lead">Para este hackatón no necesitas <span class="pink">ningún servidor MCP</span>.</div>
     </div>
   </section>
 
@@ -794,35 +819,10 @@ Usa <span class="fn">getScores</span>(offset, limit) para leer a los jugadores.<
     </div>
   </section>
 
-  <!-- 22 · Repaso -->
-  <section class="slide plain" data-title="Repaso">
-    <div class="item" style="left:110px; top:70px;"><div class="h">Repaso</div></div>
-    <div class="item v-steps mini" style="left:110px; top:170px; width:640px;">
-      <div class="v-st"><div class="c">01</div><div><b>Prompt</b><span>objetivo, contexto, restricciones, formato, comprobación</span></div></div>
-      <div class="v-st"><div class="c">02</div><div><b>Pide con nombres</b><span>padding, gap, card, toast, disabled</span></div></div>
-      <div class="v-st"><div class="c">03</div><div><b>Spec primero</b><span>lo grande en un archivo; púlela con la skill</span></div></div>
-      <div class="v-st"><div class="c">04</div><div><b>Casos de prueba</b><span>Dado / Cuando / Entonces</span></div></div>
-      <div class="v-st"><div class="c">05</div><div><b>Pasos chicos</b><span>un cambio por prompt; funciona → commit</span></div></div>
-      <div class="v-st"><div class="c">06</div><div><b>Contexto</b><span>ABI, red y error completo; nunca secretos</span></div></div>
-    </div>
-    <div class="item v-steps mini" style="left:830px; top:170px; width:660px;">
-      <div class="v-st"><div class="c">07</div><div><b>Agentes</b><span>leen, editan, corren y repiten; supervisado o autónomo</span></div></div>
-      <div class="v-st"><div class="c">08</div><div><b>AGENTS.md</b><span>las reglas del proyecto para cualquier agente</span></div></div>
-      <div class="v-st"><div class="c">09</div><div><b>MCP vs skills</b><span>aquí no necesitas MCP</span></div></div>
-      <div class="v-st"><div class="c">10</div><div><b>Léela antes</b><span>SKILL.md y scripts completos</span></div></div>
-      <div class="v-st"><div class="c">11</div><div><b>Instala</b><span>skills@1.7.2 · scope Project · Symlink</span></div></div>
-      <div class="v-st pink"><div class="c">12</div><div><b>Supervisa</b><span>tests en verde y git diff solo con lo pedido</span></div></div>
-    </div>
-    <div class="panel" style="left:1090px; top:650px; width:400px; padding:26px 44px;">
-      <div class="kicker">Capítulo 05</div>
-      <div class="h" style="font-size:32px; margin-top:12px;">Tu primera app en Polkadot</div>
-    </div>
-  </section>
-
   <div class="progress" id="progress"></div>
   <footer class="foot">
     <a href="../contenido/04-vibe-coding.md">Guía: contenido/04-vibe-coding.md</a>
-    <span><span id="count">01 / 22</span></span>
+    <span><span id="count">01 / 21</span></span>
   </footer>
 </main>
 <script src="assets/deck.js"></script>
