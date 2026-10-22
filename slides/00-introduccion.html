@@ -25,10 +25,15 @@
     <div class="tape" style="right:60px; top:120px; transform:rotate(6deg);">SIN SERVIDORES</div>
     <div class="tape" style="left:150px; bottom:100px; transform:rotate(5deg);">TU IDENTIDAD</div>
     <div class="tape" style="right:120px; bottom:110px; transform:rotate(-4deg);">TU APP .DOT</div>
-    <div class="panel" style="left:220px; top:248px; width:1160px;">
+    <div class="panel" style="left:110px; top:248px; width:900px;">
       <div class="kicker">Bootcamp + Hackatón · UANL 2026</div>
-      <div class="title">Construye y publica<br>tu app en Polkadot</div>
+      <div class="title" style="font-size:64px;">Construye y publica<br>tu app en Polkadot</div>
       <div class="sub">Con IA, desde cero, hasta tenerla en el celular de cualquiera.</div>
+    </div>
+    <div class="panel" style="left:1100px; top:240px; width:390px; padding:30px 50px 32px;">
+      <div class="kicker" style="letter-spacing:.2em;">Haz fork y síguelo</div>
+      <img class="qr" src="assets/qr-repo.svg" alt="Código QR del repositorio del tutorial" style="margin-top:20px; width:240px; height:240px;">
+      <div class="small" style="font-size:18px; margin-top:18px; color:var(--muted);">github.com/BrandonFilth/<br>polkadot-devnet-workshop</div>
     </div>
   </section>
 
@@ -39,12 +44,11 @@
       <div class="title" style="font-size:72px;">Tu app en Polkadot</div>
       <div class="sub">Una app y un smart contract, hechos con IA, en tu propio dominio <span class="pink">.dot</span>.</div>
     </div>
-    <div class="item flow" style="left:110px; top:560px;">
+    <div class="item flow" style="left:110px; top:660px;">
       <div class="chip"><b>Tu app</b><span>corre en la Polkadot App</span></div>
       <div class="chip"><b>Tu smart contract</b><span>lo despliegas tú</span></div>
       <div class="chip"><b class="pink">Tu .dot</b><span>tu propio dominio</span></div>
     </div>
-    <div class="item lead" style="left:110px; top:710px; width:960px; font-size:22px;">Ejemplo: Polka-Man en <span class="pink">polka-man.dot</span>. En el hackatón construyes la tuya de la misma forma.</div>
     <div class="item" style="left:1160px; top:90px; width:300px;">
       <div class="i-phone"><div class="i-url">polka-man.dot</div><img src="../img/cap5/polka-man-movil.png" alt="Polka-Man en el celular: HUD con puntaje, ronda, vidas y menú; el laberinto grande con Polka-Man rosa y dos fantasmas; el joystick flotante bajo el dedo y el botón rojo de pausa abajo"></div>
     </div>
@@ -83,8 +87,34 @@
         <div class="row hi"><span class="n">06</span><span class="t">Hackatón</span><span class="d">Tu proyecto</span></div>
       </div>
     </div>
-    <div class="tape" style="right:90px; top:220px; transform:rotate(7deg);">PRODUCT SDK</div>
-    <div class="tape pink" style="right:90px; bottom:250px; transform:rotate(-5deg);">HACKATÓN</div>
+    <div class="item" style="left:1060px; top:70px; width:430px; height:640px;">
+      <svg width="430" height="640" viewBox="0 0 430 640" aria-hidden="true" style="display:block;" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M100 131 C 100 180, 330 160, 330 212 C 330 260, 100 246, 100 294 C 100 342, 330 327, 330 375 C 330 423, 100 408, 100 456" stroke="#6b6b66" stroke-width="3" stroke-dasharray="4 10"/>
+        <path d="M100 456 C 100 504, 330 490, 330 538" stroke="#ff2867" stroke-width="3" stroke-dasharray="4 10"/>
+        <g stroke="#3a3a37" stroke-width="2" fill="#050505">
+          <circle cx="100" cy="131" r="40"/><circle cx="330" cy="212" r="40"/><circle cx="100" cy="294" r="40"/>
+          <circle cx="330" cy="375" r="40"/><circle cx="100" cy="456" r="40"/>
+        </g>
+        <circle cx="330" cy="538" r="40" stroke="#ff2867" stroke-width="2" fill="#050505"/>
+        <g stroke="#d6d3d1" stroke-width="3">
+          <!-- 01 teléfono -->
+          <g transform="translate(68 99)"><rect x="20" y="8" width="24" height="48" rx="5"/><path d="M28 49 H36"/></g>
+          <!-- 02 terminal -->
+          <g transform="translate(298 180)"><rect x="8" y="14" width="48" height="36" rx="4"/><path d="M16 26 L22 32 L16 38 M26 40 H36"/></g>
+          <!-- 03 bloque de contrato -->
+          <g transform="translate(68 262)"><path d="M32 10 L52 21 V43 L32 54 L12 43 V21 Z M12 21 L32 32 L52 21 M32 32 V54"/></g>
+          <!-- 04 burbuja de chat -->
+          <g transform="translate(298 343)"><path d="M10 14 H54 V42 H30 L20 52 V42 H10 Z M18 24 H46 M18 32 H38"/></g>
+          <!-- 05 globo con .dot -->
+          <g transform="translate(68 424)"><circle cx="32" cy="18" r="14"/><ellipse cx="32" cy="18" rx="6" ry="14"/><path d="M18 18 H46"/></g>
+        </g>
+        <text x="100" y="484" text-anchor="middle" fill="#ff2867" style="font:18px var(--mono);">.dot</text>
+        <!-- 06 trofeo -->
+        <g transform="translate(298 506)" stroke="#ff2867" stroke-width="3">
+          <path d="M20 12 H44 V24 C44 34 38 40 32 40 C26 40 20 34 20 24 Z M20 16 H12 V20 C12 26 16 28 20 28 M44 16 H52 V20 C52 26 48 28 44 28 M32 40 V48 M22 52 H42"/>
+        </g>
+      </svg>
+    </div>
   </section>
 
   <div class="progress" id="progress"></div>

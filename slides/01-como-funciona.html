@@ -91,6 +91,18 @@
 .d-gate > b { position: relative; margin-left: -40px; border: 3px solid var(--accent); background: #000; color: var(--accent); font: 700 20px var(--display); padding: 10px 14px; }
 .d-gate > i { flex: 1; border-top: 2px solid var(--accent); position: relative; }
 .d-gate > i::after { content: ''; position: absolute; right: 0; top: -7px; border: 6px solid transparent; border-left: 10px solid var(--accent); border-right: 0; }
+/* Miniaturas de los tres Hosts sobre el recuadro Host del sandbox */
+.d-hosts { position: absolute; left: 10px; right: 10px; bottom: calc(100% + 14px); display: flex; justify-content: space-between; align-items: flex-end; }
+.d-hosts > div { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.d-hosts span { font: 18px var(--mono); color: var(--muted); }
+.d-hosts .v-phone { width: 44px; height: 70px; border-radius: 12px; padding: 0; }
+.d-hosts .v-phone::before { top: 7px; width: 14px; height: 4px; margin-left: -7px; }
+.d-hosts .v-laptop .v-screen { width: 60px; height: 38px; margin: 0 8px; padding: 0; border-radius: 6px 6px 0 0; }
+.d-hosts .v-laptop .v-base { height: 8px; border-radius: 0 0 6px 6px; }
+.d-hosts .v-laptop .v-base::after { width: 18px; height: 3px; margin-left: -9px; border-width: 1px; }
+.d-hosts .v-win { width: 64px; height: 44px; border-color: #d6d3d1; }
+.d-hosts .v-win .v-bar { height: 11px; padding: 0 5px; gap: 3px; border-bottom: 2px solid #d6d3d1; }
+.d-hosts .v-win .v-bar i { width: 4px; height: 4px; background: #d6d3d1; }
 /* Ramas de una cuenta raíz */
 .d-pair { display: flex; flex-direction: column; align-items: stretch; }
 .d-pair .d-down { font: 700 26px var(--display); color: var(--muted); text-align: center; padding: 6px 0; }
@@ -145,9 +157,6 @@
       </div>
       <div class="d-lbl">Polkadot Web</div>
     </div>
-
-    <div class="tape" style="left:1300px; top:110px; transform:rotate(6deg);">SANDBOX</div>
-    <div class="tape pink" style="left:880px; top:735px; transform:rotate(-3deg);">CLIENTE LIGERO</div>
   </section>
 
   <!-- 2 · El Triángulo -->
@@ -227,7 +236,7 @@
       <div class="c-ord"><i>3</i>Si los niega: <span style="font-family:var(--mono); color:var(--accent); margin-left:8px;">PermissionDenied</span></div>
     </div>
 
-    <div class="panel" style="left:110px; top:330px; width:1380px; padding:36px 44px; display:grid; grid-template-columns:460px 150px 220px 90px 1fr; align-items:center;">
+    <div class="panel" style="left:110px; top:330px; width:1380px; padding:36px 44px; display:grid; grid-template-columns:460px 130px 280px 80px 1fr; align-items:center;">
       <div class="d-sbx">
         <div class="d-k pink" style="border:0; padding:0;">sandbox</div>
         <b>Tu app</b>
@@ -236,9 +245,16 @@
         <div><span class="c-x">✘</span>datos de otra app</div>
       </div>
       <div class="d-gate"><b>TrUAPI</b><i></i></div>
-      <div class="c-box" style="padding:20px 22px;"><b style="font-size:28px;">Host</b><span>aplica los permisos</span></div>
-      <svg width="90" height="320" viewBox="0 0 90 320" aria-hidden="true" style="display:block;">
-        <path d="M0 160 C 45 160, 45 50, 90 50 M0 160 H 90 M0 160 C 45 160, 45 270, 90 270" stroke="#6b6b66" stroke-width="2" fill="none"/>
+      <div style="position:relative;">
+        <div class="d-hosts">
+          <div><div class="v-phone"></div><span>App</span></div>
+          <div><div class="v-laptop"><div class="v-screen"></div><div class="v-base"></div></div><span>Desktop</span></div>
+          <div><div class="v-win"><div class="v-bar"><i></i><i></i><i></i></div></div><span>dot.li</span></div>
+        </div>
+        <div class="c-box" style="padding:20px 22px;"><b style="font-size:28px;">Host</b><span>aplica los permisos</span></div>
+      </div>
+      <svg width="80" height="320" viewBox="0 0 80 320" aria-hidden="true" style="display:block;">
+        <path d="M0 160 C 40 160, 40 50, 80 50 M0 160 H 80 M0 160 C 40 160, 40 270, 80 270" stroke="#6b6b66" stroke-width="2" fill="none"/>
       </svg>
       <div style="display:flex; flex-direction:column; gap:18px;">
         <div class="c-box"><b>Red</b><span>solo las URLs declaradas</span></div>

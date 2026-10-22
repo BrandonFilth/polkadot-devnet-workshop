@@ -369,8 +369,6 @@ Todo lo que se puede revisar desde aquí está listo.
 - `✘` falta algo: debajo te dice cómo arreglarlo.
 - `!` es un aviso o algo que tienes que revisar tú.
 
-![Verifica todo: fork, pnpm install y el resultado de verificar-entorno](../img/cap2/verifica-todo.png)
-
 ---
 
 ## Lista final
