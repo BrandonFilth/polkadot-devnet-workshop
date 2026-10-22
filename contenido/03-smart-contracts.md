@@ -12,9 +12,9 @@ despliegas en Remix; toma unos 5 minutos.
 
 ---
 
-## 1. Una app normal vs. un contrato
+## 1. Una app normal vs un contrato
 
-![Una app normal vs. un contrato](../img/cap3/app-vs-contrato.png)
+![Una app normal vs un contrato](../img/cap3/app-vs-contrato.png)
 
 | | App normal | Smart contract |
 |---|---|---|
@@ -106,7 +106,7 @@ Ten cuidado con dos cosas:
 ![Mappings](../img/cap3/mappings.png)
 
 Usa un `mapping` cuando quieras **relacionar una cosa con otra**: le das una llave y te devuelve un
-valor. Es como un diccionario o un `Map` de JavaScript.
+valor. Es como un diccionario de Python o un `Map` de JavaScript.
 
 | Para saber… | Mapping |
 |---|---|
@@ -128,7 +128,8 @@ bestScore[msg.sender] = 1240;
 ```
 
 Un mapping tiene un límite importante: **no se puede recorrer** ni saber cuántos elementos tiene.
-Si preguntas por una llave que nunca se guardó, devuelve el valor vacío (`0`, `""`, `false`). Por
+No puedes listar las llaves de un mapping; por eso el contrato también guarda una lista. Si
+preguntas por una llave que nunca se guardó, devuelve el valor vacío (`0`, `""`, `false`). Por
 eso `Leaderboard` usa las dos cosas: el mapping para buscar rápido el puntaje de alguien, y la lista
 para saber quiénes han jugado.
 
@@ -166,7 +167,7 @@ Es parecido a un *getter* contra una función que cambia algo. Si una función s
 
 ---
 
-## 7. Quién llama
+## 7. Quién firma la llamada
 
 `msg.sender` es la cuenta que llama a la función. Se parece al usuario con sesión iniciada en un
 backend, con una diferencia: aquí no hay sesión que robar, porque lo prueba la firma.
@@ -218,7 +219,9 @@ emit NewHighScore(msg.sender, score);
 - **No se puede corregir.** Si encuentras un error después de desplegar, despliegas un contrato
   nuevo, con otra dirección, y los datos del anterior se quedan ahí. Por eso se prueba antes.
 - **Guardar cuesta.** Cada dato que escribes paga gas, y los textos cuestan más que los números.
-  Guarda lo mínimo; lo demás puede ir en eventos o en Bulletin.
+  Un uint256 siempre ocupa 32 bytes (un slot de almacenamiento); un username como `ana_dev` son 7
+  bytes y cabe en un slot, pero un texto de más de 31 bytes ocupa varios. Guarda lo mínimo; lo
+  demás puede ir en eventos o en Bulletin.
 
 ---
 
@@ -235,7 +238,8 @@ emit NewHighScore(msg.sender, score);
 - **La hora es aproximada.** `block.timestamp` lo pone quien produce el bloque y puede variar unos
   segundos. Sirve para plazos de días u horas, no para cronometrar.
 - **No ve el mundo exterior.** Un contrato no puede consultar una página web ni el precio de algo
-  por su cuenta.
+  por su cuenta. Para traer datos de fuera (precios, clima, resultados) se usa un oráculo, un
+  servicio que los publica en la cadena; no lo veremos en este curso.
 
 ---
 

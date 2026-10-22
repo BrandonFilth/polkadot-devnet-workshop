@@ -98,9 +98,9 @@
 .c-brk span { position: absolute; left: 50%; top: -12px; transform: translateX(-50%); background: #000; padding: 0 10px; font: 16px var(--mono); color: var(--ink); white-space: nowrap; }
 .c-brk + * { grid-column: 1; }
 /* Búsqueda llave → mapping → valor */
-.c-look { display: grid; grid-template-columns: 250px 60px 520px 60px 250px 1fr; row-gap: 16px; align-items: center; }
-.c-look .c-cell { font-size: 20px; padding: 16px 10px; }
-.c-look .c-box { padding: 10px 18px; }
+.c-look { display: grid; grid-template-columns: 250px 60px 520px 60px 250px 1fr; row-gap: 10px; align-items: center; }
+.c-look .c-cell { font-size: 20px; padding: 10px 10px; }
+.c-look .c-box { padding: 7px 18px; }
 .c-look .c-box span { margin-top: 2px; }
 .c-pair { grid-row: span 2; align-self: stretch; margin: 24px 0 24px 18px; border: 2px solid #6b6b66; border-left: 0; display: flex; align-items: center; padding-left: 22px; }
 .c-pair span { font: 16px/1.4 var(--mono); color: var(--ink); }
@@ -127,6 +127,7 @@
 .c-gas { display: grid; grid-template-columns: 90px 1fr; row-gap: 10px; align-items: center; margin-top: 18px; }
 .c-gas span { font: 15px var(--mono); color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
 .c-gas i { display: block; height: 20px; border: 2px solid #d6d3d1; background: #0b0b0b; }
+.c-gas em { grid-column: 1 / -1; font: 18px/1.4 var(--mono); font-style: normal; color: #d6d3d1; margin: -4px 0 4px; }
 /* Iconos planos (solo bordes) */
 .c-ico { position: relative; width: 84px; height: 64px; flex: none; }
 .c-ico i { position: absolute; display: block; border: 2px solid #d6d3d1; background: #000; }
@@ -137,7 +138,13 @@
 .c-tracks { display: grid; grid-template-columns: repeat(5, 1fr); column-gap: 20px; }
 .c-track { border: 2px solid #3a3a37; background: #000; padding: 30px 22px 26px; height: 360px; display: flex; flex-direction: column; }
 .c-track.pink { border-color: var(--accent); }
-.c-track .c-ico { transform: scale(1.35); transform-origin: left top; margin-bottom: 22px; }
+/* Ilustraciones de track: trazo plano 3 px, detalles en rosa (como .j-save .ic de 05) */
+.c-tic { display: block; flex: none; width: 120px; height: 96px; fill: #000; stroke: #d6d3d1; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.c-tic .p { stroke: var(--accent); }
+.c-tic .g { stroke: #6b6b66; }
+.c-tic .fp { fill: var(--accent); stroke: var(--accent); }
+.c-tic .pf { fill: var(--accent); stroke: var(--accent); stroke-width: 2; }
+.c-tic .fg { fill: #3a3a37; stroke: none; }
 .c-track b { display: block; font: 700 24px/1.2 var(--display); text-transform: uppercase; margin-top: 28px; }
 .c-track.pink b { color: var(--accent); }
 .c-track .code { font-size: 18px; white-space: normal; margin-top: auto; padding-top: 16px; border-top: 1px dashed #3a3a37; }
@@ -194,14 +201,41 @@
   <span class="kw">function</span> <span class="fn">submitScore</span>(uint256 score) …
 }</div>
     </div>
-    <div class="tape" style="right:70px; top:140px; transform:rotate(6deg);">SOLIDITY</div>
-    <div class="tape" style="right:60px; top:380px; transform:rotate(-4deg);">OPENZEPPELIN</div>
-    <div class="tape pink" style="left:120px; top:620px; transform:rotate(-5deg);">POLKADOT HUB</div>
+    <!-- Hoja de contrato con sello, unida a una cadena de bloques -->
+    <div class="item" style="left:1070px; top:90px; width:420px;" aria-hidden="true">
+      <svg width="420" height="330" viewBox="0 0 420 330" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display:block;">
+        <path d="M105 8 H275 L315 48 V290 H105 Z" fill="#000" stroke="#d6d3d1" stroke-width="3"/>
+        <path d="M275 8 V48 H315" stroke="#d6d3d1" stroke-width="3"/>
+        <g stroke="none">
+          <rect x="133" y="70" width="52" height="10" rx="4" fill="#ff2867"/><rect x="195" y="70" width="70" height="10" rx="4" fill="#d6d3d1"/>
+          <rect x="153" y="100" width="60" height="10" rx="4" fill="#9fb6d9"/><rect x="223" y="100" width="56" height="10" rx="4" fill="#6b6b66"/>
+          <rect x="153" y="130" width="66" height="10" rx="4" fill="#ff2867"/><rect x="229" y="130" width="50" height="10" rx="4" fill="#d6d3d1"/>
+          <rect x="173" y="160" width="80" height="10" rx="4" fill="#6b6b66"/>
+          <rect x="133" y="190" width="14" height="10" rx="4" fill="#d6d3d1"/>
+        </g>
+        <path d="M133 222 H240" stroke="#3a3a37" stroke-width="2" stroke-dasharray="6 6"/>
+        <path d="M136 252 c8 -14 14 10 22 -4 s12 8 20 -2" stroke="#d6d3d1" stroke-width="2.5"/>
+        <path d="M133 262 H222" stroke="#6b6b66" stroke-width="2"/>
+        <g fill="#ff2867" stroke="#ff2867" stroke-width="2">
+          <path d="M286 284 L276 318 L288 311 L296 322 L300 292 Z"/>
+          <path d="M314 284 L324 318 L312 311 L304 322 L300 292 Z"/>
+        </g>
+        <circle cx="300" cy="250" r="44" fill="#000" stroke="#ff2867" stroke-width="3"/>
+        <circle cx="300" cy="250" r="34" stroke="#ff2867" stroke-width="2" stroke-dasharray="4 5"/>
+        <path d="M283 251 L296 264 L318 238" stroke="#ff2867" stroke-width="6"/>
+        <path d="M210 290 V330" stroke="#6b6b66" stroke-width="2"/>
+      </svg>
+      <div class="c-chain" style="margin-left:9px;">
+        <div class="c-block dim" style="width:110px; height:84px;"><i style="display:block; width:56px; height:8px; background:#3a3a37;"></i><i style="display:block; width:36px; height:8px; margin-top:10px; background:#3a3a37;"></i></div><div class="c-link" style="width:36px;"></div>
+        <div class="c-block pink" style="width:110px; height:84px;"><i style="display:block; width:56px; height:8px; background:var(--accent);"></i><i style="display:block; width:36px; height:8px; margin-top:10px; background:#6b6b66;"></i></div><div class="c-link" style="width:36px;"></div>
+        <div class="c-block dim" style="width:110px; height:84px;"><i style="display:block; width:56px; height:8px; background:#3a3a37;"></i><i style="display:block; width:36px; height:8px; margin-top:10px; background:#3a3a37;"></i></div>
+      </div>
+    </div>
   </section>
 
   <!-- 2 · App normal vs contrato -->
-  <section class="slide plain" data-title="Una app normal vs. un contrato">
-    <div class="item" style="left:110px; top:80px;"><div class="h">Una app normal vs. un contrato</div></div>
+  <section class="slide plain" data-title="Una app normal vs un contrato">
+    <div class="item" style="left:110px; top:80px;"><div class="h">Una app normal vs un contrato</div></div>
     <div class="item" style="left:110px; top:210px; width:640px;">
       <div class="kicker">App normal</div>
       <div style="display:flex; align-items:center; gap:14px; margin-top:22px; height:150px;">
@@ -320,16 +354,21 @@ players.<span class="fn">push</span>(<span class="ty">msg.sender</span>);</div><
   <section class="slide plain" data-title="Mappings">
     <div class="item" style="left:110px; top:80px;"><div class="h">Mappings</div></div>
     <div class="item lead" style="left:110px; top:180px; width:1380px;">Para relacionar una cosa con otra. Le das una llave, te devuelve un valor.</div>
-    <div class="item c-look" style="left:110px; top:260px; width:1380px;">
+    <div class="item c-look" style="left:110px; top:250px; width:1380px;">
       <span class="c-k">Llave</span><span></span><span class="c-k">Mapping</span><span></span><span class="c-k">Valor</span><span></span>
       <div class="c-cell">0x2198…6c23</div><span class="c-ar">→</span><div class="c-box"><b>bestScore</b><span>address =&gt; uint256 · su mejor puntaje</span></div><span class="c-ar">→</span><div class="c-cell">1240</div><span></span>
       <div class="c-cell">0x2198…6c23</div><span class="c-ar">→</span><div class="c-box"><b>usernameOf</b><span>address =&gt; string · su username</span></div><span class="c-ar">→</span><div class="c-cell">"ana_92"</div><div class="c-pair"><span>ida y vuelta:<br>username único</span></div>
       <div class="c-cell">"ana_92"</div><span class="c-ar">→</span><div class="c-box"><b>holderOf</b><span>bytes32 =&gt; address · quién lo tiene</span></div><span class="c-ar">→</span><div class="c-cell">0x2198…6c23</div>
       <div class="c-cell">0x42fb…53e1</div><span class="c-ar">→</span><div class="c-box pink"><b>hasVoted</b><span>address =&gt; bool · ¿ya votó?</span></div><span class="c-ar">→</span><div class="c-cell" style="border-color:var(--accent); color:var(--accent);">true</div><span></span>
     </div>
-    <div class="item c-box dim" style="left:110px; top:690px; width:1380px; display:flex; align-items:center; gap:30px; padding:18px 28px;">
+    <div class="item v-win" style="left:110px; top:618px; width:1380px; display:grid; grid-template-columns:380px 400px 1fr;">
+      <div style="padding:14px 26px; border-right:2px solid #3a3a37;"><div class="c-k">Python</div><div class="code" style="margin-top:6px; font-size:20px;">puntos = {<span class="ty">"0xA1…"</span>: 1240}</div></div>
+      <div style="padding:14px 26px; border-right:2px solid #3a3a37;"><div class="c-k">JavaScript</div><div class="code" style="margin-top:6px; font-size:20px;"><span class="kw">const</span> puntos = <span class="kw">new</span> <span class="fn">Map</span>()</div></div>
+      <div style="padding:14px 26px;"><div class="c-k">Solidity</div><div class="code" style="margin-top:6px; font-size:20px;"><span class="ty">mapping</span>(address =&gt; uint256) <span class="fn">bestScore</span>;</div></div>
+    </div>
+    <div class="item c-box dim" style="left:110px; top:734px; width:1380px; display:flex; align-items:center; gap:22px; padding:16px 28px;">
       <span class="code" style="font-size:22px; color:var(--muted); text-decoration:line-through; text-decoration-color:var(--accent); margin:0;">for (…)</span><span class="c-x" style="font-size:26px;">✘</span>
-      <span style="margin:0; font:23px var(--display); color:#d6d3d1;">No se puede recorrer ni contar. Por eso se combina con una lista.</span>
+      <span style="margin:0; font:21px var(--display); color:#d6d3d1;">No puedes listar las llaves de un mapping. Por eso el contrato también guarda un arreglo.</span>
     </div>
   </section>
 
@@ -357,9 +396,9 @@ players.<span class="fn">push</span>(<span class="ty">msg.sender</span>);</div><
     </div>
   </section>
 
-  <!-- 8 · Quién llama -->
-  <section class="slide plain" data-title="Quién llama">
-    <div class="item" style="left:110px; top:80px;"><div class="h">Quién llama</div></div>
+  <!-- 8 · Quién firma la llamada -->
+  <section class="slide plain" data-title="Quién firma la llamada">
+    <div class="item" style="left:110px; top:80px;"><div class="h">Quién firma la llamada</div></div>
 
     <svg class="wires" viewBox="0 0 1600 900" aria-hidden="true">
       <path d="M520 330 C 740 330, 760 470, 960 470"/>
@@ -391,43 +430,45 @@ players.<span class="fn">push</span>(<span class="ty">msg.sender</span>);</div><
   <!-- 9 · Reglas y eventos -->
   <section class="slide" data-title="Reglas y eventos" style="--bgpos: 60% 20%;">
     <div class="panel" style="left:110px; top:60px; width:900px; padding:34px 52px 38px;"><div class="h">Reglas y eventos</div></div>
-    <div class="panel" style="left:110px; top:240px; width:660px; padding:30px 40px 34px;">
+    <div class="panel" style="left:110px; top:240px; width:660px; height:580px; padding:30px 40px 34px;">
       <div class="c-k">revert · la compuerta</div>
-      <div style="position:relative; margin-top:16px;">
-        <!-- Ramas del rombo: vértice inferior (x 485, y 190) hacia SÍ y NO (y 234) -->
-        <svg class="wires" width="580" height="234" aria-hidden="true">
-          <path class="pink" d="M485 190 V 212 H 140 V 234"/>
-          <path d="M485 212 H 440 V 234"/>
+      <div style="position:relative; margin-top:16px; height:425px;">
+        <!-- Rombo de 170 px en (35, 92): vértices arriba (120, 92), derecho (205, 177) e inferior (120, 262).
+             sí sale del vértice derecho hacia la caja verde; no sale del vértice inferior hacia la caja rosa. -->
+        <svg width="580" height="425" viewBox="0 0 580 425" fill="none" stroke-linecap="round" stroke-linejoin="round" style="position:absolute; left:0; top:0;" aria-hidden="true">
+          <path d="M120 62 V 86" stroke="#d6d3d1" stroke-width="2"/><path d="M113 82 L120 92 L127 82 Z" fill="#d6d3d1" stroke="#d6d3d1" stroke-width="2"/>
+          <path d="M205 177 H 262" stroke="#9be7b0" stroke-width="2"/><path d="M258 170 L268 177 L258 184 Z" fill="#9be7b0" stroke="#9be7b0" stroke-width="2"/>
+          <path d="M120 262 V 292" stroke="#ff2867" stroke-width="2"/><path d="M113 288 L120 298 L127 288 Z" fill="#ff2867" stroke="#ff2867" stroke-width="2"/>
+          <g font-family="JetBrains Mono, monospace" font-size="18">
+            <text x="236" y="163" text-anchor="middle" fill="#9be7b0">sí</text>
+            <text x="134" y="286" fill="#ff2867">no</text>
+          </g>
         </svg>
-        <div style="display:flex; align-items:center; gap:14px;">
-          <div class="c-box" style="flex:1;"><span class="code" style="margin:0; font-size:19px;"><span class="fn">submitScore</span>(…)</span></div>
-          <span class="c-ar">→</span>
-          <div class="c-diamond" style="width:190px; height:190px; flex:none;"><span class="code" style="font-size:16px; line-height:1.4;">score &lt;=<br>current?</span></div>
-        </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:44px;">
-          <div class="c-box pink"><b>✘ sí</b><span class="code" style="font-size:16px; white-space:normal;"><span class="kw">revert</span> <span class="fn">ScoreNotHigher</span>(…)</span><span>no se guarda nada</span></div>
-          <div class="c-box" style="border-color:#9be7b0;"><b style="color:#9be7b0;">✔ no</b><span>guarda</span></div>
-        </div>
+        <div class="c-box" style="position:absolute; left:0; top:0; width:240px; height:62px; display:flex; align-items:center;"><span class="code" style="margin:0; font-size:19px;"><span class="fn">submitScore</span>(…)</span></div>
+        <div class="c-diamond" style="position:absolute; left:35px; top:92px; width:170px; height:170px;"><span class="code" style="font-size:18px; line-height:1.35;">score &gt;<br>récord?</span></div>
+        <div class="c-box" style="position:absolute; left:270px; top:132px; width:310px; height:90px; border-color:#9be7b0;"><b style="color:#9be7b0;">✔ sí · guarda</b><span class="code" style="font-size:18px;"><span class="kw">emit</span> <span class="fn">NewHighScore</span></span></div>
+        <div class="c-box pink" style="position:absolute; left:0; top:300px; width:420px;"><b>✘ no</b><span class="code" style="font-size:18px; white-space:normal;"><span class="kw">revert</span> <span class="fn">ScoreNotHigher</span>(…)</span><span style="font-size:18px;">no se guarda nada</span></div>
       </div>
       <div class="lead" style="margin-top:20px; font-size:22px;">Como <span class="code" style="font-size:21px;">throw</span>. Si revierte, no se guarda nada.</div>
     </div>
-    <div class="panel" style="left:830px; top:240px; width:660px; padding:30px 40px 34px;">
+    <div class="panel" style="left:830px; top:240px; width:660px; height:580px; padding:30px 40px 34px; display:flex; flex-direction:column;">
       <div class="c-k">emit · el aviso</div>
       <div class="code" style="margin-top:16px; font-size:20px;"><span class="kw">emit</span> <span class="fn">NewHighScore</span>(<span class="ty">msg.sender</span>, score);</div>
-      <div class="v-win" style="margin-top:18px;">
+      <div class="v-win" style="margin-top:26px;">
         <div class="v-bar"><i></i><i></i><i></i><span>Historial de la cadena</span></div>
-        <div class="v-body code" style="font-size:18px; line-height:1.9; padding:14px 22px;"><span class="cm">evento</span> NewHighScore(0x2198…6c23, 1240)
-<span class="cm">evento</span> NewHighScore(0x42fb…53e1, 900)</div>
+        <div class="v-body code" style="font-size:19px; line-height:2.3; padding:20px 22px;"><span class="cm">evento</span> NewHighScore(0x2198…6c23, 1240)
+<span class="cm">evento</span> NewHighScore(0x42fb…53e1, 900)
+<span class="cm">evento</span> NewHighScore(0x2198…6c23, 1310)</div>
       </div>
       <div style="margin-top:14px; text-align:right;"><span class="v-tag">la app escucha</span></div>
-      <div class="lead" style="margin-top:16px; font-size:22px;">Un aviso que la app escucha. Más barato que guardar.</div>
+      <div class="lead" style="margin-top:auto; font-size:22px;">Un aviso que la app escucha. Más barato que guardar.</div>
     </div>
   </section>
 
   <!-- 10 · Público y para siempre -->
   <section class="slide grid" data-title="Público y para siempre">
     <div class="item" style="left:110px; top:80px;"><div class="h">Público y para siempre</div></div>
-    <div class="item" style="left:110px; top:205px; width:1380px; height:270px;">
+    <div class="item" style="left:110px; top:190px; width:1380px; height:270px;">
       <div style="text-align:center;"><span class="v-tag" style="color:var(--ink); border-color:#6b6b66;">◉ cualquiera lee · hasta lo private</span></div>
       <div class="c-chain" style="margin-top:18px;">
         <div class="c-block dim" style="width:220px; height:150px;"><span class="n">bloque</span></div><div class="c-link"></div>
@@ -438,18 +479,18 @@ players.<span class="fn">push</span>(<span class="ty">msg.sender</span>);</div><
       <div style="position:absolute; left:456px; top:192px; width:692px; height:30px; border:2px dashed var(--accent); border-top:0;"></div>
       <div class="v-axis" style="position:absolute; left:456px; width:692px; top:212px; text-align:center;"><span style="background:#050505; padding:0 12px; color:var(--accent);">se corrige desplegando otro →</span></div>
     </div>
-    <div class="item c-leg" style="left:110px; top:520px; width:430px;">
+    <div class="item c-leg" style="left:110px; top:490px; width:430px;">
       <b>Nada es secreto</b>
       <p>Hasta lo <span class="code" style="font-size:19px;">private</span> se puede leer. Nunca guardes contraseñas ni datos personales.</p>
     </div>
-    <div class="item c-leg pink" style="left:585px; top:520px; width:430px;">
+    <div class="item c-leg pink" style="left:585px; top:490px; width:430px;">
       <b>No se corrige</b>
       <p>Un error se arregla desplegando otro contrato, con otra dirección. Prueba antes.</p>
     </div>
-    <div class="item c-leg" style="left:1060px; top:520px; width:430px;">
+    <div class="item c-leg" style="left:1060px; top:490px; width:430px;">
       <b>Guardar cuesta</b>
       <p>Cada dato paga gas, y el texto más que los números. Guarda lo mínimo.</p>
-      <div class="c-gas"><span>número</span><i style="width:70px;"></i><span>texto</span><i style="width:260px; background:var(--accent); border-color:var(--accent);"></i></div>
+      <div class="c-gas"><span>número</span><i style="width:70px;"></i><em>uint256 → siempre 32 bytes · 1 slot</em><span>texto</span><i style="width:260px; background:var(--accent); border-color:var(--accent);"></i><em>"ana_dev" → 7 bytes · hasta 31 caben en 1 slot; más largo, más slots</em></div>
     </div>
   </section>
 
@@ -470,7 +511,8 @@ players.<span class="fn">push</span>(<span class="ty">msg.sender</span>);</div><
     <div class="item c-box dash" style="left:650px; top:350px; width:300px; height:210px; display:grid; place-items:center; text-align:center; border-width:3px;"><div><b style="font-size:30px;">Contrato</b><span>solo ve un número<br>y una firma</span></div></div>
     <div class="item c-box" style="left:110px; top:540px; width:450px;"><b>La hora exacta</b><span><span class="code" style="font-size:18px; color:#d6d3d1;">block.timestamp</span> varía unos segundos</span></div>
     <div class="item c-box" style="left:1040px; top:540px; width:450px;"><b>El mundo exterior</b><span>no consulta páginas web ni precios</span></div>
-    <div class="item lead" style="left:110px; top:720px; width:1380px; text-align:center;">Si algo debe ser imposible de trucar, esa lógica vive dentro del contrato.</div>
+    <div class="item c-hl" style="left:110px; top:660px; width:1380px; font:21px/1.45 var(--display); color:#d6d3d1;">Por sí mismo no sabe nada de fuera: precios, clima, resultados ni la hora real más allá del bloque. Para eso se usa un <b class="pink">oráculo</b>, un servicio que trae datos externos a la cadena. No lo veremos en este curso.</div>
+    <div class="item lead" style="left:110px; top:770px; width:1380px; text-align:center;">Si algo debe ser imposible de trucar, esa lógica vive dentro del contrato.</div>
   </section>
 
   <!-- 12 · Recetas por track -->
@@ -478,23 +520,59 @@ players.<span class="fn">push</span>(<span class="ty">msg.sender</span>);</div><
     <div class="panel" style="left:110px; top:60px; width:900px; padding:34px 52px 38px;"><div class="h">Recetas por track</div></div>
     <div class="item c-tracks" style="left:110px; top:260px; width:1380px;">
       <div class="c-track">
-        <div class="c-ico"><i style="left:0; top:10px; width:84px; height:46px; border-radius:23px;"></i><i class="f" style="left:16px; top:26px; width:14px; height:14px; border-radius:50%;"></i><i class="fp" style="left:54px; top:26px; width:14px; height:14px; border-radius:50%;"></i></div>
+        <svg class="c-tic" viewBox="0 0 120 96" aria-hidden="true">
+          <path d="M60 26 V16 C60 10 66 7 72 7"/>
+          <path d="M30 26 H90 C104 26 112 36 114 50 L117 70 C118 80 110 86 102 82 L88 70 H32 L18 82 C10 86 2 80 3 70 L6 50 C8 36 16 26 30 26 Z"/>
+          <path d="M29 39 H39 V44 H44 V54 H39 V59 H29 V54 H24 V44 H29 Z"/>
+          <path d="M54 40 H58 M62 40 H66"/>
+          <circle class="p" cx="84" cy="56" r="6"/>
+          <circle class="fp" cx="96" cy="45" r="6"/>
+        </svg>
         <b>Juegos</b><div class="code">Leaderboard: mapping + lista</div>
       </div>
       <div class="c-track">
-        <div class="c-ico"><i style="left:30px; top:0; width:24px; height:30px;"></i><i style="left:8px; top:22px; width:68px; height:42px;"></i><i class="fp" style="left:24px; top:20px; width:36px; height:4px;"></i></div>
+        <svg class="c-tic" viewBox="0 0 120 96" aria-hidden="true">
+          <rect x="20" y="44" width="80" height="46" rx="3"/>
+          <path d="M14 44 L22 34 H98 L106 44 Z"/>
+          <rect x="47" y="4" width="26" height="35" rx="2"/>
+          <path class="p" d="M53 22 L58 27 L67 15"/>
+          <path d="M42 39 H78"/>
+          <rect class="fg" x="46" y="60" width="28" height="12" rx="2"/>
+        </svg>
         <b>Votaciones</b><div class="code">mapping(address =&gt; bool) hasVoted</div>
       </div>
       <div class="c-track pink">
-        <div class="c-ico"><i style="left:0; top:4px; width:84px; height:56px;"></i><i style="left:12px; top:18px; width:38px; height:2px; border-width:1px;"></i><i style="left:12px; top:30px; width:26px; height:2px; border-width:1px;"></i><i class="p" style="left:54px; top:30px; width:22px; height:22px; border-radius:50%;"></i></div>
+        <svg class="c-tic" viewBox="0 0 120 96" aria-hidden="true">
+          <rect x="8" y="10" width="92" height="66" rx="3"/>
+          <path d="M22 26 H72"/>
+          <path class="g" d="M22 40 H62 M22 52 H54"/>
+          <path class="pf" d="M82 76 L76 92 L84 88 L89 94 L91 80 Z M98 76 L104 92 L96 88 L91 94 L89 80 Z"/>
+          <circle class="p" cx="90" cy="68" r="15"/>
+          <circle class="fp" cx="90" cy="68" r="7"/>
+        </svg>
         <b>Constancias</b><div class="code">ERC-721 no transferible</div>
       </div>
       <div class="c-track pink">
-        <div class="c-ico"><i style="left:4px; top:12px; width:50px; height:50px; border-radius:50%;"></i><i class="p" style="left:30px; top:2px; width:50px; height:50px; border-radius:50%;"></i><i class="fp" style="left:46px; top:18px; width:18px; height:18px; border-radius:50%;"></i></div>
+        <svg class="c-tic" viewBox="0 0 120 96" aria-hidden="true">
+          <path d="M8 76 V84 A26 8 0 0 0 60 84 V76"/><ellipse cx="34" cy="76" rx="26" ry="8"/>
+          <path d="M8 64 V72 A26 8 0 0 0 60 72 V64"/><ellipse cx="34" cy="64" rx="26" ry="8"/>
+          <path d="M8 52 V60 A26 8 0 0 0 60 60 V52"/><ellipse cx="34" cy="52" rx="26" ry="8"/>
+          <circle class="p" cx="84" cy="56" r="27"/>
+          <circle class="p" cx="84" cy="56" r="20" stroke-width="2"/>
+          <polygon class="fp" points="84,45 86.65,52.36 94.46,52.6 88.28,57.39 90.47,64.9 84,60.5 77.53,64.9 79.72,57.39 73.54,52.6 81.35,52.36"/>
+        </svg>
         <b>Puntos</b><div class="code">ERC-20</div>
       </div>
       <div class="c-track">
-        <div class="c-ico"><i style="left:4px; top:2px; width:76px; height:60px; border-radius:6px;"></i><i style="left:12px; top:14px; width:2px; height:36px; border-width:1px;"></i><i class="p" style="left:28px; top:16px; width:32px; height:32px; border-radius:50%;"></i><i class="fp" style="left:42px; top:18px; width:4px; height:12px;"></i></div>
+        <svg class="c-tic" viewBox="0 0 120 96" aria-hidden="true">
+          <rect x="22" y="50" width="76" height="42" rx="4"/>
+          <path d="M28 58 V64 M28 78 V84 M84 64 V78"/>
+          <circle class="p" cx="58" cy="71" r="10"/>
+          <circle class="fp" cx="58" cy="71" r="3"/>
+          <circle cx="32" cy="20" r="7"/><path d="M18 46 Q18 32 32 32 Q46 32 46 46"/>
+          <circle cx="88" cy="20" r="7"/><path d="M74 46 Q74 32 88 32 Q102 32 102 46"/>
+          <circle cx="60" cy="14" r="8"/><path d="M44 46 Q44 28 60 28 Q76 28 76 46"/>
+        </svg>
         <b>Fondos de un club</b><div class="code">payable + reglas para retirar</div>
       </div>
     </div>
