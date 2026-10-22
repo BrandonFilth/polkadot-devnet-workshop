@@ -218,9 +218,10 @@ emit NewHighScore(msg.sender, score);
 - **No se puede corregir.** Si encuentras un error después de desplegar, despliegas un contrato
   nuevo, con otra dirección, y los datos del anterior se quedan ahí. Por eso se prueba antes.
 - **Guardar cuesta.** Cada dato que escribes paga gas, y los textos cuestan más que los números.
-  Un uint256 siempre ocupa 32 bytes (un slot de almacenamiento); un username como `ana_dev` son 7
-  bytes y cabe en un slot, pero un texto de más de 31 bytes ocupa varios. Guarda lo mínimo; lo
-  demás puede ir en eventos o en Bulletin.
+  Un uint256 siempre ocupa 32 bytes (un slot de almacenamiento). Un texto de hasta 31 bytes, como
+  el username `ana_dev` (7 bytes), cabe en un slot; la descripción "Juego de laberinto en Polkadot,
+  con IA" son 38 bytes y ocupa 3 slots: uno para el largo y dos para los datos. Guarda lo mínimo;
+  lo demás puede ir en eventos o en Bulletin.
 
 ---
 
