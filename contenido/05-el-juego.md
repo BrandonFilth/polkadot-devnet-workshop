@@ -14,7 +14,7 @@ vas a pedirle cada parte a tu agente con prompts cortos, una fase a la vez.
 <img src="../img/cap5/polka-man-pc.png" alt="Polka-Man en la computadora: HUD arriba con puntos, ronda, cinco vidas, pausa, sonido y Menú; el laberinto completo con bolitas, cuatro bolitas especiales rosas, dos fantasmas (rojo y verde) y Polka-Man rosa" width="640">
 
 Una app y un smart contract dentro de Polkadot, construidos con IA, en tu propio dominio `.dot`.
-La app es un juego tipo Pac-Man para el celular, a tu manera.
+La app es un juego tipo Pac-Man para el celular y la computadora, a tu manera.
 
 - **Tu app:** un juego tipo Pac-Man que corre dentro de la Polkadot App.
 - **Tu smart contract:** guarda el mejor puntaje; lo despliegas tú.
@@ -305,7 +305,7 @@ Así se reparte este juego en fases. Cada fase es una vuelta del ciclo de la
 | 9 | [Pantalla de inicio y menú](../prompts/09-pantalla-de-inicio.md) | Inicio con Jugar, Conectar y Ranking; menú con pestañas | Navegador y Host | 25–35 min |
 | 10 | [Sonido, música y animaciones](../prompts/10-sonido-y-animaciones.md) | Animaciones, efectos 8 bits y música original con Música y Efectos | Navegador | 30–40 min |
 
-En total, de 4.5 a 5.5 horas (estimado; la suma de la tabla). Un commit y un `git push` por fase.
+En total, de 4.5 a 6 horas (estimado: la tabla suma de 265 a 345 min; aún no se mide en un ensayo). Un commit y un `git push` por fase.
 Los errores típicos de la IA en este stack están en el
 [capítulo 4, sección 15](./04-vibe-coding.md#15-errores-comunes-de-la-ia-en-este-stack).
 
