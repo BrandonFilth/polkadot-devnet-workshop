@@ -327,7 +327,7 @@ pnpm install
 node scripts/verificar-entorno.mjs --completo
 ```
 
-> **POR VERIFICAR:** URL definitiva del repo.
+Repo del curso: <https://github.com/BrandonFilth/polkadot-devnet-workshop>.
 
 En Windows hazlo dentro de `C:\dev`, la carpeta del paso 6.
 

@@ -11,7 +11,7 @@ vas a pedirle cada parte a tu agente con prompts cortos, una fase a la vez.
 
 ## 1. Qué vas a construir
 
-<img src="../img/cap5/polka-man-movil.png" alt="Polka-Man en el celular: menú y HUD arriba, laberinto grande, joystick flotante bajo el dedo y botón de pausa abajo" width="220" align="right">
+<img src="../img/cap5/polka-man-pc.png" alt="Polka-Man en la computadora: HUD arriba con puntos, ronda, cinco vidas, pausa, sonido y Menú; el laberinto completo con bolitas, cuatro bolitas especiales rosas, dos fantasmas (rojo y verde) y Polka-Man rosa" width="640">
 
 Una app y un smart contract dentro de Polkadot, construidos con IA, en tu propio dominio `.dot`.
 La app es un juego tipo Pac-Man para el celular, a tu manera.
@@ -106,8 +106,6 @@ terminada: así se verá lo que vas a construir. La aplicación de ejemplo está
 ya desplegado: `0x0aAf511a454c6A522b37210ca6931Cde1c400Ac9`.
 
 Puedes ver el contrato en [Blockscout](https://blockscout-testnet.polkadot.io/address/0x0aAf511a454c6A522b37210ca6931Cde1c400Ac9?tab=index).
-
-<img src="../img/cap5/polka-man-inicio.png" alt="Pantalla de inicio de Polka-Man: Jugar, Conectar cuenta con su sugerencia, Ranking y los botones Música y Efectos" width="220" align="right">
 
 La muestra abre en una **pantalla de inicio**: Jugar, Conectar cuenta, Ranking y, ya con cuenta, tu
 Username. Conectar es opcional: si tocas Jugar sin cuenta, un aviso te recuerda una sola vez que sin
@@ -260,10 +258,18 @@ No todo tiene que vivir en un solo archivo. Puedes tener varios:
 
 Las decisiones grandes, los prompts largos y la lógica completa van en un archivo. En una sesión
 larga, la ventana de contexto del agente puede malinterpretar o deformar lo que decidiste al inicio;
-el archivo no cambia. Los cambios pequeños pueden ir solo como prompt.
+el archivo no cambia. Los cambios pequeños pueden ir solo como prompt
+([cuándo spec y cuándo prompt](./04-vibe-coding.md#cuándo-spec-y-cuándo-prompt)).
 
-No tienes que escribir la spec solo: el agente pregunta, propone y escribe el archivo; tú lo revisas
-y lo corriges.
+### Cómo la escribes
+
+1. Pega el prompt de [`prompts/00-define-tu-juego.md`](../prompts/00-define-tu-juego.md) y responde
+   la entrevista en orden.
+2. El agente escribe `SPEC.md` y, si hace falta, uno o más `spec-*.md`
+   ([hazla con el agente](./04-vibe-coding.md#hazla-con-el-agente)).
+3. La lees, le pides los huecos y la corriges.
+4. La pules con la skill ([púlela con la skill](./04-vibe-coding.md#púlela-con-la-skill)).
+5. Haces commit.
 
 ### Qué lleva `SPEC.md`
 
@@ -299,7 +305,7 @@ Así se reparte este juego en fases. Cada fase es una vuelta del ciclo de la
 | 9 | [Pantalla de inicio y menú](../prompts/09-pantalla-de-inicio.md) | Inicio con Jugar, Conectar y Ranking; menú con pestañas | Navegador y Host | 25–35 min |
 | 10 | [Sonido, música y animaciones](../prompts/10-sonido-y-animaciones.md) | Animaciones, efectos 8 bits y música original con Música y Efectos | Navegador | 30–40 min |
 
-En total, de 4.5 a 5.5 horas (**POR VERIFICAR** con un ensayo). Un commit y un `git push` por fase.
+En total, de 4.5 a 5.5 horas (estimado; la suma de la tabla). Un commit y un `git push` por fase.
 Los errores típicos de la IA en este stack están en el
 [capítulo 4, sección 15](./04-vibe-coding.md#15-errores-comunes-de-la-ia-en-este-stack).
 
@@ -603,8 +609,9 @@ Sube por esta escalera, en orden:
    6. `pnpm test` y `pnpm build` deben pasar **antes** de pedirle al agente que conecte tu interfaz
       a esa parte. Commit: "contrato desde la muestra".
 
-   Que esta copia compile en un repo nuevo está **POR VERIFICAR**. El motor del juego no se copia:
-   es la parte que construyes tú.
+   Comprobado el 2026-10-22 en un proyecto Vite + TypeScript nuevo con las versiones de la skill:
+   `pnpm build` y `pnpm test` pasan; en esa prueba no hizo falta el paso 5. El
+   motor del juego no se copia: es la parte que construyes tú.
 
 <details>
 <summary><b>Problemas comunes</b></summary>

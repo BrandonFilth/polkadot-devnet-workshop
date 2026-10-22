@@ -198,6 +198,81 @@ ejecuta las tareas una por una ([docs de Kiro](https://kiro.dev/docs/specs/)).
 > **Pídeselo a la IA así:** *"Lee `SPEC.md` y propón las tareas en orden. No escribas código
 > todavía."*
 
+![Prompt o spec: cambios pequeños en el chat, decisiones grandes en un archivo](../img/cap4/prompt-o-spec.png)
+
+### Cuándo spec y cuándo prompt
+
+Escribe primero una spec cuando la solicitud es grande: varias pantallas, reglas con números, lógica
+con muchos casos o un trabajo que va a durar varias sesiones. Los cambios pequeños ("mueve el botón",
+"cambia el color", "arregla este error") quedan como prompts.
+
+La razón: el agente relee el archivo cada vez que lo necesita. Las instrucciones largas del chat se
+diluyen o se deforman conforme crece el contexto ([sección 8](#8-contexto)). Si dudas, usa el
+[prompt 7 de `revision.md`](../prompts/revision.md#7-esto-debería-ser-una-spec).
+
+### Hazla con el agente
+
+No tienes que escribirla solo. Es el mismo enfoque de
+[Define tu juego](./05-el-juego.md#5-define-tu-juego):
+
+1. **Pide que te entreviste.** Responde en orden, con los mismos números.
+
+   ```text
+   Quiero <tu idea en 2 o 3 frases>. Antes de escribir código, entrevístame:
+   preguntas numeradas, de pocas en pocas, hasta que no queden decisiones abiertas.
+   Si te digo "no sé", dame opciones concretas y recomiéndame una. No escribas código.
+   ```
+
+2. **Pide el archivo.**
+
+   ```text
+   Con mis respuestas, escribe spec-<tema>.md con las secciones de la plantilla de arriba.
+   Cada número con un valor concreto. Marca "pendiente" lo que no decidimos.
+   No escribas código.
+   ```
+
+3. **Léela y corrígela.** Lee todo el archivo y pide los huecos:
+
+   ```text
+   ¿Qué parte de spec-<tema>.md es ambigua o se contradice? No cambies nada todavía.
+   ```
+
+4. **Haz commit.**
+
+   ```bash
+   git add spec-<tema>.md
+   git commit -m "spec de <tema>"
+   ```
+
+### Púlela con la skill
+
+La skill del hackatón ([sección 12](#12-skills)) conoce las versiones, la red y las reglas de
+publicación. Pídele que revise la spec antes de escribir código:
+
+```text
+Usa la skill polkadot-products-devnet para revisar spec-contrato.md: dime qué choca con
+las versiones fijas, la red Products Devnet, el sandbox (sin fetch externo), la publicación
+con pad o las reglas de firmas, y propón cambios. No escribas código.
+```
+
+En la respuesta, revisa que:
+
+- Cada choque cite la referencia de la skill de donde sale (`versiones.md`, `app-sdk.md`,
+  `publicar.md`…).
+- No proponga cambiar las versiones fijas.
+- Diga "no verificado" cuando algo no está en la skill.
+- No escriba código.
+
+Tú decides qué cambios entran a la spec.
+
+### Mantenla al día
+
+Cuando cambie una decisión, actualiza primero la spec y después pide el código:
+
+```text
+Actualicé SPEC.md: <qué cambió>. Aplica el cambio en el código. Primero dime tu plan.
+```
+
 ---
 
 ## 6. Casos de prueba
@@ -679,15 +754,16 @@ En este proyecto, revisa además los errores de la [sección 15](#15-errores-com
 | Conecta con `getChainAPI()` | La app se queda esperando en Polkadot Desktop 0.1.3 | *"Conecta con `createChainClient` y `devnet_asset_hub`."* |
 | Cambia el pragma o propone PolkaVM, `resolc`, Hardhat o Foundry | Sigue indicaciones de otras skills | *"`pragma solidity 0.8.28;`, Remix y MetaMask."* |
 | Escribe OpenZeppelin 4 (`_beforeTokenTransfer`, `Ownable()` sin argumento) | El proyecto usa OpenZeppelin 5.6.1 | *"Usa OpenZeppelin 5: `_update` y `Ownable(msg.sender)`."* |
-| Olvida `base: './'` en Vite | El bundle busca sus archivos en la raíz y no junto a la app. El síntoma, pantalla en blanco al abrir el `.dot`, está **POR VERIFICAR** | *"Pon `base: './'` en `vite.config`."* |
+| Olvida `base: './'` en Vite | El bundle pide sus archivos desde la raíz y no junto a la app | *"Pon `base: './'` en `vite.config`."* |
 | Pide varias firmas a la vez | El Host atiende una a la vez; la segunda nunca llega al teléfono | *"Una firma a la vez; espera a que termine la anterior."* |
 | Llama `.tx()` sin `.query()` | El revert solo aparece al firmar | *"Simula con `.query()` y muestra el error antes de pedir la firma."* |
 
 Fuentes: [`errores-comunes.md`](https://github.com/BrandonFilth/polkadot-products-devnet/blob/main/skills/polkadot-products-devnet/references/errores-comunes.md),
 [`versiones.md`](https://github.com/BrandonFilth/polkadot-products-devnet/blob/main/skills/polkadot-products-devnet/references/versiones.md)
 y [`red-devnet.md`](https://github.com/BrandonFilth/polkadot-products-devnet/blob/main/skills/polkadot-products-devnet/references/red-devnet.md)
-de la skill. Los comportamientos de Polkadot Desktop 0.1.3 se midieron por última vez el
-2026-10-01: **POR VERIFICAR** con la versión del Desktop que tengas instalada.
+de la skill. Los comportamientos de Polkadot Desktop 0.1.3 de esta tabla salen de pruebas del
+equipo. La muestra funciona en Polkadot Desktop 0.1.3 y en la Polkadot App con estas versiones fijas
+(comprobado por la organización el 2026-10-21). Si tu Desktop es de otra versión, dilo al pedir ayuda.
 
 Si aparece un error que no está aquí, pega el texto exacto y pide que cite su fuente o que diga "no
 verificado".

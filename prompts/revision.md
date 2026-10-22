@@ -55,3 +55,25 @@ Al final de cada fase, para que `SPEC.md` siga siendo la fuente de verdad.
 Agrega a la sección "Decisiones por fase" de SPEC.md las decisiones que tomamos en esta
 fase; si alguna cambia un número, actualiza también "Reglas y números".
 ```
+
+## 7. ¿Esto debería ser una spec?
+
+Antes de una solicitud grande, para decidir si va en un archivo o basta un prompt
+([capítulo 4, Cuándo spec y cuándo prompt](../contenido/04-vibe-coding.md#cuándo-spec-y-cuándo-prompt)).
+
+```text
+Quiero <tu solicitud>. Antes de hacer nada, dime si esto debería ser una spec o basta un
+prompt: cuántas pantallas, reglas con números o casos toca. Si conviene spec, propón el
+nombre del archivo y sus secciones. No escribas código.
+```
+
+## 8. Revisa una spec con la skill
+
+Antes de pedir código de una spec nueva o que cambió
+([capítulo 4, Púlela con la skill](../contenido/04-vibe-coding.md#púlela-con-la-skill)).
+
+```text
+Usa la skill polkadot-products-devnet para revisar <archivo de spec>: dime qué choca con
+las versiones fijas, la red Products Devnet, el sandbox (sin fetch externo), la publicación
+con pad o las reglas de firmas, y propón cambios. No escribas código.
+```

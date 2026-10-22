@@ -56,6 +56,15 @@ y Decisiones por fase. Si una parte necesita mucho detalle, propón un spec apar
 
 Responde en el mismo orden y con los mismos números que use el agente: `1. 3 vidas. 2. Sí. 3. No sé, dame opciones.`
 
+Si el agente termina las preguntas sin escribir el archivo:
+
+```text
+Con mis respuestas, escribe SPEC.md con las secciones Objetivo, Usuario, Qué hace, Qué no hace,
+Reglas y números, Datos y contrato, Pantallas y estados, Casos de prueba, Fuera de alcance y
+Decisiones por fase. Cada regla con un valor concreto. Marca "pendiente" lo que no decidimos.
+Si una parte necesita mucho detalle, propón un spec-<tema>.md aparte. No escribas código.
+```
+
 ## Si no sabes
 
 Cuando una pregunta del agente no la sepas responder, no inventes ni le dejes decidir solo:
@@ -77,6 +86,17 @@ para alguien que juega en el celular. Recomiéndame una y no escribas código.
   ```text
   ¿Qué parte de SPEC.md sigue siendo ambigua o se contradice? No cambies nada todavía.
   ```
+
+- Púlela con la skill
+  ([capítulo 4, Púlela con la skill](../contenido/04-vibe-coding.md#púlela-con-la-skill)):
+
+  ```text
+  Usa la skill polkadot-products-devnet para revisar SPEC.md (y cada spec-*.md): dime qué
+  choca con las versiones fijas, la red Products Devnet, el sandbox (sin fetch externo), la
+  publicación con pad o las reglas de firmas, y propón cambios. No escribas código.
+  ```
+
+  Tú decides qué cambios entran; si cambias un número, actualiza "Reglas y números".
 
 Cuando estés de acuerdo con `SPEC.md`, guárdalo en tu repo. Si crearon otros specs, agrégalos
 también por nombre (p. ej. `git add spec-fantasmas.md`).
