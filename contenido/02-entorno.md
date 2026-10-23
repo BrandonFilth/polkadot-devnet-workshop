@@ -18,7 +18,7 @@ de lo que hagas aquí cuesta dinero real.
 | Herramienta | Dónde | Para qué |
 |---|---|---|
 | Polkadot App (versión devnet) | Teléfono | Tu cuenta, tu llave y tus firmas |
-| Polkadot Desktop 0.1.3 | Computadora | Abrir y probar tu app publicada en su `.dot` (no se conecta a `localhost`) |
+| Polkadot Desktop (devnet) | Computadora | Abrir y probar tu app publicada en su `.dot` (no se conecta a `localhost`) |
 | Node.js, pnpm y Git | Computadora | Correr, construir y guardar tu código |
 | Kiro | Computadora | El editor con IA con el que vas a programar |
 | MetaMask | Navegador | Desplegar tu smart contract desde Remix |
@@ -35,8 +35,10 @@ sirven para este tutorial ([PCF](https://docs.polkadotcommunity.foundation/refer
 
 | Teléfono | Cómo instalarla |
 |---|---|
-| Android | Únete al grupo de testers o baja `app-polkadot-devnet.apk` del [último release](https://github.com/Polkadot-Community-Foundation/polkadot-android-community/releases/latest). Si tu teléfono no tiene servicios de Google, usa `app-polkadot-devnet-nogms.apk` |
-| iPhone | Por TestFlight: el enlace para unirte viene en las notas del [último release](https://github.com/Polkadot-Community-Foundation/polkadot-ios-community/releases/latest) |
+| Android | Únete al [grupo de testers](https://appdistribution.firebase.dev/i/f3b79521380b40b9) o baja `app-polkadot-devnet.apk` del [release devnet/2026-10-22.1](https://github.com/Polkadot-Community-Foundation/polkadot-android-community/releases/tag/devnet/2026-10-22.1). Si tu teléfono no tiene servicios de Google, usa `app-polkadot-devnet-nogms.apk` del mismo release |
+| iPhone | Por [TestFlight](https://testflight.apple.com/join/HnBX59vz) |
+
+Instala la versión de devnet más reciente; si ya la tenías, actualízala.
 
 En Android te va a pedir permiso para instalar apps de fuentes desconocidas: dáselo solo al navegador
 o al gestor de archivos con el que bajaste el APK.
@@ -65,26 +67,26 @@ teléfono y te manda ahí cada firma
 
 **Paso a paso:**
 
-1. Baja la versión 0.1.3 para tu sistema desde
-   [polkadot-desktop-community v0.1.3](https://github.com/Polkadot-Community-Foundation/polkadot-desktop-community/releases/tag/v0.1.3):
+1. Baja el instalador de tu sistema del
+   [último release](https://github.com/Polkadot-Community-Foundation/polkadot-desktop-community/releases/latest)
+   (la versión de devnet más reciente):
 
    | Sistema | Archivo |
    |---|---|
-   | Windows | `polkadot-desktop-0.1.3-x64.exe` |
-   | macOS (Apple Silicon) | `polkadot-desktop-0.1.3-arm64.dmg` |
-   | macOS (Intel) | `polkadot-desktop-0.1.3-x64.dmg` |
-   | Linux | `polkadot-desktop-0.1.3-x86_64.AppImage` |
+   | Windows | `polkadot-desktop-<versión>-x64.exe` |
+   | macOS (Apple Silicon) | `polkadot-desktop-<versión>-arm64.dmg` |
+   | macOS (Intel) | `polkadot-desktop-<versión>-x64.dmg` |
+   | Linux | `polkadot-desktop-<versión>-x86_64.AppImage` |
 
 2. Instálala. En Windows, si aparece "Windows protegió tu PC", toca **Más información → Ejecutar de
-   todas formas**. En macOS la app aparece en *Aplicaciones* como **Polkadot Desktop Dev**.
+   todas formas**. En macOS la app aparece en *Aplicaciones* como **Polkadot Desktop Dev**. No está
+   firmada por Apple: la primera vez ábrela con clic derecho → Abrir, o en Ajustes del Sistema →
+   Privacidad y seguridad → Abrir de todos modos.
 3. Ábrela. Te muestra un código QR.
 4. En la Polkadot App abre el escáner, apunta al QR y toca **Link**.
 5. Espera a que Desktop pase de *Completing pairing…* al tablero principal.
 
 ![El QR de Polkadot Desktop para emparejar tu teléfono](../img/cap2/polkadot-desktop-qr.png)
-
-> Usa la 0.1.3 aunque veas versiones más nuevas marcadas como *rc* (*release candidate*). Son de
-> prueba y pueden no ser compatibles con el SDK que vamos a usar.
 
 ---
 
@@ -346,6 +348,9 @@ La verificación tarda uno o dos minutos la primera vez, porque descarga `pad` y
 está bien, verás algo así:
 
 ```
+Probando pad… listo
+Probando dotns… listo
+
 Tu entorno
 
 ✔ Node.js                          v24.11.0
@@ -353,12 +358,19 @@ Tu entorno
 ✔ Git                              2.51.0.windows.1
 ✔ Git: tu nombre y correo          Tu Nombre
 ✔ Git: rutas largas                activadas
+✔ GitHub CLI                       2.83.0
+✔ GitHub: tu sesión                tu-usuario
 ✔ PowerShell: política de scripts  RemoteSigned
 ✔ Carpeta de trabajo               C:\dev\polkadot-devnet-workshop
 ✔ Polkadot Desktop                 instalado
-✔ Product SDK                      0.27.0
-✔ pad                              0.16.7
-✔ dotns                            0.9.5
+✔ Product SDK                      0.39.0
+✔ Descriptores del devnet          @polkadot-community-foundation/product-sdk-descriptors@0.14.0-pcf.1
+✔ @parity/truapi                   0.25.0
+✔ polkadot-api                     3.2.1
+✔ pnpm-workspace.yaml              overrides acotados
+✔ minimumReleaseAgeExclude         descriptores del devnet
+✔ pad                              0.22.1
+✔ dotns                            1.0.0
 ! A mano                           Polkadot App en el teléfono, Kiro y MetaMask
   → Revisa la lista del final del capítulo 2.
 
@@ -376,7 +388,8 @@ Todo lo que se puede revisar desde aquí está listo.
 Lo que el script no puede revisar:
 
 - [ ] La Polkadot App (devnet) está instalada y tienes tu frase en papel.
-- [ ] Polkadot Desktop 0.1.3 está emparejado con tu teléfono.
+- [ ] La Polkadot App es la versión de devnet más reciente.
+- [ ] Polkadot Desktop (la versión de devnet más reciente) está emparejado con tu teléfono.
 - [ ] Kiro abre y ya iniciaste sesión.
 - [ ] MetaMask tiene la red Polkadot Hub TestNet.
 
@@ -436,10 +449,11 @@ gh repo create mi-juego --public --source=. --push
 - **Iniciaste sesión con otra cuenta.** `gh auth logout` y repite el paso 5.
 - **Desktop no muestra el QR o no termina de emparejar.** Revisa que el teléfono y la computadora
   tengan internet, cierra Desktop por completo y vuelve a abrirlo.
-- **En Windows, Desktop se pone lento y el disco se llena.** La versión 0.1.3 no logra rotar su
-  archivo de log en Windows y lo deja crecer sin límite. Corre el guardián, que lo vacía antes de
-  que crezca:
+- **En Windows, Desktop se pone lento y el disco se llena.** Si Desktop no logra rotar su archivo
+  de log, lo deja crecer sin límite. Corre el guardián, que lo vacía antes de que crezca:
   `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\desktop-log-guard.ps1 -Watch`
+- **Encontraste una falla del devnet.** Repórtala en
+  [products-devnet-issues](https://github.com/Polkadot-Community-Foundation/products-devnet-issues/issues/new/choose).
 
 </details>
 

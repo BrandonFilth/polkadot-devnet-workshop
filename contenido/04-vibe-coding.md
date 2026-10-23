@@ -452,9 +452,9 @@ Polkadot Product (Vite + TypeScript) que corre dentro de Polkadot Desktop o la P
 
 ## Versiones
 - Exactas, sin ^ ni ~. No actualizar ninguna sin que yo lo pida.
-- @parity/product-sdk 0.27.0
-- @parity/product-sdk-descriptors 0.11.0
-- Override @parity/truapi 0.13.1 en pnpm-workspace.yaml
+- Las de la skill (references/versiones.md): @parity/product-sdk 0.39.0, polkadot-api 3.2.1,
+  @parity/product-sdk-descriptors como alias npm:@polkadot-community-foundation/product-sdk-descriptors@0.14.0-pcf.1
+- @parity/truapi 0.25.0 con los overrides acotados de la skill en pnpm-workspace.yaml. Nunca overrides globales.
 - pnpm 12.6.0 en devEngines
 
 ## Gestor de paquetes
@@ -677,7 +677,7 @@ npx skills@1.7.2 add https://github.com/wshobson/agents --skill solidity-securit
 la skill del hackatón: red del devnet, versiones probadas, contratos con REVM y Remix, patrones del
 SDK y publicación. Busca primero en sus `references/`, después en las fuentes de
 [`fuentes.md`](https://github.com/BrandonFilth/polkadot-products-devnet/blob/main/skills/polkadot-products-devnet/references/fuentes.md)
-(docs.polkadot.com, `llms.txt` y las skills de Parity fijadas al commit `07fed91`) y cita cada dato.
+(docs.polkadot.com, `llms.txt` y las skills de Parity fijadas al commit `941edee`) y cita cada dato.
 Por eso no necesitas instalar las skills de Parity.
 
 **`frontend-design`** ([anthropics/skills](https://github.com/anthropics/skills)): pautas de diseño

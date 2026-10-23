@@ -6,8 +6,8 @@ En el [capítulo 5](./05-el-juego.md) publicaste tu juego en tu `.dot` para prob
 Aquí haces la versión final: la misma app, en el mismo dominio, ahora con **icono, nombre y
 descripción** en su tarjeta. Al final sabes mantenerla publicada y compartirla.
 
-Comprobado con `pad` 0.16.7 en Products Devnet, con Polka-Man en `polka-man.dot`, en Polkadot Desktop
-y en la Polkadot App para Android.
+Comprobado el 2026-10-23 con `pad` 0.22.1 en Products Devnet, con Polka-Man, en la Polkadot App para
+Android.
 
 ---
 
@@ -118,7 +118,7 @@ Desde la carpeta de tu proyecto. En el repo del curso, la muestra se publica des
 Windows (PowerShell):
 
 ```powershell
-function pad { $env:PAD_UPDATE_CHECK = '0'; pnpm dlx --ignore-scripts @polkadot-community-foundation/polkadot-app-deploy@0.16.7 @args }
+function pad { $env:PAD_UPDATE_CHECK = '0'; pnpm dlx --ignore-scripts @polkadot-community-foundation/polkadot-app-deploy@0.22.1 @args }
 pnpm build
 $env:APP_DOT = 'tmp' + (-join ((Get-Date -Format 'yyyyMMddHHmmss').ToCharArray() | ForEach-Object { [char](97 + [int]"$_") })) + '.dot'
 pad .\dist $env:APP_DOT --env devnet --js-merkle
@@ -127,7 +127,7 @@ pad .\dist $env:APP_DOT --env devnet --js-merkle
 macOS o Linux:
 
 ```bash
-pad() { PAD_UPDATE_CHECK=0 pnpm dlx --ignore-scripts @polkadot-community-foundation/polkadot-app-deploy@0.16.7 "$@"; }
+pad() { PAD_UPDATE_CHECK=0 pnpm dlx --ignore-scripts @polkadot-community-foundation/polkadot-app-deploy@0.22.1 "$@"; }
 pnpm build
 export APP_DOT="tmp$(date +%Y%m%d%H%M%S | tr '0-9' 'a-j').dot"
 pad ./dist "$APP_DOT" --env devnet --js-merkle
@@ -137,7 +137,7 @@ Es el ciclo del capítulo 5 con dos cambios: el nombre temporal va en la variabl
 el archivo de publicación; en macOS y Linux hace falta `export`) y ya no lleva `--no-manifest`. Corre
 las cuatro líneas en la misma terminal en cada subida: la tercera genera un nombre nuevo.
 
-Tarda **unos 4 minutos hasta el CID y unos 6 en total** (más o menos un minuto más la primera vez,
+Tarda **unos 3.5 minutos hasta el CID y unos 5 en total** (casi un minuto más la primera vez,
 mientras se descarga `pad`). Corre `pad` sin tuberías (`| Tee-Object` y similares) para leer bien
 la salida. Terminó bien si ves estas líneas:
 
@@ -146,7 +146,11 @@ CID: bafybei…
   Loaded config: …\polkadot-app-deploy.config.mjs
   Icon CID: bafk2bza…
    Verified text[manifest]: {"$v":1,"displayName":"Polka-Man",…}
+DEPLOYMENT COMPLETE!
 ```
+
+También salen `WARNING: devnet declares DotNS 1.0.0 …`, `Revive.call: nonce contention (attempt N/5)`
+y `Atomically writing contenthash and executable manifest on app.<nombre-temporal>.dot`: son normales.
 
 Copia dos cosas:
 
@@ -231,10 +235,8 @@ Cada vez:
 4. Pon una marca de versión visible en tu app (por ejemplo `v1.1` en la pantalla de inicio). Así
    sabes qué build abrió el Host.
 
-Con el archivo de publicación en tu proyecto, usa este comando también para las pruebas del ciclo
-del capítulo 5. `pad` lee la config aunque pases `--no-manifest`; sin `APP_DOT` definida, termina con
-`Deployment failed (not retryable): Invalid product config …` después de subir (según el código de
-`pad` 0.16.7).
+Con el archivo de publicación en tu proyecto, el comando con `--no-manifest` del capítulo 5 sigue
+sirviendo para las pruebas: sube solo el bundle y no escribe el manifest.
 
 ---
 
@@ -262,8 +264,9 @@ Antes de compartirla, ábrela desde otro teléfono, con otra cuenta, y guarda un
 | `Config domain '…' (in …) does not match deploy domain '…'` | El nombre que le pasaste a `pad` no es el de `APP_DOT`. El bundle subió pero el manifest no se escribió: repite con `$env:APP_DOT` como argumento |
 | El icono sale en blanco | En el registro, `icon.cid` debe empezar con `bafk2bza`. Copia otra vez el JSON de la línea `Verified text[manifest]:` |
 | En Android sale la tarjeta anterior | Quita el marcador, busca la app otra vez y vuelve a agregarla ([sección 7](#7-comprueba)) |
-| Se abre la versión anterior de la app | Cierra la app del Host y vuelve a abrirla. Tu marca de versión te dice cuál cargó |
-| `A newer version of polkadot-app-deploy is available (0.16.7 → …)` | Ignóralo; la versión está fija en 0.16.7 |
+| Se abre un build viejo de tu app | Cierra la app del Host y vuelve a abrirla. Tu marca de versión te dice cuál cargó |
+| `WARNING: devnet declares DotNS 1.0.0, newer than 0.8.0 …` | Inofensivo: `pad` sigue y termina bien |
+| `Revive.call: nonce contention (attempt N/5)` | Inofensivo: `pad` reintenta solo |
 | Falla por propietario con tu propio dominio | Nunca le pases tu dominio a `pad`: solo el nombre temporal de `APP_DOT`. Tu dominio se actualiza a mano con Resolve y el registro |
 
 Los demás avisos de `pad` (`Previous deploy did not exit cleanly`, `pad logout`) están en la tabla

@@ -8,8 +8,8 @@ import { join } from 'node:path';
 
 const completo = process.argv.includes('--completo');
 const windows = process.platform === 'win32';
-const PAD = '@polkadot-community-foundation/polkadot-app-deploy@0.16.7';
-const DOTNS = '@polkadot-community-foundation/dotns-cli@0.9.5';
+const PAD = '@polkadot-community-foundation/polkadot-app-deploy@0.22.1';
+const DOTNS = '@polkadot-community-foundation/dotns-cli@1.0.0';
 
 const color = process.stdout.isTTY ? { ok: '\x1b[32m', mal: '\x1b[31m', ojo: '\x1b[33m', fin: '\x1b[0m' } : { ok: '', mal: '', ojo: '', fin: '' };
 const resultados = [];
@@ -131,7 +131,7 @@ if (windows) {
 // Product SDK: es una dependencia del juego (game/), no algo instalado en la computadora.
 // Con pnpm la dependencia queda en el paquete (game/node_modules), no en la raíz.
 {
-  const SDK_ESPERADO = '0.27.0';
+  const SDK_ESPERADO = '0.39.0';
   const sdk = [join(process.cwd(), 'game', 'node_modules'), join(process.cwd(), 'node_modules')]
     .map((carpeta) => join(carpeta, '@parity', 'product-sdk', 'package.json'))
     .find((ruta) => existsSync(ruta));
@@ -147,7 +147,77 @@ if (windows) {
       instalada = null;
     }
     if (instalada === SDK_ESPERADO) anotar('ok', 'Product SDK', instalada);
-    else anotar('mal', 'Product SDK', instalada ?? 'versión desconocida', `Se esperaba ${SDK_ESPERADO}: no actualices el SDK (capítulo 4, sección 15).`);
+    else anotar('mal', 'Product SDK', instalada ?? 'versión desconocida', `Se esperaba ${SDK_ESPERADO}: no cambies las versiones del proyecto (capítulo 4, sección 10).`);
+  }
+}
+
+// Versiones que tienen que coincidir con los Hosts. Solo se revisan con el proyecto instalado.
+const raiz = process.cwd();
+if (existsSync(join(raiz, 'package.json')) && existsSync(join(raiz, 'node_modules'))) {
+  // Descriptores del devnet: el alias apunta al paquete de Polkadot Community Foundation.
+  {
+    const ruta = join(raiz, 'game', 'node_modules', '@parity', 'product-sdk-descriptors', 'package.json');
+    let paquete = null;
+    try {
+      paquete = JSON.parse(readFileSync(ruta, 'utf8'));
+    } catch {
+      paquete = null;
+    }
+    if (paquete?.name === '@polkadot-community-foundation/product-sdk-descriptors' && paquete.version === '0.14.0-pcf.1') {
+      anotar('ok', 'Descriptores del devnet', `${paquete.name}@${paquete.version}`);
+    } else {
+      anotar('mal', 'Descriptores del devnet', paquete ? `${paquete.name}@${paquete.version}` : 'sin instalar', 'Corre pnpm install en la raíz del repo.');
+    }
+  }
+
+  // Una sola versión de @parity/truapi y de polkadot-api en todo el árbol.
+  let carpetas = [];
+  try {
+    carpetas = readdirSync(join(raiz, 'node_modules', '.pnpm'));
+  } catch {
+    carpetas = [];
+  }
+  const versiones = (prefijo) => [...new Set(carpetas.filter((n) => n.startsWith(prefijo)).map((n) => n.slice(prefijo.length).split('_')[0]))].sort();
+  for (const [nombre, prefijo, esperada, arreglo] of [
+    ['@parity/truapi', '@parity+truapi@', '0.25.0', 'Debe ser solo 0.25.0, la versión de TrUAPI de los Hosts. No cambies pnpm-workspace.yaml y corre pnpm install.'],
+    ['polkadot-api', 'polkadot-api@', '3.2.1', 'Debe ser solo 3.2.1. No cambies pnpm-workspace.yaml y corre pnpm install.'],
+  ]) {
+    const encontradas = versiones(prefijo);
+    if (encontradas.length === 1 && encontradas[0] === esperada) anotar('ok', nombre, esperada);
+    else anotar('mal', nombre, encontradas.length ? encontradas.join(', ') : 'sin instalar', arreglo);
+  }
+}
+
+// pnpm-workspace.yaml: overrides acotados (padre@versión>hijo) y la excepción de los descriptores.
+{
+  const ruta = join(raiz, 'pnpm-workspace.yaml');
+  if (existsSync(join(raiz, 'package.json')) && existsSync(ruta)) {
+    const lineas = readFileSync(ruta, 'utf8').replace(/^\uFEFF/, '').split(/\r?\n/);
+    const bloque = (nombre) => {
+      const inicio = lineas.findIndex((l) => l.trimEnd() === `${nombre}:`);
+      if (inicio < 0) return [];
+      const fin = lineas.findIndex((l, i) => i > inicio && l.trim() !== '' && !/^\s/.test(l) && !l.startsWith('#'));
+      return lineas.slice(inicio + 1, fin < 0 ? undefined : fin).filter((l) => /^\s/.test(l) && !l.trim().startsWith('#'));
+    };
+
+    const overrides = bloque('overrides').map((l) => {
+      const m = l.trim().match(/^(['"]?)(.+?)\1\s*:\s*(.*)$/);
+      return m ? { clave: m[2], valor: m[3].trim().replace(/^['"]|['"]$/g, '') } : null;
+    }).filter(Boolean);
+    const globales = overrides.filter((o) => ['@parity/truapi', 'polkadot-api', '@parity/product-sdk-descriptors'].includes(o.clave));
+    for (const o of globales) {
+      anotar('mal', 'pnpm-workspace.yaml', `override global de ${o.clave}`, 'Usa solo overrides acotados (padre@versión>hijo): los globales rompen pnpm dlx de pad dentro del repo.');
+    }
+    const truapi = overrides.some((o) => o.clave.endsWith('>@parity/truapi') && o.valor === '0.25.0');
+    if (!globales.length && truapi) anotar('ok', 'pnpm-workspace.yaml', 'overrides acotados');
+    else if (!globales.length) anotar('mal', 'pnpm-workspace.yaml', 'sin override de @parity/truapi 0.25.0', 'Copia el bloque overrides de la skill (references/versiones.md).');
+
+    const excluidos = bloque('minimumReleaseAgeExclude').map((l) => l.trim().replace(/^-\s*/, '').replace(/^['"]|['"]$/g, ''));
+    if (excluidos.includes('@polkadot-community-foundation/product-sdk-descriptors@0.14.0-pcf.1')) {
+      anotar('ok', 'minimumReleaseAgeExclude', 'descriptores del devnet');
+    } else {
+      anotar('mal', 'minimumReleaseAgeExclude', 'sin los descriptores del devnet', 'Sin esto pnpm install se bloquea con los descriptores del devnet.');
+    }
   }
 }
 

@@ -14,9 +14,10 @@ navegador y dentro de Polkadot Desktop o la Polkadot App. Guarda récords en un 
 
 ## Versiones
 - Exactas, sin ^ ni ~. No actualizar ninguna sin que yo lo pida.
-- @parity/product-sdk 0.27.0
-- @parity/product-sdk-descriptors 0.11.0
-- Override @parity/truapi 0.13.1 en pnpm-workspace.yaml
+- @parity/product-sdk 0.39.0
+- polkadot-api 3.2.1
+- @parity/product-sdk-descriptors como alias npm:@polkadot-community-foundation/product-sdk-descriptors@0.14.0-pcf.1
+- @parity/truapi 0.25.0 con overrides acotados (padre@versión>hijo) en pnpm-workspace.yaml. Nunca overrides globales: rompen pnpm dlx de pad.
 - pnpm 12.6.0 en devEngines
 
 ## Gestor de paquetes

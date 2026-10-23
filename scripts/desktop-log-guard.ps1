@@ -1,6 +1,6 @@
 ﻿<#
 .SYNOPSIS
-  Evita que Polkadot Desktop 0.1.3 llene el disco en Windows.
+  Evita que Polkadot Desktop llene el disco en Windows cuando no logra rotar su log.
 
 .DESCRIPTION
   Al pasar de 5 MB, el Desktop intenta rotar su log con un nombre que lleva la hora ISO

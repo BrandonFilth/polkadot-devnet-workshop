@@ -39,7 +39,7 @@ por qué:
 | Archivo o carpeta | Qué tiene | Por qué |
 |---|---|---|
 | `package.json` | Los scripts `dev`, `build`, `typecheck`, `test` y `test:red` (llaman a `game/`) y pnpm 12.6.0 en `devEngines` | Todos corren los mismos comandos desde la raíz |
-| `pnpm-workspace.yaml` | `packages: [game]` y el override de `@parity/truapi` 0.13.1 | Es la versión que entienden Polkadot Desktop 0.1.3 y la Polkadot App del devnet; 0.16 o posterior no |
+| `pnpm-workspace.yaml` | `packages: [game]`, los overrides acotados (`@parity/truapi` 0.25.0, `polkadot-api` 3.2.1 y los descriptores del devnet) y `minimumReleaseAgeExclude` | Los Hosts hablan TrUAPI 0.25: el juego usa una sola versión de truapi y de `polkadot-api`. Cada override nombra al paquete del SDK (`padre@versión>hijo`) para no afectar a `pad` |
 | `contrato/` | `Leaderboard.sol`, sus tests en `test/` y el script que genera la ABI | El contrato se prueba aparte, sin la app ([capítulo 3](./03-smart-contracts.md)) |
 | `prompts/` | Un prompt por fase, de `00-define-tu-juego.md` a `10-sonido-y-animaciones.md`, y `revision.md` | Es el camino que sigues, fase por fase |
 | `game/AGENTS.md` | Reglas para el agente: red, versiones, pnpm, reglas del juego, SDK, Vite, secretos y comandos | Para que no cambie versiones ni red |
@@ -410,7 +410,7 @@ sesión, frase de recuperación ni keystore: en cada publicación la única firm
 Resolve, en tu teléfono.
 Fuente: la skill
 ([`publicar.md`, sección 2](https://github.com/BrandonFilth/polkadot-products-devnet/blob/main/skills/polkadot-products-devnet/references/publicar.md)).
-Comprobado el 2026-10-18 con `pad` 0.16.7.
+Comprobado el 2026-10-23 con `pad` 0.22.1.
 
 Ciclo: `pnpm build` → subes con `pad` → copias el CID → `dotns.dot` → Profile → Resolve → pegas →
 Save → firmas → abres tu `.dot` en el Host. Cada build da un CID nuevo.
@@ -428,7 +428,7 @@ Para la versión final con icono, nombre y descripción: [capítulo 6](./06-publ
    Windows (PowerShell):
 
    ```powershell
-   function pad { $env:PAD_UPDATE_CHECK = '0'; pnpm dlx --ignore-scripts @polkadot-community-foundation/polkadot-app-deploy@0.16.7 @args }
+   function pad { $env:PAD_UPDATE_CHECK = '0'; pnpm dlx --ignore-scripts @polkadot-community-foundation/polkadot-app-deploy@0.22.1 @args }
    $tmp = 'tmp' + (-join ((Get-Date -Format 'yyyyMMddHHmmss').ToCharArray() | ForEach-Object { [char](97 + [int]"$_") })) + '.dot'
    pad .\dist $tmp --env devnet --js-merkle --no-manifest
    ```
@@ -436,7 +436,7 @@ Para la versión final con icono, nombre y descripción: [capítulo 6](./06-publ
    macOS o Linux:
 
    ```bash
-   pad() { PAD_UPDATE_CHECK=0 pnpm dlx --ignore-scripts @polkadot-community-foundation/polkadot-app-deploy@0.16.7 "$@"; }
+   pad() { PAD_UPDATE_CHECK=0 pnpm dlx --ignore-scripts @polkadot-community-foundation/polkadot-app-deploy@0.22.1 "$@"; }
    tmp="tmp$(date +%Y%m%d%H%M%S | tr '0-9' 'a-j').dot"
    pad ./dist "$tmp" --env devnet --js-merkle --no-manifest
    ```
@@ -444,8 +444,11 @@ Para la versión final con icono, nombre y descripción: [capítulo 6](./06-publ
    La primera línea define el atajo para esa terminal. Corre las tres líneas en cada subida: la
    segunda genera un nombre temporal nuevo.
 3. Terminó bien si ves `Storage signer: pool fallback (no session)`, `Using pool account N`,
-   `Verified on-chain`, el aviso de despliegue completo y la última línea `CID: bafy…`. Ese es el CID
-   raíz: cópialo. Las líneas `bafkrei…` son los trozos.
+   `Verified on-chain`, `P2P retrieval: ✓`, `DEPLOYMENT COMPLETE!` y la línea `CID: bafy…`
+   (casi al final, antes de `Domain:`). Ese es el CID raíz: cópialo. Las líneas `bafkrei…` son
+   los trozos. En el camino pueden salir
+   `WARNING: devnet declares DotNS 1.0.0, newer than 0.8.0 …` y
+   `Revive.call: nonce contention (attempt N/5)`: son inofensivos, `pad` sigue solo.
 4. Opcional, sin el Host: `https://<nombre-temporal>.dev-dot.li` muestra el bundle.
 5. En la Polkadot App (o en Desktop) abre `dotns.dot` → Profile → pestaña My Domains → en la fila de
    tu dominio, botón Resolve. Se abre "Resolve to IPFS": pega el CID (`bafy…`) en "IPFS Hash or
@@ -456,7 +459,7 @@ Para la versión final con icono, nombre y descripción: [capítulo 6](./06-publ
    En la fila también están Edit, Delegate y Set Primary. Edit es para los registros del perfil
    (manifest), no para el CID.
 6. Abre tu dominio desde el Host. En la fase 7 revisa que cargan el juego y el ranking; en la fase 8,
-   Conectar, permiso de gas y guardar récord.
+   Conectar, los permisos que pide el Host y guardar récord.
 
 **Repite el ciclo cuando quieras.** Cada vez que quieras probar la conexión o cualquier función
 dentro del Host, en el taller y en el hackatón, repites los pasos 1 a 6. Cada build da un CID nuevo
@@ -483,7 +486,8 @@ Si algo falla:
 | Falla por propietario con tu propio dominio | Nunca le pases a `pad` el dominio de tu teléfono: `pad` firma con su worker. Dale el nombre temporal y pega el CID a mano |
 | No aparece `Storage signer: pool fallback (no session)` o pide aprobar en el teléfono | Hay una sesión de `pad` guardada. Corre `pad logout` y repite |
 | `Previous deploy did not exit cleanly. Continuing.` o `Previous deploy was interrupted` | Inofensivo |
-| `A newer version of polkadot-app-deploy is available (0.16.7 → 0.20.0)` | Ignóralo; no actualices (la versión está fija en 0.16.7) |
+| `WARNING: devnet declares DotNS 1.0.0, newer than 0.8.0 …` | Inofensivo: `pad` sigue y termina bien |
+| `Revive.call: nonce contention (attempt N/5)` | Inofensivo: `pad` reintenta solo |
 
 Notas:
 
@@ -523,6 +527,8 @@ muestra si no pasó.
 
 El gas se paga en PGAS. Al conectar, tu app pide al Host un permiso de gas
 ([skill, `app-sdk.md`](https://github.com/BrandonFilth/polkadot-products-devnet/blob/main/skills/polkadot-products-devnet/references/app-sdk.md)).
+El Host puede mostrar hasta tres solicitudes al conectar: tu identidad (username), permiso para
+enviar transacciones y el permiso de gas. Acepta las tres.
 Estados que tu app debe manejar:
 
 | Respuesta al permiso de gas | Qué debe pasar |
@@ -596,14 +602,17 @@ Sube por esta escalera, en orden:
    4. En `src/contract/config.ts` cambia `LEADERBOARD_ADDRESS` a la dirección de **tu** contrato y
       `PRODUCT_DOMAIN` a **tu** dominio `.dot`.
    5. Si `pnpm build` o `pnpm test` fallan al importar el `.json`, pídele al agente que agregue
-      `"resolveJsonModule": true` en `compilerOptions` de tu `tsconfig.json`. Si fallan por otra
-      razón, usa el prompt 4 de `revision.md` con el error exacto.
+      `"resolveJsonModule": true` en `compilerOptions` de tu `tsconfig.json`. Si `tsc` falla con
+      errores como `Property 'error' does not exist on type …` en `src/hub/`, pídele que agregue
+      `"strict": true` en el mismo lugar. Si fallan por otra razón, usa el prompt 4 de
+      `revision.md` con el error exacto.
    6. `pnpm test` y `pnpm build` deben pasar **antes** de pedirle al agente que conecte tu interfaz
       a esa parte. Commit: "contrato desde la muestra".
 
-   Comprobado el 2026-10-22 en un proyecto Vite + TypeScript nuevo con las versiones de la skill:
-   `pnpm build` y `pnpm test` pasan; en esa prueba no hizo falta el paso 5. El
-   motor del juego no se copia: es la parte que construyes tú.
+   Comprobado el 2026-10-23 en un proyecto Vite + TypeScript nuevo con las versiones de la skill:
+   `pnpm build` y `pnpm test` pasan. La plantilla de Vite no trae `"strict": true` y hizo falta
+   agregarlo (paso 5); `resolveJsonModule` no. El motor del juego no se copia: es la parte que
+   construyes tú.
 
 <details>
 <summary><b>Problemas comunes</b></summary>
@@ -620,6 +629,10 @@ Sube por esta escalera, en orden:
   los salte. Pídele la causa y que corrija el código.
 - **`pnpm dev` dice que el puerto 5173 está ocupado.** Cierra la otra
   terminal que corre `pnpm dev`.
+- **El juego carga pero no conecta la cuenta.** Tu app usa otra versión de TrUAPI que el Host.
+  Revisa con la skill que tus versiones y los overrides de `pnpm-workspace.yaml` sean los de
+  `versiones.md`, corre `pnpm install` y `pnpm build` y vuelve a publicar. Confirma también que tu
+  Polkadot App y Desktop son la versión de devnet más reciente ([capítulo 2](./02-entorno.md)).
 
 </details>
 

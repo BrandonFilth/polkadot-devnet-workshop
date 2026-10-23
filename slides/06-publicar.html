@@ -290,12 +290,12 @@
     <div class="item" style="left:110px; top:60px;"><div class="h">Sube app e icono</div></div>
     <div class="item term" style="left:110px; top:160px; width:1380px;">
       <div class="bar"><i></i><i></i><i></i><span>PowerShell · carpeta de tu proyecto</span></div>
-      <div class="body code j-cmd"><div><span class="kw">function</span> pad { $env:PAD_UPDATE_CHECK = '0'; pnpm dlx --ignore-scripts @polkadot-community-foundation/polkadot-app-deploy@0.16.7 @args }</div><div><span class="kw">pnpm</span> build</div><div>$env:APP_DOT = 'tmp' + (-join ((Get-Date -Format 'yyyyMMddHHmmss').ToCharArray() | ForEach-Object { [char](97 + [int]"$_") })) + '.dot'</div><div><span class="kw">pad</span> .\dist $env:APP_DOT --env devnet --js-merkle</div><div class="cm">…</div><div class="p6-hi">CID: bafybei…</div><div class="cm">  Loaded config: …\polkadot-app-deploy.config.mjs</div><div class="cm">  Icon CID: bafk2bza…</div><div class="p6-hi">   Verified text[manifest]: {"$v":1,"displayName":"Polka-Man",…}</div></div>
+      <div class="body code j-cmd"><div><span class="kw">function</span> pad { $env:PAD_UPDATE_CHECK = '0'; pnpm dlx --ignore-scripts @polkadot-community-foundation/polkadot-app-deploy@0.22.1 @args }</div><div><span class="kw">pnpm</span> build</div><div>$env:APP_DOT = 'tmp' + (-join ((Get-Date -Format 'yyyyMMddHHmmss').ToCharArray() | ForEach-Object { [char](97 + [int]"$_") })) + '.dot'</div><div><span class="kw">pad</span> .\dist $env:APP_DOT --env devnet --js-merkle</div><div class="cm">…</div><div class="p6-hi">CID: bafybei…</div><div class="cm">  Loaded config: …\polkadot-app-deploy.config.mjs</div><div class="cm">  Icon CID: bafk2bza…</div><div class="p6-hi">   Verified text[manifest]: {"$v":1,"displayName":"Polka-Man",…}</div></div>
     </div>
     <div class="item j-parts" style="left:110px; top:590px; width:1380px; grid-template-columns:1fr 1fr 1fr;">
       <div class="j-part pink"><b><i>01</i>Copia el CID</b><p>La línea CID: bafy…, para Resolve.</p></div>
       <div class="j-part pink"><b><i>02</i>Copia el JSON</b><p>Todo lo que sigue a Verified text[manifest]:</p></div>
-      <div class="j-part"><b><i>03</i>Espera</b><p>Unos 4 min hasta el CID, unos 6 en total.</p></div>
+      <div class="j-part"><b><i>03</i>Espera</b><p>Unos 3.5 min hasta el CID, unos 5 en total.</p></div>
     </div>
   </section>
 
@@ -391,8 +391,8 @@ Correrla: pnpm install · pnpm dev</div>
       <div><code>domain required · Invalid product config</code><span>APP_DOT no existe en esta terminal: defínela.</span></div>
       <div><code>Config domain … does not match</code><span>Pásale $env:APP_DOT a pad y repite.</span></div>
       <div><code>Icono en blanco</code><span>icon.cid debe empezar con bafk2bza.</span></div>
-      <div><code>Abre la versión anterior</code><span>Cierra la app y vuelve a abrirla.</span></div>
-      <div style="border-bottom:0;"><code>A newer version … is available</code><span>Ignóralo: la versión está fija.</span></div>
+      <div><code>Abre un build viejo</code><span>Cierra la app y vuelve a abrirla.</span></div>
+      <div style="border-bottom:0;"><code>WARNING: devnet declares DotNS 1.0.0</code><span>Inofensivo: pad sigue.</span></div>
       <div style="border-bottom:0;"><code>Falla con tu propio dominio</code><span>A pad, solo el nombre temporal.</span></div>
     </div>
     <div class="item p6-note" style="left:110px; top:630px; width:1380px;">Android: si la app ya estaba en tus marcadores, puede mostrar la tarjeta anterior. Quita el marcador, búscala otra vez y agrégala.</div>
