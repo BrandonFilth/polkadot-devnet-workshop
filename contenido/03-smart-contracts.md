@@ -92,9 +92,8 @@ players.push(msg.sender);
 Ten cuidado con dos cosas:
 
 - **Las listas solo crecen.** Cada elemento que agregas se queda guardado para siempre y cuesta gas.
-- **Recorrer una lista muy larga dentro de una función que escribe** puede costar tanto gas que la
-  transacción falle. Por eso `Leaderboard` la lee por páginas (`getScores(offset, limit)`), y solo
-  en funciones de lectura.
+- **Se puede recorrer, pero cuesta.** Léela con funciones `view` y por páginas, como hace
+  `Leaderboard` con `getScores(offset, limit)`, y ordena los resultados en la app.
 
 > **Pídeselo a la IA así:** *"Guarda en una lista a cada jugador la primera vez que envía un
 > puntaje, y agrega una función de lectura que la devuelva por páginas."*
