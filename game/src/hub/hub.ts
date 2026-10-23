@@ -133,12 +133,16 @@ function unwrap<T>(result: QueryResult<T>, label: string): T {
   return result.value;
 }
 
-/** El id con el que el Host deriva cuentas, deducido de la URL cuando el Host no lo dice. */
-function productIdFromLocation(): string {
-  const host = typeof location === 'undefined' ? '' : location.host.toLowerCase();
-  if (/^localhost(:\d{1,5})?$/.test(host) || host.endsWith('.dot')) return host;
-  if (host.endsWith('.dot.li')) return host.slice(0, -'.li'.length);
-  return PRODUCT_DOMAIN;
+/**
+ * El id con el que el Host deriva cuentas, deducido del host de la URL cuando el Host no lo dice.
+ * `<n>.dot`, `<n>.dot.li`, `<n>.app.dot.li`, `<n>.dev-dot.li` y `<n>.app.dev-dot.li` → `<n>.dot`;
+ * `localhost[:puerto]` sin cambio; cualquier otro → PRODUCT_DOMAIN.
+ */
+export function productIdFromHost(host: string): string {
+  const h = host.toLowerCase();
+  if (/^localhost(:\d{1,5})?$/.test(h) || h.endsWith('.dot')) return h;
+  const label = /^([a-z0-9-]+)\.(?:app\.)?(?:dev-)?dot\.li$/.exec(h)?.[1];
+  return label ? `${label}.dot` : PRODUCT_DOMAIN;
 }
 
 type TxOutcome = { ok: true; value?: TxResult } | { ok: false; error: unknown };
@@ -209,6 +213,7 @@ export function createHub(deps?: HubDeps): Hub {
     if (!productId) throw new Error('No hay conexión con la Polkadot App.');
     if (!chain) throw new Error(NO_CHAIN);
     signer?.destroy();
+    d.log.info('conectando cuenta', productId);
     const manager = d.createSigner(productId);
     signer = manager;
     const connected = await withTimeout(manager.connect(), ACCOUNT_TIMEOUT_MS, 'Conexión de firma');
@@ -358,11 +363,11 @@ export function createHub(deps?: HubDeps): Hub {
   };
 
   /*
-   * waitFor 'best' (igual que la app de referencia). En product-sdk-tx 0.4.7 la promesa solo se
-   * resuelve antes de finalizar con 'best-block'; con 'best' se resuelve al finalizar. Por eso, después
-   * de in-block, la pantalla sigue en «Confirmando en la blockchain…» hasta que .tx() termina.
+   * waitFor 'finalized'. En product-sdk-tx 0.5.3, 'best-block' resuelve la promesa en in-block y
+   * 'finalized' al finalizar. Con 'finalized', después de in-block la pantalla sigue en
+   * «Confirmando en la blockchain…» hasta que .tx() termina.
    */
-  const txOptions = { waitFor: 'best' as const, timeoutMs: SIGN_TIMEOUT_MS };
+  const txOptions = { waitFor: 'finalized' as const, timeoutMs: SIGN_TIMEOUT_MS };
 
   return {
     getState: () => state,
@@ -399,7 +404,7 @@ export function createHub(deps?: HubDeps): Hub {
       const context = await d.getProductContext(PRODUCT_CONTEXT_TIMEOUT_MS).catch(() => null);
       if (context) productId = context.productId;
       else {
-        productId = productIdFromLocation();
+        productId = productIdFromHost(typeof location === 'undefined' ? '' : location.host);
         d.log.info('getProductContext no respondió; id deducido de la URL', productId);
       }
       // Las lecturas van por ETH-RPC y no esperan a la cadena del Host, que solo hace falta para firmar.
@@ -556,7 +561,7 @@ function defaultDeps(): HubDeps {
       return truApi;
     },
 
-    // Polkadot Desktop 0.1.3 no responde getProductContext y truapi 0.13.1 no tiene timeout propio.
+    // Plazo propio: si el Host no responde a tiempo, hub.ts deduce el id del host de la URL.
     async getProductContext(timeoutMs) {
       if (!truApi) return null;
       try {
@@ -571,7 +576,8 @@ function defaultDeps(): HubDeps {
           'getProductContext',
         );
         return { productId: context.productId };
-      } catch {
+      } catch (error) {
+        log.warn('getProductContext', describeError(error));
         return null;
       }
     },
@@ -640,6 +646,7 @@ function defaultDeps(): HubDeps {
       const r = await (await host()).requestResourceAllocation([
         { tag: 'SmartContractAllowance', value: { tag: 'Index', value: DERIVATION_INDEX } },
       ]);
+      if (!r.ok) log.warn('requestResourceAllocation', describeError(r.error));
       const outcome = r.ok ? r.value[0] : undefined;
       return outcome === 'Allocated' || outcome === 'Rejected' ? outcome : 'NotAvailable';
     },

@@ -2,15 +2,16 @@
  * Estados visibles de cada interacción con el Host (conectar, guardar récord, username).
  * Máquina pura: hub.ts la alimenta y el popup de estados solo la dibuja (components/TxEstado.ts).
  *
- * Qué estado sale de dónde (@parity/product-sdk 0.27.0 → product-sdk-contracts → product-sdk-tx 0.4.7,
- * `submitAndWatch`, que recibe el `onStatus` que pasamos a `.tx()`):
+ * Qué estado sale de dónde (@parity/product-sdk 0.39.0 → product-sdk-contracts 0.11.3 → product-sdk-tx
+ * 0.5.3, `submitAndWatch`, que recibe el `onStatus` que pasamos a `.tx()`):
  *  - REAL, de nuestro código: `simulando` (nuestro `.query()`), `actualizando` (nuestra relectura),
  *    `conectando` (sesión de firma + cuenta del Product) y `permiso-gas` (SmartContractAllowance).
- *  - REAL, del SDK: `enviando` ← onStatus('signing'), que el SDK emite en el evento `signed` de PAPI, es
- *    decir DESPUÉS de que aprobaste en el teléfono; `confirmando` ← onStatus('broadcasting') y
- *    onStatus('in-block').
+ *  - REAL, del SDK: `enviando` ← onStatus('signing'), que el SDK emite en el evento `created` de
+ *    polkadot-api 3, es decir DESPUÉS de que aprobaste en el teléfono; `confirmando` ←
+ *    onStatus('broadcasting') y onStatus('in-block'). onStatus('finalized') y onStatus('error') no
+ *    cambian el paso: el resultado de `.tx()` decide «Listo» o el error.
  *  - INFERIDO (pero cierto): `firma`. El SDK no avisa cuando el Host muestra la solicitud de firma. Se pone
- *    justo antes de llamar a `.tx()`; el tiempo entre esa llamada y el evento `signed` es el que esperamos
+ *    justo antes de llamar a `.tx()`; el tiempo entre esa llamada y el evento `created` es el que esperamos
  *    tu firma (más una simulación corta que hace el SDK para calcular el peso).
  *  Nunca se marca `enviando` ni `confirmando` sin el evento del SDK.
  */

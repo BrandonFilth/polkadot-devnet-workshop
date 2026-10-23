@@ -4,8 +4,14 @@ packages:
 allowBuilds:
   esbuild: false
 
-# Polkadot Desktop 0.1.3, las apps móviles del devnet y dev-dot.li hablan el formato plano (codec 1).
-# @parity/truapi 0.13.1 es la última versión que lo habla; 0.16.0 y posteriores no pueden negociar
-# con esos Hosts. Se fija para que nunca se elija en silencio una 0.13.x futura.
+# Los descriptores del devnet son una publicación reciente: se excluyen de la espera mínima de pnpm.
+minimumReleaseAgeExclude:
+  - '@polkadot-community-foundation/product-sdk-descriptors@0.14.0-pcf.1'
+
+# Los Hosts de Products Devnet (iOS, Android, Desktop y dev-dot.li) hablan TrUAPI 0.25 (codec 3).
+# @parity/truapi y polkadot-api se fijan para que todo el árbol use una sola versión de cada uno.
+# Los descriptores del devnet salen del paquete de Polkadot Community Foundation.
 overrides:
-  '@parity/truapi': 0.13.1
+  '@parity/truapi': 0.25.0
+  '@parity/product-sdk-descriptors': npm:@polkadot-community-foundation/product-sdk-descriptors@0.14.0-pcf.1
+  polkadot-api: 3.2.1

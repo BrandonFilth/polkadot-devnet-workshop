@@ -13,7 +13,7 @@ export type QueryResult<T> = { success: true; value: T } | { success: false; val
 export type ReadOptions = { origin?: string; from?: string; at?: 'best' | 'finalized' };
 
 export type TxOptions = {
-  waitFor?: 'best' | 'finalized';
+  waitFor?: 'best-block' | 'finalized';
   timeoutMs?: number;
   onStatus?: (status: unknown) => void;
 };

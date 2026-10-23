@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { LeaderboardContract, TxOptions } from '../contract/leaderboard';
-import { createHub, type Hub, type HubDeps, type SignerAccount } from './hub';
+import { createHub, productIdFromHost, type Hub, type HubDeps, type SignerAccount } from './hub';
 import type { ProgressStep } from './progress';
 
 const sdkEvents = (opts?: TxOptions) => {
-  for (const status of ['signing', 'broadcasting', 'in-block']) opts?.onStatus?.(status);
+  for (const status of ['signing', 'broadcasting', 'in-block', 'finalized']) opts?.onStatus?.(status);
 };
 
 /** Pasos visibles que pasan por el Hub, sin repetir los consecutivos. */
@@ -36,7 +36,8 @@ function makeWorld() {
     submitScore: { query: vi.fn(async (..._a: unknown[]): Promise<{ success: boolean; value: unknown }> => ok<unknown>(undefined)) },
     setUsername: { query: vi.fn(async (..._a: unknown[]): Promise<{ success: boolean; value: unknown }> => ok<unknown>(undefined)) },
   };
-  // Como submitAndWatch de product-sdk-tx 0.4.7: signed → broadcasted → in-block y luego resuelve.
+  // Como submitAndWatch de product-sdk-tx 0.5.3 con waitFor 'finalized': signing → broadcasting →
+  // in-block → finalized y luego resuelve.
   const tx = vi.fn(async (arg: unknown, opts?: TxOptions): Promise<{ ok: true; value: object } | { ok: false; error: unknown }> => {
     sdkEvents(opts);
     store.best = arg as bigint;
@@ -220,7 +221,7 @@ describe('hub (sin red, con dobles)', () => {
   });
 });
 
-// Textos exactos de product-sdk-tx 0.4.7.
+// Textos exactos de product-sdk-tx 0.5.3.
 const sdkError = (name: string, message: string) => Object.assign(new Error(message), { name });
 const REJECTED = () => sdkError('TxSigningRejectedError', 'Transaction signing was rejected.');
 const TIMEOUT = () => sdkError('TxTimeoutError', 'Transaction timed out after 300s. The transaction may still be processing on-chain.');
@@ -302,5 +303,46 @@ describe('hub: estados visibles de cada firma', () => {
     expect(world.tx).not.toHaveBeenCalled();
     expect(world.usernameTx).toHaveBeenCalledTimes(1);
     expect(hub.getState().progress).toMatchObject({ op: 'username', step: 'listo' });
+  });
+
+  it('18. saveScore y setUsername piden waitFor «finalized» a .tx()', async () => {
+    const { hub, world } = await connectedHub();
+    await hub.saveScore(500);
+    await hub.setUsername('ana_01');
+    expect(world.tx).toHaveBeenCalledWith(500n, expect.objectContaining({ waitFor: 'finalized' }));
+    expect(world.usernameTx).toHaveBeenCalledWith('ana_01', expect.objectContaining({ waitFor: 'finalized' }));
+  });
+
+  it('19. connect: un connect() con error del SignerManager no deja cuenta y lo registra', async () => {
+    const deps = fakeDeps({
+      createSigner: vi.fn(() => ({
+        connect: vi.fn(async () => ({ ok: false, error: new Error('Host rejected product account request: DomainNotValid') })),
+        getProductAccount: vi.fn(async () => ({ ok: true as const, value: ME })),
+        destroy: vi.fn(),
+      })),
+    });
+    const hub = createHub(deps);
+    await hub.start();
+    const r = await hub.connect();
+    expect(r.ok).toBe(false);
+    expect(r.message).toContain('DomainNotValid');
+    expect(hub.getState().account).toBeNull();
+    expect(deps.log.warn).toHaveBeenCalledWith('connect', expect.stringContaining('DomainNotValid'));
+  });
+});
+
+describe('productIdFromHost', () => {
+  it.each([
+    ['polka-man.dot', 'polka-man.dot'],
+    ['localhost:5173', 'localhost:5173'],
+    ['polka-man.dot.li', 'polka-man.dot'],
+    ['polka-man.app.dot.li', 'polka-man.dot'],
+    ['tmpabc.dev-dot.li', 'tmpabc.dot'],
+    ['tmpabc.app.dev-dot.li', 'tmpabc.dot'],
+    ['TMPABC.App.Dev-Dot.li', 'tmpabc.dot'],
+    ['example.com', 'polka-man.dot'],
+    ['', 'polka-man.dot'],
+  ])('%s → %s', (host, expected) => {
+    expect(productIdFromHost(host)).toBe(expected);
   });
 });

@@ -55,7 +55,7 @@ describe('clasificación de errores de transacción', () => {
     expect(autoReconnect('connection')).toBe(true);
   });
 
-  // Textos exactos de @parity/product-sdk-tx 0.4.7 (no es dependencia directa: se arman Error con el mismo name/message).
+  // Textos exactos de @parity/product-sdk-tx 0.5.3 (no es dependencia directa: se arman Error con el mismo name/message).
   const sdkError = (name: string, message: string) => Object.assign(new Error(message), { name });
 
   it('errores reales del SDK: rechazada, sin respuesta y sin gas', () => {
