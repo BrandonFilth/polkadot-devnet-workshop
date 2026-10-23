@@ -1,4 +1,4 @@
-// Guarda capturas de diapositivas para las guías: 1280x720 PNG, sin pie, logo ni barra de progreso.
+// Guarda capturas de diapositivas para las guías: 1280x720 PNG, con el logo de Polkadot abajo a la derecha, sin pie ni barra de progreso.
 // Cada par <n>=<nombre> guarda la diapositiva n (empieza en 1) como <carpeta>/<nombre>.png.
 //   node slides/tools/capturar.mjs <presentacion.html> <carpeta> <n>=<nombre> [<n>=<nombre> …]
 //   node slides/tools/capturar.mjs slides/03-smart-contracts.html img/cap3 16=abi 18=cuentas
@@ -52,7 +52,7 @@ await enviar('Emulation.setDeviceMetricsOverride', { width: 1600, height: 900, d
 await enviar('Page.navigate', { url: pathToFileURL(resolve(archivo)).href });
 await sleep(3000);
 await evaluar('document.fonts.ready.then(() => true)');
-await evaluar(`(() => { const s = document.createElement('style'); s.textContent = '.foot,.progress,.brand{display:none!important}'; document.head.append(s); return true; })()`);
+await evaluar(`(() => { const s = document.createElement('style'); s.textContent = '.foot,.progress{display:none!important}'; document.head.append(s); return true; })()`);
 
 const total = await evaluar('slides.length');
 const fuera = capturas.filter(([, n]) => Number(n) < 1 || Number(n) > total);

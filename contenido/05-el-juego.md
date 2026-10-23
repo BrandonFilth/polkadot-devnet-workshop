@@ -11,7 +11,7 @@ vas a pedirle cada parte a tu agente con prompts cortos, una fase a la vez.
 
 ## 1. Qué vas a construir
 
-<img src="../img/cap5/polka-man-pc.png" alt="Polka-Man en la computadora: HUD arriba con puntos, ronda, cinco vidas, pausa, sonido y Menú; el laberinto completo con bolitas, cuatro bolitas especiales rosas, dos fantasmas (rojo y verde) y Polka-Man rosa" width="640">
+<img src="../img/cap5/polka-man-pc.png" alt="Polka-Man en la computadora: HUD arriba con puntos, ronda, cinco vidas, pausa, sonido y Menú; el laberinto completo con bolitas, cuatro bolitas especiales rosas, dos fantasmas (rojo y verde) y Polka-Man rosa" width="100%">
 
 Una app y un smart contract dentro de Polkadot, construidos con IA, en tu propio dominio `.dot`.
 La app es un juego tipo Pac-Man para el celular y la computadora, a tu manera.
