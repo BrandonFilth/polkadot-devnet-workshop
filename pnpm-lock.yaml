@@ -163,9 +163,20 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  '@parity/truapi': 0.25.0
-  '@parity/product-sdk-descriptors': npm:@polkadot-community-foundation/product-sdk-descriptors@0.14.0-pcf.1
-  polkadot-api: 3.2.1
+  '@parity/product-sdk-host@0.28.0>@parity/truapi': 0.25.0
+  '@parity/product-sdk-renderer@0.7.0>@parity/truapi': 0.25.0
+  '@parity/product-sdk-chain-client@0.13.3>@parity/product-sdk-descriptors': npm:@polkadot-community-foundation/product-sdk-descriptors@0.14.0-pcf.1
+  '@parity/product-sdk-cloud-storage@0.13.3>@parity/product-sdk-descriptors': npm:@polkadot-community-foundation/product-sdk-descriptors@0.14.0-pcf.1
+  '@parity/product-sdk@0.39.0>polkadot-api': 3.2.1
+  '@parity/product-sdk-chain-client@0.13.3>polkadot-api': 3.2.1
+  '@parity/product-sdk-cloud-storage@0.13.3>polkadot-api': 3.2.1
+  '@parity/product-sdk-contracts@0.11.3>polkadot-api': 3.2.1
+  '@parity/product-sdk-host@0.28.0>polkadot-api': 3.2.1
+  '@parity/product-sdk-individuality@0.11.0>polkadot-api': 3.2.1
+  '@parity/product-sdk-keys@0.5.3>polkadot-api': 3.2.1
+  '@parity/product-sdk-signer@0.17.3>polkadot-api': 3.2.1
+  '@parity/product-sdk-tx@0.5.3>polkadot-api': 3.2.1
+  '@polkadot-community-foundation/product-sdk-descriptors@0.14.0-pcf.1>polkadot-api': 3.2.1
 
 importers:
 
@@ -443,7 +454,7 @@ packages:
     engines: {node: '>=22.0.0'}
     peerDependencies:
       multiformats: ^14.0.0
-      polkadot-api: 3.2.1
+      polkadot-api: ^3.1.0
 
   '@parity/product-sdk-address@0.3.1':
     resolution: {integrity: sha512-DZ4JCHfxA9uUJeD35MYyir/eU+SeJa0Y/GXLWqYPE3BMdVa599kx0In2Ww+xkUYizDRIx91vGZ5G2ordqUgC8g==}
