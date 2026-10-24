@@ -358,6 +358,14 @@ Fase 6 ([prompt](../prompts/06-tu-contrato.md)). Tu juego lee el top 10 de **tu*
 - **El contrato no sabe si el puntaje es legítimo.** Cualquiera puede llamar `submitScore` sin jugar
   ([capítulo 3, sección 10](./03-smart-contracts.md#10-lo-que-un-contrato-no-puede-saber)).
 
+> El contrato `Leaderboard` del curso solo guarda lo que necesita el juego base: el mejor puntaje y
+> el username de cada cuenta. Si agregaste o cambiaste algo del juego que deba guardarse en la cadena
+> (otros datos de la partida, modos, objetos o logros), ese contrato no sirve tal cual: hay que
+> modificarlo o agregar las funciones y datos que falten, volver a desplegarlo y actualizar la
+> dirección y la ABI en tu app. Pídele al agente que agregue a la spec lo que se va a guardar y que
+> cambie el contrato y sus tests, y revisa el cambio antes de desplegar. Un contrato desplegado no se
+> puede editar: cada cambio es un despliegue nuevo, con otra dirección y los datos vacíos.
+
 Leer el ranking no necesita firma: se prueba con `pnpm dev` en el navegador.
 
 ---

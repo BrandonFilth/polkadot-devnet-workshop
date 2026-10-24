@@ -31,6 +31,8 @@ Lee SPEC.md (y el spec de esta parte si existe) y AGENTS.md.
 Usa la skill polkadot-products-devnet.
 Mi contrato Leaderboard está en la dirección <tu-dirección> y su ABI está en
 src/contract/leaderboard.abi.json.
+Antes de usarlo, revisa si algo que agregué o cambié en el juego necesita guardarse en la cadena
+y el contrato no lo tiene. Si es así, dímelo antes de desplegar o escribir código.
 Muestra el top 10 de mi contrato en su propia pestaña, leyendo por la red, como dice
 SPEC.md, con su estado vacío y un error con "Reintentar" si no hay red.
 Si no cabe, la lista se desplaza dentro de su pestaña.

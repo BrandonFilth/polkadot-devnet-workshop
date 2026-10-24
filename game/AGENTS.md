@@ -3,7 +3,10 @@
 ## Proyecto
 Polka-Man: juego de laberinto (Vite + TypeScript + Canvas 2D, sin framework de UI) que corre en el
 navegador y dentro de Polkadot Desktop o la Polkadot App. Guarda récords en un contrato
-`Leaderboard` propio, desplegado por el mismo proyecto.
+`Leaderboard` propio, desplegado por el mismo proyecto. Ese contrato solo guarda el mejor puntaje y
+el username. Si algo nuevo del juego necesita guardarse en la cadena, dímelo y propón el cambio a la
+spec, al contrato y a sus tests antes de tocar `contrato/`: cada cambio es un despliegue nuevo, con
+otra dirección y otra ABI.
 
 ## Red
 - Solo Products Devnet: Asset Hub 1000, chainId 420420417.
