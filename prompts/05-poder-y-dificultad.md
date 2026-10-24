@@ -1,12 +1,12 @@
 # Fase 5 · Bolitas especiales y dificultad
 
-Al terminar las bolitas especiales asustan a los fantasmas y el juego se pone más difícil en cada
+Al terminar las bolitas especiales vuelven vulnerables a los fantasmas y el juego se pone más difícil en cada
 ronda, con un tope. 25 a 35 minutos.
 
 ## Antes de pedir
 
-- ¿Cuánto dura el susto? (p. ej. "6 segundos y menos en cada ronda").
-- ¿Cuánto vale comerse un fantasma asustado? (p. ej. "200, y el doble por cada uno seguido").
+- ¿Cuánto dura el efecto de la bolita especial? (p. ej. "6 segundos y menos en cada ronda").
+- ¿Cuánto vale comerse un fantasma vulnerable? (p. ej. "200, y el doble por cada uno seguido").
 - ¿Cómo sube la dificultad y dónde se detiene? (p. ej. "fantasmas 5 % más rápidos cada ronda,
   hasta la ronda 9; siempre más lentos que el jugador").
 - ¿Cuánto espera en la casa un fantasma comido? (p. ej. "5 s en la ronda 1, medio segundo menos
@@ -18,7 +18,7 @@ Escribe tus respuestas en `SPEC.md`.
 
 ```text
 Lee SPEC.md (y el spec de esta parte si existe) y AGENTS.md.
-Agrega las bolitas especiales. Al comer una, los fantasmas se asustan por un tiempo: huyen
+Agrega las bolitas especiales. Al comer una, los fantasmas se vuelven vulnerables por un tiempo: huyen
 y el personaje se los puede comer. Un fantasma comido regresa a su casa, espera lo que dice
 SPEC.md y vuelve a salir.
 Haz que la dificultad suba en cada ronda como dice SPEC.md, con su tope.
@@ -37,7 +37,7 @@ contra para un juego de celular. Recomiéndame una y no escribas código.
 
 ## Al terminar, revisa
 
-- Comer una segunda bolita especial no hace cosas raras a los fantasmas que ya estaban asustados.
+- Comer una segunda bolita especial no hace cosas raras a los fantasmas que ya estaban vulnerables.
 - En la ronda que dice `SPEC.md`, sale un fantasma más.
 - Tocar a un fantasma que ya fue comido (regresando a su casa) no quita vida.
 - Los fantasmas comidos esperan en la casa antes de volver a salir, y esperan menos en rondas más

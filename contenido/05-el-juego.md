@@ -73,14 +73,14 @@ Son las decisiones de la muestra; tú tomas las tuyas en la fase 0.
 |---|---|
 | Vidas | 5. Pierdes una al chocar con un fantasma; con 0, fin de la partida |
 | Bolita | 10 puntos |
-| Bolita especial (las 4 rosas de las esquinas) | 50 puntos y los fantasmas se asustan: te los puedes comer |
-| Fantasmas comidos en un mismo susto | 200, 400, 800 y 1600 puntos |
+| Bolita especial (las 4 rosas de las esquinas) | 50 puntos y los fantasmas se vuelven vulnerables: te los puedes comer |
+| Fantasmas comidos durante un mismo efecto | 200, 400, 800 y 1600 puntos |
 | Ronda | Termina al vaciar el laberinto; las bolitas vuelven y empieza la siguiente |
 | Velocidad de los fantasmas | +5 % cada ronda, con tope por debajo de la del jugador |
 | Número de fantasmas | Empieza en 2 y sale uno más cada 3 rondas, hasta 6 |
 | Fantasmas | Se distinguen solo por color: rojo, verde, amarillo, azul, morado y cian. Todos siguen la misma regla: en cada cruce van por el camino que más los acerca a ti, sin dar media vuelta |
 | Para no amontonarse | En cada cruce, 1 de cada 4 veces (25 %) eligen un camino al azar |
-| Susto | Huyen al azar a media velocidad; 6 s en la ronda 1, 0.5 s menos cada ronda, mínimo 2 s |
+| Efecto de la bolita especial | Huyen al azar a media velocidad; 6 s en la ronda 1, 0.5 s menos cada ronda, mínimo 2 s |
 | Salida de la casa | Uno cada 3 s |
 | Fantasma comido | Vuelve a la casa como ojos y espera 5 s antes de salir; 0.5 s menos cada ronda, mínimo 2 s |
 | Controles | Joystick flotante con diagonales (aparece donde tocas abajo y sigue al dedo; al soltar se desvanece y sigues recto; vibra un poco al cambiar de dirección si el teléfono puede) y botón redondo de pausa; swipe; flechas o WASD |
@@ -110,7 +110,7 @@ Prueba:
 - Moverte con el joystick: toca en la zona de abajo y arrastra. Aparece bajo tu dedo y lo sigue
   si te alejas; también en diagonal (arriba y a la derecha gira a la derecha en el primer cruce
   donde se pueda). Al soltar, Polka-Man sigue hasta la pared. También con swipe o con las flechas.
-- Comer bolitas y bolitas especiales, y comerte a los fantasmas asustados.
+- Comer bolitas y bolitas especiales, y comerte a los fantasmas vulnerables.
 - Chocar con un fantasma y perder vidas hasta el fin de la partida.
 - Vaciar el laberinto y ver que cada ronda se pone más difícil.
 - Guardar un récord con una firma: los pasos salen en un popup aparte, encima del fin.
@@ -290,7 +290,7 @@ Así se reparte este juego en fases. Cada fase es una vuelta del ciclo de la
 | 2 | [Laberinto y movimiento](../prompts/02-laberinto.md) | Laberinto y personaje con teclado, swipe y joystick flotante con diagonales, con pausa | Navegador | 30–35 min |
 | 3 | [Bolitas, puntaje y rondas](../prompts/03-puntos.md) | Comer bolitas, HUD y nueva ronda al vaciar | Navegador | 20–25 min |
 | 4 | [Fantasmas y vidas](../prompts/04-fantasmas.md) | Fantasmas por color con una sola regla, vidas y pantalla de fin | Navegador | 30–40 min |
-| 5 | [Bolitas especiales y dificultad](../prompts/05-poder-y-dificultad.md) | Fantasmas asustados, espera en la casa y dificultad por ronda con tope | Navegador | 25–35 min |
+| 5 | [Bolitas especiales y dificultad](../prompts/05-poder-y-dificultad.md) | Fantasmas vulnerables, espera en la casa y dificultad por ronda con tope | Navegador | 25–35 min |
 | 6 | [Tu contrato y el ranking](../prompts/06-tu-contrato.md) | Top 10 de tu contrato en su propia pestaña | Navegador | 25–30 min |
 | 7 | [Publica en tu .dot](../prompts/07-publica.md) | Tu dominio `.dot` y tu juego publicado en él, abierto desde el Host | Host | 15–20 min |
 | 8 | [Guarda tu récord](../prompts/08-guarda-tu-record.md) | Conectar, permiso de gas y guardar con una firma, con los pasos en un popup | Host | 30–40 min |
@@ -334,9 +334,9 @@ sí y a veces no, o pinta un fantasma del mismo color que el personaje.
 
 ### Fase 5 · Bolitas especiales y dificultad
 
-Fantasmas asustados que te puedes comer y dificultad que sube por ronda
+Fantasmas vulnerables que te puedes comer y dificultad que sube por ronda
 ([prompt](../prompts/05-poder-y-dificultad.md)). Piensa: ¿qué pasa si comes una segunda bolita
-especial mientras los fantasmas siguen asustados? Error típico: la velocidad crece sin tope y en la
+especial mientras los fantasmas siguen vulnerables? Error típico: la velocidad crece sin tope y en la
 ronda 10 los fantasmas son más rápidos que tú.
 
 ---
