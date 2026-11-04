@@ -187,7 +187,7 @@ export const MIN_TILE_PX = 8;
 /** Alto de la barra superior (HUD + menú), en px CSS. */
 export const HUD_HEIGHT_PX = 44;
 
-/** Alto de la zona de controles táctiles (joystick y pausa), en px CSS. */
+/** Alto de la zona de controles táctiles (flechas y pausa), en px CSS. */
 export const CONTROLS_HEIGHT_PX = 132;
 
 /**
@@ -223,6 +223,15 @@ export const RANKING_MAX_HEIGHT_PX = 320;
 
 /** Diámetro del botón de pausa estilo Atari, en px CSS. */
 export const PAUSE_BUTTON_PX = 72;
+
+/** Lado de cada flecha del D-pad táctil, en px CSS (blanco táctil de al menos 48 px). */
+export const DPAD_BUTTON_PX = 56;
+
+/** Separación entre las flechas del D-pad, en px CSS. */
+export const DPAD_GAP_PX = 4;
+
+/** Vibración corta, en ms, al tocar o cambiar de flecha (si el teléfono la tiene). */
+export const DPAD_HAPTIC_MS = 10;
 
 /** Diferencia mínima de alto, en px CSS, para decir que el teclado del celular está abierto. */
 export const KEYBOARD_MIN_PX = 120;

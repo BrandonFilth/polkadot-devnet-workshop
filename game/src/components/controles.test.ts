@@ -10,31 +10,43 @@ const rule = (selector: string) => {
   return [...css.replace(/\r\n/g, '\n').matchAll(re)].map((m) => m[1]).join('\n');
 };
 
-describe('controles: joystick flotante', () => {
-  it('la zona del joystick no deja hacer scroll ni zoom', () => {
-    expect(rule('.stick-zone')).toMatch(/touch-action:\s*none/);
-    expect(css).toMatch(/\.stage, \.controles, \.stick-zone \{ touch-action: none; \}/);
+describe('controles: flechas', () => {
+  it('el pad de flechas no deja hacer scroll ni zoom', () => {
+    expect(rule('.dpad')).toMatch(/touch-action:\s*none/);
+    expect(css).toMatch(/\.stage, \.controles, \.dpad \{ touch-action: none; \}/);
   });
 
-  it('la pista se esconde con mouse y la base se desvanece con --stick-fade', () => {
-    expect(css).toMatch(/@media \(pointer: fine\) \{\s*\.stick-hint \{\s*display: none;/);
-    expect(rule('.stick')).toMatch(/transition:\s*opacity var\(--stick-fade\)/);
-    expect(rule('.stick')).toMatch(/pointer-events:\s*none/);
+  it('cada flecha bloquea gestos y el menú de mantener presionado', () => {
+    const btn = rule('.controles .dpad-btn');
+    expect(btn).toMatch(/touch-action:\s*none/);
+    expect(btn).toMatch(/-webkit-touch-callout:\s*none/);
+    expect(btn).toMatch(/user-select:\s*none/);
   });
 
-  it('no queda nada del joystick fijo', () => {
-    expect(css).not.toMatch(/\.joystick/);
-    expect(source).not.toMatch(/\.joystick|'joystick/);
+  it('no queda nada del joystick', () => {
+    for (const text of [css, source]) {
+      expect(text).not.toMatch(/\.joystick/);
+      expect(text).not.toMatch(/\.stick|stick-zone/);
+      expect(text).not.toContain('Toca y arrastra');
+      expect(text).not.toContain('createFloatingStick');
+    }
+    expect(source).not.toMatch(/'joystick/);
   });
 
-  it('un dedo con captura, sin scroll, dibujo por cuadro y vibración que falla en silencio', () => {
+  it('un dedo con captura, sin scroll, pedido recto y vibración que falla en silencio', () => {
     expect(source).toContain('setPointerCapture');
     expect(source).toContain('preventDefault');
-    expect(source).toContain('requestAnimationFrame');
-    expect(source).toMatch(/try \{\s*navigator\.vibrate\(JOYSTICK_HAPTIC_MS\)/);
-    expect(source).toContain('createFloatingStick');
-    expect(source).toContain('stickHintVisible');
-    expect(source).toContain('Toca y arrastra');
+    expect(source).toContain('lostpointercapture');
+    expect(source).toContain('pointercancel');
+    expect(source).toContain('createDpad');
+    expect(source).toContain('setDirections(state, frame.dir, null)');
+    expect(source).toMatch(/try \{\s*navigator\.vibrate\(DPAD_HAPTIC_MS\)/);
+  });
+
+  it('nombres accesibles en español', () => {
+    for (const label of ['Arriba', 'Abajo', 'Izquierda', 'Derecha', 'Flechas']) {
+      expect(source).toContain(`'${label}'`);
+    }
   });
 
   it('textos sin signos de exclamación', () => {

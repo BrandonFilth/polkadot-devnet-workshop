@@ -21,6 +21,9 @@ import {
   houseCooldownSeconds,
   MAX_EVENTS,
   CONTROLS_HEIGHT_PX,
+  DPAD_BUTTON_PX,
+  DPAD_GAP_PX,
+  DPAD_HAPTIC_MS,
   HUD_HEIGHT_PX,
   JOYSTICK_DEAD_ZONE_PX,
   JOYSTICK_DIAGONAL_HALF_DEG,
@@ -105,6 +108,11 @@ describe('rules: dificultad', () => {
     // El joystick y la pausa caben en la zona de controles.
     expect(JOYSTICK_RADIUS_PX * 2).toBeLessThan(CONTROLS_HEIGHT_PX);
     expect(PAUSE_BUTTON_PX).toBeLessThan(CONTROLS_HEIGHT_PX);
+    // Flechas del D-pad: blanco táctil de al menos 48 px.
+    expect(DPAD_BUTTON_PX).toBe(56);
+    expect(DPAD_GAP_PX).toBe(4);
+    expect(DPAD_HAPTIC_MS).toBe(10);
+    expect(DPAD_BUTTON_PX).toBeGreaterThanOrEqual(48);
   });
 
   it('espera en la casa: 5 s en la ronda 1, 0.5 s menos cada ronda, mínimo 2 s', () => {

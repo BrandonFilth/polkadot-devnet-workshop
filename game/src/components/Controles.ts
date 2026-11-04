@@ -1,12 +1,14 @@
-// Controles táctiles estilo Atari: joystick flotante (aparece donde tocas en la zona de abajo y sigue al dedo,
-// 8 sectores con diagonales) y botón rojo de pausa a la derecha, fuera de la zona del joystick.
+// Controles táctiles estilo Atari: flechas en cruz (arriba, abajo, izquierda, derecha) en la zona de abajo y
+// botón rojo de pausa a la derecha. Tocar una flecha pide esa dirección (giro en búfer, como el teclado);
+// mantenerla la conserva y deslizar el dedo a otra flecha cambia la dirección sin soltar.
 import { setDirections, togglePause, type GameState } from '../engine/game';
-import { JOYSTICK_HAPTIC_MS, JOYSTICK_RADIUS_PX } from '../engine/rules';
-import { createFloatingStick, stickHintVisible, type Point, type StickFrame } from '../input/floatingStick';
+import { DPAD_HAPTIC_MS } from '../engine/rules';
+import type { Dir } from '../engine/types';
+import { createDpad, type Point } from '../input/dpad';
 
 export interface Controles {
   readonly element: HTMLElement;
-  /** Ajusta el botón de pausa (Pausa/Seguir) y la pista del joystick a la fase actual. */
+  /** Ajusta el botón de pausa (Pausa/Seguir) a la fase actual y suelta las flechas si ya no se juega. */
   sync(): void;
   destroy(): void;
 }
@@ -14,11 +16,19 @@ export interface Controles {
 const PAUSE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3v14H7zM14 5h3v14h-3z"/></svg>';
 const PLAY_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5 L19 12 L8 19 Z"/></svg>';
 
-/** Vibración corta al cambiar de dirección. Si el teléfono no la tiene (iOS) no pasa nada. */
+/** Flechas en el orden del DOM (Arriba, Izquierda, Derecha, Abajo), con su nombre y su triángulo. */
+const ARROWS: ReadonlyArray<{ dir: Dir; label: string; path: string }> = [
+  { dir: 'arriba', label: 'Arriba', path: 'M12 5 L20 18 L4 18 Z' },
+  { dir: 'izquierda', label: 'Izquierda', path: 'M5 12 L18 4 L18 20 Z' },
+  { dir: 'derecha', label: 'Derecha', path: 'M19 12 L6 4 L6 20 Z' },
+  { dir: 'abajo', label: 'Abajo', path: 'M12 19 L20 6 L4 6 Z' },
+];
+
+/** Vibración corta al cambiar de flecha. Si el teléfono no la tiene (iOS) no pasa nada. */
 function haptic(): void {
   if (typeof navigator === 'undefined' || typeof navigator.vibrate !== 'function') return;
   try {
-    navigator.vibrate(JOYSTICK_HAPTIC_MS);
+    navigator.vibrate(DPAD_HAPTIC_MS);
   } catch {
     // Falla en silencio.
   }
@@ -28,106 +38,90 @@ export function createControles(state: GameState): Controles {
   const element = document.createElement('div');
   element.className = 'controles';
 
-  const zone = document.createElement('div');
-  zone.className = 'stick-zone';
-  zone.setAttribute('role', 'group');
-  zone.setAttribute('aria-label', 'Joystick: toca y arrastra para moverte');
+  const pad = document.createElement('div');
+  pad.className = 'dpad';
+  pad.setAttribute('role', 'group');
+  pad.setAttribute('aria-label', 'Flechas');
 
-  const hint = document.createElement('div');
-  hint.className = 'stick-hint';
-  hint.setAttribute('aria-hidden', 'true');
-  const hintText = document.createElement('span');
-  hintText.textContent = 'Toca y arrastra';
-  hint.append(hintText);
-
-  const base = document.createElement('div');
-  base.className = 'stick';
-  base.setAttribute('aria-hidden', 'true');
-  const knob = document.createElement('div');
-  knob.className = 'stick-knob';
-  base.append(knob);
-
-  zone.append(hint, base);
+  const buttons = new Map<Dir, HTMLButtonElement>();
+  const clicks: Array<[HTMLButtonElement, (e: MouseEvent) => void]> = [];
+  for (const { dir, label, path } of ARROWS) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = `dpad-btn dpad-btn--${dir}`;
+    b.dataset.dir = dir;
+    b.setAttribute('aria-label', label);
+    b.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${path}"/></svg>`;
+    // Activación sin puntero (teclado o lector de pantalla): detail 0. Con dedo ya la manejan los pointer events.
+    const onClick = (e: MouseEvent) => {
+      if (e.detail === 0) setDirections(state, dir, null);
+    };
+    b.addEventListener('click', onClick);
+    clicks.push([b, onClick]);
+    buttons.set(dir, b);
+    pad.append(b);
+  }
 
   const pause = document.createElement('button');
   pause.type = 'button';
   pause.className = 'atari-pause';
   pause.addEventListener('click', () => togglePause(state));
 
-  element.append(zone, pause);
+  element.append(pad, pause);
 
-  const stick = createFloatingStick();
-  // Esquina de la zona al empezar el arrastre: los puntos van en coordenadas de la zona.
-  let origin = { left: 0, top: 0 };
-  const local = (e: PointerEvent): Point => ({ x: e.clientX - origin.left, y: e.clientY - origin.top });
+  const dpad = createDpad();
+  const point = (e: PointerEvent): Point => ({ x: e.clientX, y: e.clientY });
 
-  // La dirección se manda en cada pointermove; el dibujo espera al siguiente cuadro (un solo rAF pendiente).
-  let pending: StickFrame | null = null;
-  let raf = 0;
-  const draw = () => {
-    raf = 0;
-    if (!pending) return;
-    const { base: b, knob: k } = pending;
-    base.style.transform = `translate(${b.x - JOYSTICK_RADIUS_PX}px, ${b.y - JOYSTICK_RADIUS_PX}px)`;
-    knob.style.transform = `translate(calc(-50% + ${k.x - b.x}px), calc(-50% + ${k.y - b.y}px))`;
+  let shownActive: Dir | null = null;
+  const showActive = (dir: Dir | null) => {
+    if (dir === shownActive) return;
+    if (shownActive) buttons.get(shownActive)?.classList.remove('dpad-btn--activa');
+    if (dir) buttons.get(dir)?.classList.add('dpad-btn--activa');
+    shownActive = dir;
   };
-  const schedule = (frame: StickFrame) => {
-    pending = frame;
-    if (!raf) raf = requestAnimationFrame(draw);
+
+  const apply = (frame: { dir: Dir | null; changed: boolean }) => {
+    if (!frame.changed || !frame.dir) return;
+    // Sin diagonales: cada flecha es un pedido recto. Al soltar no se borra (Polka-Man sigue recto).
+    setDirections(state, frame.dir, null);
+    haptic();
+    showActive(frame.dir);
   };
 
   const release = (id: number) => {
-    if (stick.pointerId !== id) return; // no era el dedo activo
-    const w = stick.end(id);
-    // Al soltar queda la última principal: Polka-Man sigue recto hasta la pared, como en el clásico.
-    if (w) setDirections(state, w.primary, null);
-    base.classList.remove('stick--activo'); // se desvanece en --stick-fade
-    if (zone.hasPointerCapture?.(id)) zone.releasePointerCapture(id);
-    sync();
+    if (!dpad.end(id)) return; // no era el dedo activo
+    if (pad.hasPointerCapture?.(id)) pad.releasePointerCapture(id);
+    showActive(null);
   };
 
   const onDown = (e: PointerEvent) => {
-    e.preventDefault(); // sin scroll, zoom ni selección mientras se arrastra
-    const rect = zone.getBoundingClientRect();
-    if (stick.pointerId === null) origin = { left: rect.left, top: rect.top };
-    const frame = stick.start(e.pointerId, local(e));
+    e.preventDefault(); // sin scroll, zoom, doble tap, foco ni selección
+    const rect = pad.getBoundingClientRect();
+    const center = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    const frame = dpad.start(e.pointerId, point(e), center);
     if (!frame) return; // ya hay un dedo: este se ignora
-    zone.setPointerCapture?.(e.pointerId);
-    base.classList.add('stick--activo');
-    schedule(frame);
-    draw(); // la base aparece bajo el dedo ya en este cuadro
-    sync();
+    pad.setPointerCapture?.(e.pointerId);
+    apply(frame);
   };
   const onMove = (e: PointerEvent) => {
-    const frame = stick.move(e.pointerId, local(e));
+    const frame = dpad.move(e.pointerId, point(e));
     if (!frame) return;
     e.preventDefault();
-    if (frame.dir && frame.changed) {
-      setDirections(state, frame.dir, frame.secondary);
-      haptic();
-    }
-    schedule(frame);
+    apply(frame);
   };
   const onUp = (e: PointerEvent) => release(e.pointerId);
 
-  zone.addEventListener('pointerdown', onDown);
-  zone.addEventListener('pointermove', onMove);
-  zone.addEventListener('pointerup', onUp);
-  zone.addEventListener('pointercancel', onUp);
-  zone.addEventListener('lostpointercapture', onUp);
+  pad.addEventListener('pointerdown', onDown);
+  pad.addEventListener('pointermove', onMove);
+  pad.addEventListener('pointerup', onUp);
+  pad.addEventListener('pointercancel', onUp);
+  pad.addEventListener('lostpointercapture', onUp);
 
   let shownPaused: boolean | null = null;
-  let shownHint: boolean | null = null;
   function sync() {
-    // Si la partida se pausa o termina con el dedo abajo, se suelta el joystick.
-    if (stick.pointerId !== null && state.phase !== 'listo' && state.phase !== 'jugando') {
-      release(stick.pointerId);
-      return;
-    }
-    const hintOn = stickHintVisible(state.phase, state.round, stick.pointerId !== null);
-    if (hintOn !== shownHint) {
-      shownHint = hintOn;
-      zone.classList.toggle('stick-zone--pista', hintOn);
+    // Si la partida se pausa o termina con el dedo abajo, se sueltan las flechas.
+    if (dpad.pointerId !== null && state.phase !== 'listo' && state.phase !== 'jugando') {
+      release(dpad.pointerId);
     }
     const paused = state.phase === 'pausa';
     if (paused === shownPaused) return;
@@ -141,12 +135,12 @@ export function createControles(state: GameState): Controles {
     element,
     sync,
     destroy() {
-      zone.removeEventListener('pointerdown', onDown);
-      zone.removeEventListener('pointermove', onMove);
-      zone.removeEventListener('pointerup', onUp);
-      zone.removeEventListener('pointercancel', onUp);
-      zone.removeEventListener('lostpointercapture', onUp);
-      if (raf) cancelAnimationFrame(raf);
+      pad.removeEventListener('pointerdown', onDown);
+      pad.removeEventListener('pointermove', onMove);
+      pad.removeEventListener('pointerup', onUp);
+      pad.removeEventListener('pointercancel', onUp);
+      pad.removeEventListener('lostpointercapture', onUp);
+      for (const [b, onClick] of clicks) b.removeEventListener('click', onClick);
     },
   };
 }

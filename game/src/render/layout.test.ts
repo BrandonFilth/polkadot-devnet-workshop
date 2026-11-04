@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { CONTROLS_HEIGHT_PX, HUD_HEIGHT_PX, MAZE_HEIGHT, MAZE_WIDTH, MIN_TILE_PX } from '../engine/rules';
+import {
+  CONTROLS_HEIGHT_PX,
+  DPAD_BUTTON_PX,
+  DPAD_GAP_PX,
+  HUD_HEIGHT_PX,
+  MAZE_HEIGHT,
+  MAZE_WIDTH,
+  MIN_TILE_PX,
+  PAUSE_BUTTON_PX,
+} from '../engine/rules';
 import { mazeLayout, portraitSplit, stageSize, type Viewport } from './layout';
 
 const phone = (width: number, height: number, extra: Partial<Viewport> = {}): Viewport => ({
@@ -59,6 +68,15 @@ describe('layout del laberinto', () => {
   it('vertical en pantalla baja: los controles nunca bajan de su alto mínimo', () => {
     const s = portraitSplit(phone(390, 500));
     expect(s.controlsHeight).toBeGreaterThanOrEqual(CONTROLS_HEIGHT_PX);
+  });
+
+  it('vertical: las flechas (3 botones y 2 separaciones) caben en la zona de controles junto a la pausa', () => {
+    const dpad = 3 * DPAD_BUTTON_PX + 2 * DPAD_GAP_PX;
+    for (const v of [phone(360, 800), phone(390, 844)]) {
+      expect(dpad).toBeLessThanOrEqual(portraitSplit(v).controlsHeight);
+      // Ancho libre: el más angosto (360) menos 24 de padding y la columna de la pausa.
+      expect(dpad).toBeLessThanOrEqual(360 - 24 - PAUSE_BUTTON_PX);
+    }
   });
 
   it('un escenario diminuto usa la casilla mínima', () => {

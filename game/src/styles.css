@@ -1,5 +1,5 @@
-/* Polka-Man: paleta, safe areas, layout, joystick flotante, menú y overlays. Nada se carga de internet.
-   Las medidas (--hud-h, --controls-h, --joy-r, --knob-r, --pause-size, --stick-fade) las pone app.ts desde
+/* Polka-Man: paleta, safe areas, layout, flechas táctiles, menú y overlays. Nada se carga de internet.
+   Las medidas (--hud-h, --controls-h, --pause-size, --dpad-btn, --dpad-gap) las pone app.ts desde
    rules.ts; los valores de aquí son solo respaldo. */
 :root {
   --bg: #050505;
@@ -13,10 +13,9 @@
   --display: 'Space Mono', 'JetBrains Mono', monospace;
   --hud-h: 44px;
   --controls-h: 132px;
-  --joy-r: 56px;
-  --knob-r: 26px;
   --pause-size: 72px;
-  --stick-fade: 150ms;
+  --dpad-btn: 56px;
+  --dpad-gap: 4px;
   color-scheme: dark;
 }
 
@@ -30,7 +29,7 @@
 html, body { height: 100%; margin: 0; overflow: hidden; overscroll-behavior: none; }
 #app { position: fixed; inset: 0;
        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
-.stage, .controles, .stick-zone { touch-action: none; }
+.stage, .controles, .dpad { touch-action: none; }
 .controles button, .hud button { touch-action: manipulation; }
 .overlay { overflow-y: auto; touch-action: pan-y; overscroll-behavior: contain; }
 
@@ -346,8 +345,8 @@ body {
   display: block;
 }
 
-/* Controles estilo Atari: joystick flotante en toda la zona de abajo (aparece donde pones el pulgar y lo
-   sigue) y botón rojo de pausa en su propia columna a la derecha, fuera de esa zona. Solo en táctil. */
+/* Controles estilo Atari: flechas en cruz centradas en la zona de abajo y botón rojo de pausa en su propia
+   columna a la derecha, fuera de las flechas. Solo en táctil. */
 .controles {
   display: none;
   align-items: center;
@@ -367,7 +366,7 @@ body {
 }
 
 /* Celular en vertical: el laberinto justo debajo del HUD (--maze-h lo calcula app.ts con portraitSplit)
-   y la zona de controles se queda con el resto: toda ella sirve para el joystick, salvo la columna de la pausa. */
+   y la zona de controles se queda con el resto: las flechas a la izquierda y la columna de la pausa a la derecha. */
 @media (pointer: coarse) and (orientation: portrait) {
   #app {
     grid-template-rows: var(--hud-h) var(--maze-h, minmax(0, 1fr)) minmax(var(--controls-h), 1fr);
@@ -383,112 +382,86 @@ body {
   display: none;
 }
 
-/* Zona de activación: todo lo que queda a la izquierda de la pausa. Tocar en cualquier punto pone ahí la base. */
-.stick-zone {
-  position: relative;
+/* Flechas en cruz (rejilla 3x3) centradas en todo lo que queda a la izquierda de la pausa. Controles.ts saca la
+   dirección de dónde está el dedo respecto al centro, así que tocar cerca de una flecha también cuenta. */
+.dpad {
+  --dpad-size: var(--dpad-btn);
   flex: 1;
   align-self: stretch;
   min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(3, var(--dpad-size));
+  grid-template-rows: repeat(3, var(--dpad-size));
+  grid-template-areas:
+    '. up .'
+    'left . right'
+    '. down .';
+  gap: var(--dpad-gap);
+  place-content: center;
   touch-action: none;
-  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
-/* Base del joystick: invisible hasta que tocas; Controles.ts la mueve con transform. */
-.stick {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: calc(var(--joy-r) * 2);
-  height: calc(var(--joy-r) * 2);
+/* Fuera de vertical la fila mide --controls-h: las flechas se encogen para caber. */
+@media (pointer: coarse) and (orientation: landscape) {
+  .dpad {
+    --dpad-size: min(var(--dpad-btn), calc((var(--controls-h) - 2 * var(--dpad-gap) - 8px) / 3));
+  }
+}
+
+.controles .dpad-btn {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 0;
   border: 2px solid var(--muted);
-  border-radius: 50%;
-  background: radial-gradient(circle, #151515 0 55%, #0d0d0d 56% 100%);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--stick-fade) ease-out;
-  will-change: transform, opacity;
+  border-radius: 12px;
+  background: #151515;
+  box-shadow: 0 4px 0 #0d0d0d, 0 0 0 1px #050505;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 60ms ease-out, border-color 60ms ease-out;
 }
 
-.stick--activo {
-  opacity: 1;
-  transition: none;
+.dpad-btn--arriba { grid-area: up; }
+.dpad-btn--abajo { grid-area: down; }
+.dpad-btn--izquierda { grid-area: left; }
+.dpad-btn--derecha { grid-area: right; }
+
+.dpad-btn svg {
+  width: 50%;
+  height: 50%;
+  fill: var(--ink);
+  pointer-events: none;
+}
+
+.controles .dpad-btn:active,
+.controles .dpad-btn--activa {
+  transform: translateY(3px);
+  border-color: var(--accent);
+  box-shadow: 0 1px 0 #0d0d0d, 0 0 0 1px #050505;
+}
+
+.dpad-btn--activa svg {
+  fill: var(--accent);
+}
+
+.dpad-btn:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .stick {
+  .controles .dpad-btn {
     transition: none;
   }
-}
-
-/* Cruz de guía: las 4 direcciones del laberinto. */
-.stick::before,
-.stick::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  background: #2a2a2a;
-  transform: translate(-50%, -50%);
-}
-
-.stick::before {
-  width: 2px;
-  height: 80%;
-}
-
-.stick::after {
-  width: 80%;
-  height: 2px;
-}
-
-/* Pista en reposo: anillo punteado y «Toca y arrastra», solo al empezar (ver stickHintVisible). */
-.stick-hint {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  display: grid;
-  place-items: center;
-  width: calc(var(--joy-r) * 2);
-  height: calc(var(--joy-r) * 2);
-  padding: 0 18px;
-  border: 2px dashed var(--line);
-  border-radius: 50%;
-  color: var(--muted);
-  font-size: 12px;
-  text-align: center;
-  line-height: 1.2;
-  transform: translate(-50%, -50%);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--stick-fade) ease-out;
-}
-
-.stick-zone--pista .stick-hint {
-  opacity: 0.7;
-}
-
-@media (pointer: fine) {
-  .stick-hint {
-    display: none;
-  }
-}
-
-.stick-knob {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  z-index: 1;
-  width: calc(var(--knob-r) * 2);
-  height: calc(var(--knob-r) * 2);
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #ffffff, var(--ink) 45%, #bdbdb8 100%);
-  box-shadow: 0 4px 0 #6b6b67, 0 0 0 1px #050505;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-}
-
-.stick--activo .stick-knob {
-  box-shadow: 0 2px 0 #6b6b67, 0 0 0 2px var(--accent);
 }
 
 /* Botón rojo redondo sobre una base negra, como el del joystick del Atari 2600. */

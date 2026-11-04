@@ -8,7 +8,7 @@ export interface Viewport {
   safeRight: number;
   safeBottom: number;
   safeLeft: number;
-  /** Pantalla táctil: hay zona de controles (joystick y pausa). */
+  /** Pantalla táctil: hay zona de controles (flechas y pausa). */
   touch: boolean;
 }
 

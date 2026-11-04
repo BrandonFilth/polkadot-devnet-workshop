@@ -19,9 +19,8 @@ import { MAZE, parseMaze } from './engine/maze';
 import {
   CONTROLS_HEIGHT_PX,
   HUD_HEIGHT_PX,
-  JOYSTICK_FADE_MS,
-  JOYSTICK_KNOB_RADIUS_PX,
-  JOYSTICK_RADIUS_PX,
+  DPAD_BUTTON_PX,
+  DPAD_GAP_PX,
   PAUSE_BUTTON_PX,
   RANKING_MAX_HEIGHT_PX,
 } from './engine/rules';
@@ -41,10 +40,9 @@ export function startApp(root: HTMLElement): void {
   // Las medidas de la pantalla viven en rules.ts; el CSS las lee de aquí.
   root.style.setProperty('--hud-h', `${HUD_HEIGHT_PX}px`);
   root.style.setProperty('--controls-h', `${CONTROLS_HEIGHT_PX}px`);
-  root.style.setProperty('--joy-r', `${JOYSTICK_RADIUS_PX}px`);
-  root.style.setProperty('--knob-r', `${JOYSTICK_KNOB_RADIUS_PX}px`);
   root.style.setProperty('--pause-size', `${PAUSE_BUTTON_PX}px`);
-  root.style.setProperty('--stick-fade', `${JOYSTICK_FADE_MS}ms`);
+  root.style.setProperty('--dpad-btn', `${DPAD_BUTTON_PX}px`);
+  root.style.setProperty('--dpad-gap', `${DPAD_GAP_PX}px`);
   root.style.setProperty('--ranking-max-h', `${RANKING_MAX_HEIGHT_PX}px`);
 
   const header = document.createElement('header');
@@ -57,7 +55,7 @@ export function startApp(root: HTMLElement): void {
   canvas.setAttribute('aria-label', 'Tablero de Polka-Man');
   stage.append(canvas);
 
-  // Joystick flotante y botón de pausa estilo Atari (solo en pantallas táctiles, ver styles.css).
+  // Flechas y botón de pausa estilo Atari (solo en pantallas táctiles, ver styles.css).
   const controles = createControles(state);
 
   // Aviso de giro: fuera del escenario, a pantalla completa y por encima de todo.
