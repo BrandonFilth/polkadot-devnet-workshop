@@ -24,21 +24,17 @@ import {
   DPAD_BUTTON_PX,
   DPAD_GAP_PX,
   DPAD_HAPTIC_MS,
+  DPAD_PAD_PX,
   HUD_HEIGHT_PX,
-  JOYSTICK_DEAD_ZONE_PX,
-  JOYSTICK_DIAGONAL_HALF_DEG,
-  JOYSTICK_FADE_MS,
-  JOYSTICK_HAPTIC_MS,
-  JOYSTICK_HINT_ROUNDS,
-  JOYSTICK_KNOB_RADIUS_PX,
-  JOYSTICK_RADIUS_PX,
   KEYBOARD_MIN_PX,
   MIN_TILE_PX,
   PAUSE_BUTTON_PX,
   PLAYER_SPEED,
   RANKING_MAX_HEIGHT_PX,
+  SWIPE_DIAGONAL_HALF_DEG,
   VIEW_CROP_TILES,
 } from './rules';
+import { dpadSize } from '../render/layout';
 
 const round3 = (v: number) => Math.round(v * 1000) / 1000;
 
@@ -83,10 +79,10 @@ describe('rules: dificultad', () => {
     expect(round3(frightenedSeconds(r))).toBe(fright);
   });
 
-  it('diagonal del joystick y alto del ranking', () => {
-    expect(JOYSTICK_DIAGONAL_HALF_DEG).toBe(32.5);
+  it('diagonal del swipe y alto del ranking', () => {
+    expect(SWIPE_DIAGONAL_HALF_DEG).toBe(32.5);
     // 75° cae dentro del sector diagonal (45 ± 32.5) con margen.
-    expect(Math.abs(75 - 45)).toBeLessThan(JOYSTICK_DIAGONAL_HALF_DEG - 1);
+    expect(Math.abs(75 - 45)).toBeLessThan(SWIPE_DIAGONAL_HALF_DEG - 1);
     expect(RANKING_MAX_HEIGHT_PX).toBe(320);
   });
 
@@ -95,22 +91,16 @@ describe('rules: dificultad', () => {
     expect(MIN_TILE_PX).toBe(8);
     expect(HUD_HEIGHT_PX).toBe(44);
     expect(CONTROLS_HEIGHT_PX).toBe(132);
-    expect(JOYSTICK_RADIUS_PX).toBe(56);
-    expect(JOYSTICK_KNOB_RADIUS_PX).toBe(26);
-    expect(JOYSTICK_DEAD_ZONE_PX).toBe(10);
-    expect(JOYSTICK_FADE_MS).toBe(150);
-    expect(JOYSTICK_HINT_ROUNDS).toBe(1);
-    expect(JOYSTICK_HAPTIC_MS).toBe(10);
-    // La zona muerta es más chica que la perilla: un pequeño movimiento ya da dirección.
-    expect(JOYSTICK_DEAD_ZONE_PX).toBeLessThan(JOYSTICK_KNOB_RADIUS_PX);
     expect(PAUSE_BUTTON_PX).toBe(72);
     expect(KEYBOARD_MIN_PX).toBe(120);
-    // El joystick y la pausa caben en la zona de controles.
-    expect(JOYSTICK_RADIUS_PX * 2).toBeLessThan(CONTROLS_HEIGHT_PX);
+    // Las flechas (encogidas si hace falta) y la pausa caben en la zona de controles de alto mínimo.
+    expect(dpadSize(CONTROLS_HEIGHT_PX)).toBeGreaterThanOrEqual(1);
+    expect(3 * dpadSize(CONTROLS_HEIGHT_PX) + 2 * DPAD_GAP_PX).toBeLessThanOrEqual(CONTROLS_HEIGHT_PX);
     expect(PAUSE_BUTTON_PX).toBeLessThan(CONTROLS_HEIGHT_PX);
     // Flechas del D-pad: blanco táctil de al menos 48 px.
     expect(DPAD_BUTTON_PX).toBe(56);
     expect(DPAD_GAP_PX).toBe(4);
+    expect(DPAD_PAD_PX).toBe(8);
     expect(DPAD_HAPTIC_MS).toBe(10);
     expect(DPAD_BUTTON_PX).toBeGreaterThanOrEqual(48);
   });

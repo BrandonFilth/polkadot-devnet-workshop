@@ -1,8 +1,8 @@
-// Teclado y swipe sobre el escenario. El joystick vive en components/Controles.ts. Solo traduce eventos a llamadas del motor.
+// Teclado y swipe sobre el escenario. Las flechas táctiles viven en components/Controles.ts. Solo traduce eventos a llamadas del motor.
 import { setDirections, start, togglePause, type GameState } from '../engine/game';
 import { OPPOSITE } from '../engine/movement';
 import type { Dir } from '../engine/types';
-import type { Wanted } from './joystick';
+import type { Wanted } from './directions';
 import { swipeDirections } from './swipe';
 
 const KEYS: Record<string, Dir> = {

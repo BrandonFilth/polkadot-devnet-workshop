@@ -21,6 +21,7 @@ import {
   HUD_HEIGHT_PX,
   DPAD_BUTTON_PX,
   DPAD_GAP_PX,
+  DPAD_PAD_PX,
   PAUSE_BUTTON_PX,
   RANKING_MAX_HEIGHT_PX,
 } from './engine/rules';
@@ -43,6 +44,7 @@ export function startApp(root: HTMLElement): void {
   root.style.setProperty('--pause-size', `${PAUSE_BUTTON_PX}px`);
   root.style.setProperty('--dpad-btn', `${DPAD_BUTTON_PX}px`);
   root.style.setProperty('--dpad-gap', `${DPAD_GAP_PX}px`);
+  root.style.setProperty('--dpad-pad', `${DPAD_PAD_PX}px`);
   root.style.setProperty('--ranking-max-h', `${RANKING_MAX_HEIGHT_PX}px`);
 
   const header = document.createElement('header');
@@ -72,6 +74,7 @@ export function startApp(root: HTMLElement): void {
   const syncSplit = () => {
     if (!portrait.matches) {
       root.style.removeProperty('--maze-h');
+      root.style.removeProperty('--controls-avail');
       return;
     }
     const cs = getComputedStyle(root);
@@ -86,6 +89,8 @@ export function startApp(root: HTMLElement): void {
       touch: true,
     });
     root.style.setProperty('--maze-h', `${split.mazeHeight}px`);
+    // Alto real de la fila de controles: las flechas se encogen si no caben (regla .dpad de styles.css).
+    root.style.setProperty('--controls-avail', `${split.controlsHeight}px`);
   };
   portrait.addEventListener('change', syncSplit);
   window.addEventListener('resize', syncSplit);

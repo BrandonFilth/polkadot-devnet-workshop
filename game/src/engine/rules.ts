@@ -191,32 +191,11 @@ export const HUD_HEIGHT_PX = 44;
 export const CONTROLS_HEIGHT_PX = 132;
 
 /**
- * Radio de la base del joystick flotante, en px CSS. Si el dedo se aleja más que esto, la base lo
- * sigue para que la perilla quede en el borde.
- */
-export const JOYSTICK_RADIUS_PX = 56;
-
-/** Radio de la perilla del joystick, en px CSS. */
-export const JOYSTICK_KNOB_RADIUS_PX = 26;
-
-/** Zona muerta del joystick, en px CSS desde el centro de la base: más cerca no cambia la dirección. */
-export const JOYSTICK_DEAD_ZONE_PX = 10;
-
-/** Duración, en ms, del desvanecido del joystick al soltar el dedo. */
-export const JOYSTICK_FADE_MS = 150;
-
-/** Rondas de cada partida en las que se ve la pista «Toca y arrastra» mientras no hay dedo. */
-export const JOYSTICK_HINT_ROUNDS = 1;
-
-/** Vibración corta, en ms, al cambiar de dirección con el joystick (si el teléfono la tiene). */
-export const JOYSTICK_HAPTIC_MS = 10;
-
-/**
- * Media anchura, en grados, del sector diagonal del joystick (y del swipe) alrededor de cada 45°.
+ * Media anchura, en grados, del sector diagonal alrededor de cada 45°.
  * 32.5 → diagonal de 12.5° a 77.5° desde el eje horizontal; recto = ±12.5° alrededor de cada eje.
  * Con ±22.5 los 75° caerían en «arriba» puro y con ±30 justo en el borde: 32.5 los incluye con margen.
  */
-export const JOYSTICK_DIAGONAL_HALF_DEG = 32.5;
+export const SWIPE_DIAGONAL_HALF_DEG = 32.5;
 
 /** Alto máximo de la lista del ranking, en px CSS; más filas se desplazan dentro de su caja. */
 export const RANKING_MAX_HEIGHT_PX = 320;
@@ -229,6 +208,9 @@ export const DPAD_BUTTON_PX = 56;
 
 /** Separación entre las flechas del D-pad, en px CSS. */
 export const DPAD_GAP_PX = 4;
+
+/** Margen vertical, en px CSS, que se reserva en la fila de controles al encoger las flechas. */
+export const DPAD_PAD_PX = 8;
 
 /** Vibración corta, en ms, al tocar o cambiar de flecha (si el teléfono la tiene). */
 export const DPAD_HAPTIC_MS = 10;

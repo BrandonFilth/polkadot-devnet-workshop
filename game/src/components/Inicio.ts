@@ -9,7 +9,7 @@ import type { Mine } from './FinDePartida';
 export const INICIO_SUGERENCIA = 'Conéctate para guardar tu récord. Puedes jugar sin conectarte.';
 export const INICIO_FUERA = 'Para conectar abre el juego en la Polkadot App o Desktop.';
 export const AVISO_SIN_CUENTA = 'Sin cuenta no se guardará tu récord';
-export const INICIO_AYUDA = 'PC: flechas o WASD · Celular: joystick o desliza';
+export const INICIO_AYUDA = 'PC: flechas o WASD · Celular: flechas o desliza';
 
 /** Fantasma de la portada (cuerpo con 3 picos y ojos), en una caja de 100×100. */
 const ghostArt = (x: number, color: string) =>

@@ -9,7 +9,7 @@ import {
   MIN_TILE_PX,
   PAUSE_BUTTON_PX,
 } from '../engine/rules';
-import { mazeLayout, portraitSplit, stageSize, type Viewport } from './layout';
+import { dpadSize, mazeLayout, portraitSplit, stageSize, type Viewport } from './layout';
 
 const phone = (width: number, height: number, extra: Partial<Viewport> = {}): Viewport => ({
   width,
@@ -77,6 +77,19 @@ describe('layout del laberinto', () => {
       // Ancho libre: el más angosto (360) menos 24 de padding y la columna de la pausa.
       expect(dpad).toBeLessThanOrEqual(360 - 24 - PAUSE_BUTTON_PX);
     }
+  });
+
+  it('dpadSize: flechas de 56 px en 360×800 y 390×844', () => {
+    expect(dpadSize(portraitSplit(phone(360, 800)).controlsHeight)).toBe(56);
+    expect(dpadSize(portraitSplit(phone(390, 844)).controlsHeight)).toBe(56);
+  });
+
+  it('dpadSize: en pantallas bajas las flechas se encogen y caben en la fila de controles', () => {
+    for (const v of [phone(360, 600), phone(390, 500)]) {
+      const h = portraitSplit(v).controlsHeight;
+      expect(3 * dpadSize(h) + 2 * DPAD_GAP_PX).toBeLessThanOrEqual(h);
+    }
+    expect(dpadSize(132)).toBe(38);
   });
 
   it('un escenario diminuto usa la casilla mínima', () => {

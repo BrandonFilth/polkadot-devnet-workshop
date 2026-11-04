@@ -9,7 +9,7 @@ export interface Player {
   dir: Dir | null;
   /** Dirección pedida (principal); se aplica en el primer centro donde se pueda girar. */
   nextDir: Dir | null;
-  /** Segunda dirección pedida (diagonal del joystick, swipe o dos teclas). null = pedido recto. */
+  /** Segunda dirección pedida (diagonal del swipe o dos teclas). null = pedido recto. */
   altDir: Dir | null;
   /** Fase de la boca, de 0 a 1. Avanza solo mientras se mueve. */
   mouth: number;

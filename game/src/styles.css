@@ -1,5 +1,5 @@
 /* Polka-Man: paleta, safe areas, layout, flechas táctiles, menú y overlays. Nada se carga de internet.
-   Las medidas (--hud-h, --controls-h, --pause-size, --dpad-btn, --dpad-gap) las pone app.ts desde
+   Las medidas (--hud-h, --controls-h, --pause-size, --dpad-btn, --dpad-gap, --dpad-pad) las pone app.ts desde
    rules.ts; los valores de aquí son solo respaldo. */
 :root {
   --bg: #050505;
@@ -16,6 +16,7 @@
   --pause-size: 72px;
   --dpad-btn: 56px;
   --dpad-gap: 4px;
+  --dpad-pad: 8px;
   color-scheme: dark;
 }
 
@@ -385,7 +386,8 @@ body {
 /* Flechas en cruz (rejilla 3x3) centradas en todo lo que queda a la izquierda de la pausa. Controles.ts saca la
    dirección de dónde está el dedo respecto al centro, así que tocar cerca de una flecha también cuenta. */
 .dpad {
-  --dpad-size: var(--dpad-btn);
+  /* Si la fila no alcanza (--controls-avail en vertical, --controls-h fuera de vertical), las flechas se encogen. */
+  --dpad-size: min(var(--dpad-btn), calc((var(--controls-avail, var(--controls-h)) - 2 * var(--dpad-gap) - var(--dpad-pad)) / 3));
   flex: 1;
   align-self: stretch;
   min-width: 0;
@@ -402,13 +404,6 @@ body {
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
-}
-
-/* Fuera de vertical la fila mide --controls-h: las flechas se encogen para caber. */
-@media (pointer: coarse) and (orientation: landscape) {
-  .dpad {
-    --dpad-size: min(var(--dpad-btn), calc((var(--controls-h) - 2 * var(--dpad-gap) - 8px) / 3));
-  }
 }
 
 .controles .dpad-btn {
@@ -464,7 +459,7 @@ body {
   }
 }
 
-/* Botón rojo redondo sobre una base negra, como el del joystick del Atari 2600. */
+/* Botón rojo redondo sobre una base negra, como el botón del control del Atari 2600. */
 .atari-pause {
   flex: none;
   width: var(--pause-size);

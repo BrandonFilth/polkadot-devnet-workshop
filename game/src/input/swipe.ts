@@ -1,7 +1,7 @@
-// Convierte un deslizamiento en direcciones: el eje dominante debe superar el umbral; mismos 8 sectores que el joystick.
+// Convierte un deslizamiento en direcciones: el eje dominante debe superar el umbral; mismos 8 sectores que el teclado.
 import { SWIPE_THRESHOLD_PX } from '../engine/rules';
 import type { Dir } from '../engine/types';
-import { sectorDirections, type Wanted } from './joystick';
+import { sectorDirections, type Wanted } from './directions';
 
 /** `dy` positivo es hacia abajo (coordenadas de pantalla). Bajo el umbral da null. */
 export function swipeDirections(dx: number, dy: number, threshold = SWIPE_THRESHOLD_PX): Wanted | null {

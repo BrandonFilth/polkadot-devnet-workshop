@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 // Texto de styles.css y del componente (vite.config.js deja pasar estos ?raw a los tests).
 import css from '../styles.css?raw';
 import source from './Controles.ts?raw';
+import app from '../app.ts?raw';
 
 /** Cuerpos (juntos) de todas las reglas cuyo selector es exactamente `selector`. */
 const rule = (selector: string) => {
@@ -31,6 +32,28 @@ describe('controles: flechas', () => {
       expect(text).not.toContain('createFloatingStick');
     }
     expect(source).not.toMatch(/'joystick/);
+    // Ningún archivo del juego (salvo esta prueba) menciona el joystick viejo.
+    const all = import.meta.glob<string>('/src/**/*.{ts,css}', { query: '?raw', import: 'default', eager: true });
+    const files = Object.entries(all).filter(([path]) => !path.endsWith('/controles.test.ts'));
+    expect(files.length).toBeGreaterThan(10);
+    for (const [path, text] of files) {
+      expect(text, path).not.toContain('floatingStick');
+      expect(text, path).not.toContain('JOYSTICK_');
+    }
+  });
+
+  it('las flechas se encogen si la fila de controles no alcanza (vertical y horizontal)', () => {
+    const dpad = rule('.dpad');
+    expect(dpad).toContain('min(var(--dpad-btn)');
+    expect(dpad).toContain('var(--controls-avail, var(--controls-h))');
+    // Una sola regla para las dos orientaciones: ya no hay bloque horizontal solo para .dpad.
+    expect(css.replace(/\r\n/g, '\n')).not.toMatch(/@media \(pointer: coarse\) and \(orientation: landscape\) \{\s*\.dpad \{/);
+  });
+
+  it('app.ts pone el alto real de la fila en vertical y lo quita fuera de vertical', () => {
+    expect(app).toContain("setProperty('--controls-avail'");
+    expect(app).toContain("removeProperty('--controls-avail')");
+    expect(app).toContain("setProperty('--dpad-pad'");
   });
 
   it('un dedo con captura, sin scroll, pedido recto y vibración que falla en silencio', () => {

@@ -17,6 +17,11 @@ describe('inicio: textos y estilo', () => {
     for (const text of [INICIO_SUGERENCIA, INICIO_FUERA, INICIO_AYUDA]) expect(text).not.toMatch(/[!¡]/);
   });
 
+  it('la ayuda nombra las flechas táctiles, no el joystick', () => {
+    expect(INICIO_AYUDA).toBe('PC: flechas o WASD · Celular: flechas o desliza');
+    expect(INICIO_AYUDA).not.toMatch(/joystick/i);
+  });
+
   it('POLKA-MAN no se parte en dos líneas y Jugar no lleva borde', () => {
     const h1 = rule('.inicio h1');
     expect(h1).toMatch(/white-space:\s*nowrap/);
