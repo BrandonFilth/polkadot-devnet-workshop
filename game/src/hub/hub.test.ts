@@ -23,12 +23,21 @@ const ME: SignerAccount = { address: '5FakeSs58Cuenta', h160Address: `0x${'1'.re
 const OTHER = `0x${'2'.repeat(40)}` as const;
 
 const ok = <T>(value: T) => ({ success: true as const, value });
+/** startTime del contrato falso: medianoche de Monterrey del 1 nov 2026. */
+const START = BigInt(Date.UTC(2026, 10, 1, 6) / 1000);
 
 /** Contrato en memoria compartido por el lector (RPC) y el escritor (Host). */
 function makeWorld() {
-  const store = { best: 0n, username: '' };
+  const store = { best: 0n, lifetime: 0n, username: '' };
   const reader = {
     bestScore: { query: vi.fn(async (..._a: unknown[]) => ok<unknown>(store.best)) },
+    lifetimeBest: { query: vi.fn(async (..._a: unknown[]) => ok<unknown>(store.lifetime)) },
+    scoreOf: { query: vi.fn(async (..._a: unknown[]) => ok<unknown>(0n)) },
+    currentPeriod: { query: vi.fn(async (..._a: unknown[]) => ok<unknown>(2n)) },
+    startTime: { query: vi.fn(async (..._a: unknown[]) => ok<unknown>(START)) },
+    PERIOD_LENGTH: { query: vi.fn(async (..._a: unknown[]) => ok<unknown>(259_200n)) },
+    playerCountIn: { query: vi.fn(async (..._a: unknown[]) => ok<unknown>(2n)) },
+    getScoresIn: { query: vi.fn(async (..._a: unknown[]) => ok<unknown>([[ME.h160Address, OTHER], ['', 'otro_1'], [90n, 400n]])) },
     usernameOf: { query: vi.fn(async (..._a: unknown[]) => ok<unknown>(store.username)) },
     playerOf: { query: vi.fn(async (..._a: unknown[]) => ok<unknown>(`0x${'0'.repeat(40)}`)) },
     playerCount: { query: vi.fn(async (..._a: unknown[]) => ok<unknown>(2n)) },
@@ -41,6 +50,7 @@ function makeWorld() {
   const tx = vi.fn(async (arg: unknown, opts?: TxOptions): Promise<{ ok: true; value: object } | { ok: false; error: unknown }> => {
     sdkEvents(opts);
     store.best = arg as bigint;
+    if ((arg as bigint) > store.lifetime) store.lifetime = arg as bigint;
     return { ok: true, value: {} };
   });
   const usernameTx = vi.fn(async (name: unknown, opts?: TxOptions): Promise<{ ok: true; value: object } | { ok: false; error: unknown }> => {
@@ -218,6 +228,55 @@ describe('hub (sin red, con dobles)', () => {
     const { hub, world } = await connectedHub();
     world.reader.bestScore.query.mockRejectedValue(new Error('RPC caído'));
     await expect(hub.readMine()).rejects.toThrow('No se pudo leer tu récord');
+  });
+});
+
+describe('hub: periodos, historial y récord de por vida', () => {
+  it('readPeriods devuelve el periodo actual, startTime y PERIOD_LENGTH', async () => {
+    const deps = fakeDeps();
+    const hub = createHub(deps);
+    expect(await hub.readPeriods()).toEqual({ current: 2, start: START, length: 259_200n });
+  });
+
+  it('readPeriods con error lanza «No se pudo leer el periodo»', async () => {
+    const deps = fakeDeps();
+    deps.world.reader.currentPeriod.query.mockRejectedValue(new Error('RPC caído'));
+    const hub = createHub(deps);
+    await expect(hub.readPeriods()).rejects.toThrow('No se pudo leer el periodo');
+  });
+
+  it('readTopIn(1) lee playerCountIn/getScoresIn con 1n, ordena y marca tu fila', async () => {
+    const { hub, world } = await connectedHub();
+    const top = await hub.readTopIn(1);
+    expect(world.reader.playerCountIn.query).toHaveBeenCalledWith(1n);
+    expect(world.reader.getScoresIn.query).toHaveBeenCalledWith(1n, 0n, 2n);
+    expect(top).toEqual([
+      { address: OTHER, username: 'otro_1', score: 400n, mine: false },
+      { address: ME.h160Address, username: '', score: 90n, mine: true },
+    ]);
+    expect(world.reader.getScores.query).not.toHaveBeenCalled();
+  });
+
+  it('readTopIn con error lanza «No se pudo leer el historial»', async () => {
+    const deps = fakeDeps();
+    deps.world.reader.getScoresIn.query.mockRejectedValue(new Error('RPC caído'));
+    const hub = createHub(deps);
+    await expect(hub.readTopIn(0)).rejects.toThrow('No se pudo leer el historial');
+  });
+
+  it('readMine devuelve el récord del periodo, el de por vida y el username', async () => {
+    const { hub, world } = await connectedHub();
+    world.store.best = 300n;
+    world.store.lifetime = 900n;
+    world.store.username = 'ana';
+    expect(await hub.readMine()).toEqual({ best: 300n, lifetime: 900n, username: 'ana' });
+  });
+
+  it('guardar un récord mayor sube también el de por vida', async () => {
+    const { hub, world } = await connectedHub();
+    world.store.lifetime = 200n;
+    expect((await hub.saveScore(500)).ok).toBe(true);
+    expect(await hub.readMine()).toEqual({ best: 500n, lifetime: 500n, username: '' });
   });
 });
 

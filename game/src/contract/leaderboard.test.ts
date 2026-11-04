@@ -8,10 +8,26 @@ const names = (type: string) =>
     .sort();
 
 describe('ABI de Leaderboard', () => {
-  it('trae las 7 funciones, 3 errores y 2 eventos del contrato', () => {
-    expect(names('function')).toEqual(['bestScore', 'getScores', 'playerCount', 'playerOf', 'setUsername', 'submitScore', 'usernameOf']);
-    expect(names('error')).toEqual(['InvalidUsername', 'ScoreNotHigher', 'UsernameTaken']);
-    expect(names('event')).toEqual(['NewHighScore', 'UsernameSet']);
+  it('trae las 15 funciones, 4 errores y 3 eventos del contrato v2 (periodos de 3 días)', () => {
+    expect(names('function')).toEqual([
+      'PERIOD_LENGTH',
+      'bestScore',
+      'currentPeriod',
+      'getScores',
+      'getScoresIn',
+      'lifetimeBest',
+      'periodBounds',
+      'playerCount',
+      'playerCountIn',
+      'playerOf',
+      'scoreOf',
+      'setUsername',
+      'startTime',
+      'submitScore',
+      'usernameOf',
+    ]);
+    expect(names('error')).toEqual(['InvalidStart', 'InvalidUsername', 'ScoreNotHigher', 'UsernameTaken']);
+    expect(names('event')).toEqual(['NewHighScore', 'NewLifetimeBest', 'UsernameSet']);
   });
 });
 

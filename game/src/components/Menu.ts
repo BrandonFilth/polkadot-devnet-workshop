@@ -1,4 +1,4 @@
-// Menú superior: Username (elegir o cambiar en cualquier momento, sin récord) y Ranking (top 10).
+// Menú superior: Username (elegir o cambiar en cualquier momento, sin récord) y Ranking (actual e historial).
 // Abrirlo pausa la partida; cerrarlo no la reanuda (nada reanuda solo).
 import { setPaused, type GameState } from '../engine/game';
 import type { HostPhase, Hub } from '../hub/hub';

@@ -30,6 +30,7 @@ import {
   MIN_TILE_PX,
   PAUSE_BUTTON_PX,
   PLAYER_SPEED,
+  RANKING_HISTORY_PERIODS,
   RANKING_MAX_HEIGHT_PX,
   SWIPE_DIAGONAL_HALF_DEG,
   VIEW_CROP_TILES,
@@ -84,6 +85,10 @@ describe('rules: dificultad', () => {
     // 75° cae dentro del sector diagonal (45 ± 32.5) con margen.
     expect(Math.abs(75 - 45)).toBeLessThan(SWIPE_DIAGONAL_HALF_DEG - 1);
     expect(RANKING_MAX_HEIGHT_PX).toBe(320);
+  });
+
+  it('el historial del ranking lista 10 periodos', () => {
+    expect(RANKING_HISTORY_PERIODS).toBe(10);
   });
 
   it('pantalla y controles con los valores pedidos', () => {

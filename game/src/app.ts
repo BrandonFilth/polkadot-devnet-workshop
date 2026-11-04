@@ -120,7 +120,7 @@ export function startApp(root: HTMLElement): void {
     mine = null;
     hub.readMine().then(
       (r) => {
-        if (seq === mineSeq) mine = r ?? { best: 0n, username: '' };
+        if (seq === mineSeq) mine = r ?? { best: 0n, lifetime: 0n, username: '' };
       },
       () => {
         if (seq === mineSeq) mine = 'error';

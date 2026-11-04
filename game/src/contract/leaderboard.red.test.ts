@@ -1,5 +1,7 @@
 // Prueba de integración contra el devnet real (proyecto `red`: `pnpm test:red`). Solo lecturas y
 // simulaciones con el rpcReader del juego: sin llaves ni firmas.
+// Falla a propósito hasta que LEADERBOARD_ADDRESS (contract/config.ts) apunte al Leaderboard v2
+// (periodos de 3 días) ya desplegado: la dirección actual es la del contrato anterior.
 import { bytesToHex, createPublicClient, http } from 'viem';
 import { describe, expect, it } from 'vitest';
 import { CHAIN_ID, ETH_RPC_URL, LEADERBOARD_ADDRESS } from './config';
@@ -25,16 +27,33 @@ describe('Leaderboard en Products Devnet', () => {
     expect(await client.getChainId()).toBe(CHAIN_ID);
   });
 
-  it('hay código desplegado del tamaño del contrato compilado (5,686 bytes)', async () => {
+  it('hay código desplegado del tamaño del contrato compilado (7,179 bytes)', async () => {
     const code = await client.getCode({ address: LEADERBOARD_ADDRESS });
-    // El runtime de Leaderboard.sol (solc 0.8.28, sin optimizador) mide 5,686 bytes; la metadata
+    // El runtime de Leaderboard.sol (solc 0.8.28, sin optimizador) mide 7,179 bytes; la metadata
     // puede cambiar pero no su tamaño.
-    expect(code ? (code.length - 2) / 2 : 0).toBe(5_686);
+    expect(code ? (code.length - 2) / 2 : 0).toBe(7_179);
   });
 
   it('playerCount() responde', () => {
     expect(countResult.success).toBe(true);
     expect(players >= 0n).toBe(true);
+  });
+
+  it('currentPeriod() responde', async () => {
+    const r = await contract.currentPeriod.query();
+    expect(r.success).toBe(true);
+    expect(BigInt(r.value as bigint) >= 0n).toBe(true);
+  });
+
+  it('periodBounds(currentPeriod) contiene la hora actual', async () => {
+    const period = await contract.currentPeriod.query();
+    expect(period.success).toBe(true);
+    const r = await contract.periodBounds.query(BigInt(period.value as bigint));
+    expect(r.success).toBe(true);
+    const [startsAt, endsAt] = (r.value as [bigint, bigint]).map((v) => Number(v));
+    const nowSec = Date.now() / 1000;
+    expect(startsAt).toBeLessThanOrEqual(nowSec);
+    expect(nowSec).toBeLessThan(endsAt!);
   });
 
   it.skipIf(players === 0n)('getScores() se decodifica', () => {

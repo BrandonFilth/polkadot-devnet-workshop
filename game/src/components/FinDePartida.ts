@@ -1,4 +1,4 @@
-// Bloque de 'fin': puntaje, récord, el botón que decide saveOptions() y el mensaje del último Result.
+// Bloque de 'fin': puntaje, récord del periodo y de por vida, el botón que decide saveOptions() y el mensaje del último Result.
 import type { HostPhase, Hub, Result } from '../hub/hub';
 
 export type SaveOption = 'fuera' | 'conectar' | 'cero' | 'cargando' | 'guardar' | 'no-supera';
@@ -24,7 +24,18 @@ export function saveOptions(i: {
   return { option: 'no-supera', disabled: false };
 }
 
-export type Mine = { best: bigint; username: string } | null | 'error';
+/** `best` = récord del periodo actual; `lifetime` = récord de por vida. null = leyendo. */
+export type Mine = { best: bigint; lifetime: bigint; username: string } | null | 'error';
+
+/** Las tres líneas del resumen. «—» si no hay cuenta, si se está leyendo o si la lectura falló. */
+export function finSummary(i: { score: number; connected: boolean; mine: Mine }): [string, string, string] {
+  const known = i.connected && i.mine !== null && i.mine !== 'error' ? i.mine : null;
+  return [
+    `Puntaje: ${i.score}`,
+    `Récord del periodo: ${known ? known.best : '—'}`,
+    `Récord de por vida: ${known ? known.lifetime : '—'}`,
+  ];
+}
 
 export type FinButton = 'guardar' | 'jugar' | 'ranking' | 'inicio';
 
@@ -115,13 +126,19 @@ export function createFinDePartida(opts: {
     const score = opts.score();
     const decided = saveOptions({ host: s.host, connected, score, best, busy: s.busy });
     option = decided.option;
-    const record = connected && mine !== null && mine !== 'error' ? String(mine.best) : '—';
+    const lines = finSummary({ score, connected, mine });
     const showName = savedOk && mine !== null && mine !== 'error' && mine.username === '';
-    const key = [score, record, decided.option, decided.disabled, lastMessage, showName].join('|');
+    const key = [...lines, decided.option, decided.disabled, lastMessage, showName].join('|');
     if (key === shownKey) return;
     shownKey = key;
 
-    summary.textContent = `Puntaje: ${score} · Récord: ${record}`;
+    summary.replaceChildren(
+      ...lines.map((text) => {
+        const span = document.createElement('span');
+        span.textContent = text;
+        return span;
+      }),
+    );
     const label = finButtons(decided.option).includes('guardar') ? LABELS[decided.option] : undefined;
     button.hidden = label === undefined;
     button.disabled = decided.disabled;

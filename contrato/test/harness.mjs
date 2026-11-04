@@ -5,7 +5,7 @@ import { createRequire } from 'node:module';
 import { createBlock } from '@ethereumjs/block';
 import { createAddressFromString } from '@ethereumjs/util';
 import { createVM } from '@ethereumjs/vm';
-import { decodeErrorResult, decodeEventLog, decodeFunctionResult, encodeFunctionData, getAddress, hexToBytes, toHex } from 'viem';
+import { decodeErrorResult, decodeEventLog, decodeFunctionResult, encodeDeployData, encodeFunctionData, getAddress, hexToBytes, toHex } from 'viem';
 
 const require = createRequire(import.meta.url);
 const solc = require('solc');
@@ -49,11 +49,19 @@ export class Reverted extends Error {
   }
 }
 
-export async function deploy() {
+/** Hora (Unix, segundos) del primer bloque de cada despliegue de prueba. */
+export const NOW = 1_800_000_000n;
+
+/**
+ * Despliega Leaderboard con `args` para el constructor (por defecto `start = NOW`).
+ * El reloj empieza en NOW y solo avanza con `warp(segundos)`.
+ */
+export async function deploy(args = [NOW]) {
   const { abi, bytecode } = compile();
   const vm = await createVM();
   let number = 1n;
-  const block = () => createBlock({ header: { timestamp: 1_800_000_000n, number } }, { common: vm.common });
+  let now = NOW;
+  const block = () => createBlock({ header: { timestamp: now, number } }, { common: vm.common });
   const run = async (from, data, to) => {
     const r = await vm.evm.runCall({
       caller: createAddressFromString(from),
@@ -68,10 +76,6 @@ export async function deploy() {
     return r;
   };
 
-  const created = await run(player(99), bytecode);
-  if (created.execResult.exceptionError) throw new Error(`el despliegue falló: ${created.execResult.exceptionError.error}`);
-  const address = created.createdAddress.toString();
-
   const revert = (bytes) => {
     const data = toHex(bytes);
     try {
@@ -81,6 +85,10 @@ export async function deploy() {
       return new Reverted(`(sin decodificar ${data.slice(0, 10)})`, []);
     }
   };
+
+  const created = await run(player(99), encodeDeployData({ abi, bytecode, args }));
+  if (created.execResult.exceptionError) throw revert(created.execResult.returnValue);
+  const address = created.createdAddress.toString();
 
   /** Escribe como `from`. Lanza Reverted con el nombre del error del contrato. */
   const send = async (from, functionName, args = []) => {
@@ -98,7 +106,12 @@ export async function deploy() {
     return decodeFunctionResult({ abi, functionName, data: toHex(r.execResult.returnValue) });
   };
 
-  return { address, send, read };
+  /** Adelanta el reloj de los bloques siguientes. */
+  const warp = (seconds) => {
+    now += BigInt(seconds);
+  };
+
+  return { address, send, read, warp, now: () => now };
 }
 
 /** Comprueba que la promesa revierta con ese error. */

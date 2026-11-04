@@ -200,6 +200,9 @@ export const SWIPE_DIAGONAL_HALF_DEG = 32.5;
 /** Alto máximo de la lista del ranking, en px CSS; más filas se desplazan dentro de su caja. */
 export const RANKING_MAX_HEIGHT_PX = 320;
 
+/** Cuántos periodos pasados (de 3 días cada uno) lista Ranking > Historial, del más reciente al más viejo. */
+export const RANKING_HISTORY_PERIODS = 10;
+
 /** Diámetro del botón de pausa estilo Atari, en px CSS. */
 export const PAUSE_BUTTON_PX = 72;
 

@@ -28,13 +28,21 @@ type Write<Args extends unknown[]> = Read<Args, unknown> & {
   tx: (...args: [...Args, TxOptions?]) => Promise<{ ok: true; value: TxResult } | { ok: false; error: unknown }>;
 };
 
-/** Las 7 funciones de Leaderboard.sol, tipadas a mano porque la ABI se carga como JSON. */
+/** Las funciones de Leaderboard.sol, tipadas a mano porque la ABI se carga como JSON. */
 export interface LeaderboardContract {
   bestScore: Read<[Hex], Num>;
+  lifetimeBest: Read<[Hex], Num>;
+  scoreOf: Read<[bigint, Hex], Num>;
   usernameOf: Read<[Hex], string>;
   playerOf: Read<[string], Hex>;
   playerCount: Read<[], Num>;
+  playerCountIn: Read<[bigint], Num>;
+  currentPeriod: Read<[], Num>;
+  startTime: Read<[], Num>;
+  PERIOD_LENGTH: Read<[], Num>;
+  periodBounds: Read<[bigint], unknown>;
   getScores: Read<[bigint, bigint], unknown>;
+  getScoresIn: Read<[bigint, bigint, bigint], unknown>;
   submitScore: Write<[bigint]>;
   setUsername: Write<[string]>;
 }

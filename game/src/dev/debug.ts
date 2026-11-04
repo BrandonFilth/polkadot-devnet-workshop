@@ -15,10 +15,15 @@ export interface PolkaDebug {
   cuenta(on: boolean): void;
   /** Fase falsa del Host (por ejemplo 'listo' sin cuenta, para ver el aviso «sin cuenta»). */
   host(phase: HubState['host']): void;
-  /** Récord y username que devuelve readMine(). */
-  mine(best: number, username: string): void;
-  /** `n` filas falsas para el ranking (la 5.ª es «tuya»). */
+  /** Récord del periodo, username y récord de por vida (por defecto = best) que devuelve readMine(). */
+  mine(best: number, username: string, lifetime?: number): void;
+  /** `n` filas falsas para el ranking (la 5.ª es «tuya»); readTopIn las reusa con otros puntajes. */
   ranking(n: number): void;
+  /**
+   * Periodo actual falso para readPeriods(): `current` periodos de 3 días desde `startUnix` (segundos).
+   * Por defecto, la medianoche de Monterrey de hace current·3 días + 1 día (el periodo actual empezó ayer).
+   */
+  periodos(current: number, startUnix?: number): void;
   /** Termina la partida con `score` puntos. */
   fin(score: number): void;
   /** Operación en curso hasta el paso `step` (busy). */
@@ -68,7 +73,8 @@ export function withDebug(hub: Hub, state: GameState): Hub {
 
   let over: Partial<HubState> = {};
   let rows: RankingRow[] | null = null;
-  let mine: { best: bigint; username: string } | null = null;
+  let mine: { best: bigint; lifetime: bigint; username: string } | null = null;
+  let periods: { current: number; start: bigint; length: bigint } | null = null;
   const listeners = new Set<(s: HubState) => void>();
   const getState = (): HubState => ({ ...hub.getState(), ...over });
   const notify = () => {
@@ -90,8 +96,15 @@ export function withDebug(hub: Hub, state: GameState): Hub {
       over = { ...over, host: phase, message: '' };
       notify();
     },
-    mine(best, username) {
-      mine = { best: BigInt(best), username };
+    mine(best, username, lifetime = best) {
+      mine = { best: BigInt(best), lifetime: BigInt(lifetime), username };
+    },
+    periodos(current, startUnix) {
+      const DAY = 86_400;
+      // Medianoche de hoy en Monterrey (UTC−6 todo el año) = 06:00 UTC.
+      const today = Math.floor((Date.now() / 1000 - 6 * 3_600) / DAY) * DAY + 6 * 3_600;
+      const start = startUnix ?? today - (current * 3 + 1) * DAY;
+      periods = { current, start: BigInt(start), length: 259_200n };
     },
     ranking(n) {
       rows = Array.from({ length: n }, (_, i) => ({
@@ -129,6 +142,7 @@ export function withDebug(hub: Hub, state: GameState): Hub {
       over = {};
       rows = null;
       mine = null;
+      periods = null;
       notify();
     },
     morir() {
@@ -192,5 +206,9 @@ export function withDebug(hub: Hub, state: GameState): Hub {
     // Siempre devuelve todas las filas falsas: así se prueba la lista larga aunque se pidan 10.
     readTop: (limit) => (rows ? Promise.resolve(rows) : hub.readTop(limit)),
     readMine: () => (mine ? Promise.resolve(mine) : hub.readMine()),
+    readPeriods: () => (periods ? Promise.resolve(periods) : hub.readPeriods()),
+    // Las mismas filas falsas con puntajes distintos por periodo, para ver que cambian.
+    readTopIn: (period, limit) =>
+      rows ? Promise.resolve(rows.map((r) => ({ ...r, score: r.score + BigInt(period * 10) }))) : hub.readTopIn(period, limit),
   };
 }

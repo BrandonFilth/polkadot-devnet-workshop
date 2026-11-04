@@ -752,6 +752,13 @@ button:focus-visible {
   font-variant-numeric: tabular-nums;
 }
 
+/* Tres líneas: puntaje, récord del periodo y récord de por vida. */
+.overlay .fin-summary span {
+  display: block;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
 .ranking {
   width: 100%;
 }
@@ -835,6 +842,97 @@ button:focus-visible {
   color: var(--bg);
   background: var(--accent);
   font-weight: 500;
+}
+
+/* Las etiquetas largas («TOP 10 · 30 dic 2026 – 2 ene 2027») parten línea en vez de salirse a 360 px. */
+.ranking h2 {
+  overflow-wrap: anywhere;
+}
+
+/* Selector Actual | Historial. `.ranking > .ranking-vista` gana a `.ranking > div` (que es para el cuerpo). */
+.ranking > .ranking-vista {
+  flex-direction: row;
+  align-items: stretch;
+  gap: 4px;
+  width: 100%;
+  margin: 0 0 12px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg);
+}
+
+.ranking-vista-btn {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--muted);
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.ranking-vista-btn[aria-selected='true'] {
+  color: var(--bg);
+  background: var(--accent);
+}
+
+.ranking-vista-btn:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.ranking-reinicio {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+/* Periodos anteriores: viven dentro de .ranking-scroll, que ya pone el alto máximo y el desplazamiento. */
+.ranking-periodos {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ranking-periodos button {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: none;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 15px;
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.ranking-periodos li:last-child button {
+  border-bottom: 0;
+}
+
+.ranking-periodos button:hover {
+  color: var(--accent);
+}
+
+.ranking-periodos button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -2px;
 }
 
 .fin {

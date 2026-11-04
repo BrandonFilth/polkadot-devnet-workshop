@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import css from '../styles.css?raw';
 import overlaySource from './Overlay.ts?raw';
 import finSource from './FinDePartida.ts?raw';
+import rankingSource from './Ranking.ts?raw';
 import { rankingCells, RANKING_TOP } from './Ranking';
 
 
@@ -39,6 +40,39 @@ describe('ranking: su propia pestaña con una lista que se desplaza', () => {
       expect(src).not.toMatch(/readTop/);
     }
     expect(overlaySource).toMatch(/Ver ranking/);
+  });
+});
+
+describe('ranking: Actual | Historial', () => {
+  it('el componente tiene las vistas Actual e Historial', () => {
+    expect(rankingSource).toMatch(/'Actual'/);
+    expect(rankingSource).toMatch(/'Historial'/);
+    expect(rankingSource).toMatch(/role', 'tablist'/);
+  });
+
+  it('el selector marca la vista elegida con aria-selected', () => {
+    expect(rule(".ranking-vista-btn[aria-selected='true']")).toMatch(/background:\s*var\(--accent\)/);
+    const bar = rule('.ranking > .ranking-vista');
+    expect(bar).toMatch(/flex-direction:\s*row/);
+    expect(bar).toMatch(/background:\s*var\(--bg\)/);
+    expect(rule('.ranking-vista-btn')).toMatch(/min-width:\s*0/);
+  });
+
+  it('la lista de periodos no tiene alto propio: vive dentro de .ranking-scroll', () => {
+    const body = rule('.ranking-periodos');
+    expect(body).not.toMatch(/max-height/);
+    expect(body).toMatch(/list-style:\s*none/);
+    expect(rule('.ranking-periodos button')).toMatch(/overflow-wrap:\s*anywhere/);
+    expect(rankingSource).toMatch(/scrollBox\(list,/);
+  });
+
+  it('el contador y el encabezado parten línea en vez de desbordar', () => {
+    expect(rule('.ranking-reinicio')).toMatch(/overflow-wrap:\s*anywhere/);
+    expect(rule('.ranking h2')).toMatch(/overflow-wrap:\s*anywhere/);
+  });
+
+  it('el resumen del fin muestra sus tres líneas en bloque', () => {
+    expect(rule('.overlay .fin-summary span')).toMatch(/display:\s*block/);
   });
 });
 

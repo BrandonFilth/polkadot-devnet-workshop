@@ -63,8 +63,14 @@ export interface Hub {
   subscribe(listener: (s: HubState) => void): () => void;
   start(): Promise<void>;
   connect(): Promise<Result>;
+  /** Top del periodo actual. */
   readTop(limit?: number): Promise<RankingRow[]>;
-  readMine(): Promise<{ best: bigint; username: string } | null>;
+  /** Top de un periodo pasado (Ranking > Historial). */
+  readTopIn(period: number, limit?: number): Promise<RankingRow[]>;
+  /** Periodo actual y lo necesario para calcular las fechas de cualquier periodo. */
+  readPeriods(): Promise<{ current: number; start: bigint; length: bigint }>;
+  /** `best` = récord del periodo actual; `lifetime` = récord de por vida. */
+  readMine(): Promise<{ best: bigint; lifetime: bigint; username: string } | null>;
   saveScore(score: number): Promise<Result>;
   setUsername(name: string): Promise<Result>;
 }
@@ -295,6 +301,41 @@ export function createHub(deps?: HubDeps): Hub {
     toBig(unwrap(await withTimeout(d.reader.bestScore.query(h160, { from: h160 }), READ_TIMEOUT_MS, 'bestScore'), 'bestScore'));
   const readUsername = async (h160: `0x${string}`) =>
     String(unwrap(await withTimeout(d.reader.usernameOf.query(h160, { from: h160 }), READ_TIMEOUT_MS, 'usernameOf'), 'usernameOf') ?? '');
+  const readLifetime = async (h160: `0x${string}`) =>
+    toBig(unwrap(await withTimeout(d.reader.lifetimeBest.query(h160, { from: h160 }), READ_TIMEOUT_MS, 'lifetimeBest'), 'lifetimeBest'));
+
+  /**
+   * Top `limit` de una lista del contrato: lee cuántos jugadores hay y luego páginas de 50 (hasta
+   * MAX_PLAYERS_READ); ordena y marca tu fila. Si algo falla lanza `failMessage`.
+   */
+  const readTopOf = async (
+    source: {
+      count: () => Promise<QueryResult<unknown>>;
+      page: (offset: bigint, limit: bigint) => Promise<QueryResult<unknown>>;
+      countLabel: string;
+      pageLabel: string;
+      logLabel: string;
+      failMessage: string;
+    },
+    limit: number,
+  ): Promise<RankingRow[]> => {
+    try {
+      const rows = await withTimeout((async () => {
+        const n = toBig(unwrap(await source.count(), source.countLabel));
+        const total = Number(n < BigInt(MAX_PLAYERS_READ) ? n : BigInt(MAX_PLAYERS_READ));
+        const pages: Promise<QueryResult<unknown>>[] = [];
+        for (let offset = 0; offset < total; offset += 50) {
+          pages.push(source.page(BigInt(offset), BigInt(Math.min(50, total - offset))));
+        }
+        return (await Promise.all(pages)).flatMap((p) => decodeScores(unwrap(p, source.pageLabel)));
+      })(), READ_TIMEOUT_MS, 'Ranking');
+      const me = state.account?.h160.toLowerCase();
+      return topScores(rows, limit).map((row) => ({ ...row, mine: me !== undefined && row.address.toLowerCase() === me }));
+    } catch (error) {
+      d.log.warn(source.logLabel, describeError(error));
+      throw new Error(source.failMessage, { cause: error });
+    }
+  };
 
   /** Relee hasta 3 veces cada 2 s hasta que `done()` se cumpla (el RPC puede ir un bloque atrás). */
   const reread = async (done: () => Promise<boolean>, times = REREADS): Promise<boolean> => {
@@ -453,22 +494,50 @@ export function createHub(deps?: HubDeps): Hub {
       return endOp(result);
     },
 
-    async readTop(limit = 10) {
+    readTop(limit = 10) {
+      return readTopOf(
+        {
+          count: () => d.reader.playerCount.query(),
+          page: (offset, n) => d.reader.getScores.query(offset, n),
+          countLabel: 'playerCount',
+          pageLabel: 'getScores',
+          logLabel: 'ranking',
+          failMessage: 'No se pudo leer el ranking',
+        },
+        limit,
+      );
+    },
+
+    readTopIn(period, limit = 10) {
+      const p = BigInt(period);
+      return readTopOf(
+        {
+          count: () => d.reader.playerCountIn.query(p),
+          page: (offset, n) => d.reader.getScoresIn.query(p, offset, n),
+          countLabel: 'playerCountIn',
+          pageLabel: 'getScoresIn',
+          logLabel: 'historial',
+          failMessage: 'No se pudo leer el historial',
+        },
+        limit,
+      );
+    },
+
+    async readPeriods() {
       try {
-        const rows = await withTimeout((async () => {
-          const count = toBig(unwrap(await d.reader.playerCount.query(), 'playerCount'));
-          const total = Number(count < BigInt(MAX_PLAYERS_READ) ? count : BigInt(MAX_PLAYERS_READ));
-          const pages: Promise<QueryResult<unknown>>[] = [];
-          for (let offset = 0; offset < total; offset += 50) {
-            pages.push(d.reader.getScores.query(BigInt(offset), BigInt(Math.min(50, total - offset))));
-          }
-          return (await Promise.all(pages)).flatMap((page) => decodeScores(unwrap(page, 'getScores')));
-        })(), READ_TIMEOUT_MS, 'Ranking');
-        const me = state.account?.h160.toLowerCase();
-        return topScores(rows, limit).map((row) => ({ ...row, mine: me !== undefined && row.address.toLowerCase() === me }));
+        const [current, start, length] = await withTimeout(
+          Promise.all([d.reader.currentPeriod.query(), d.reader.startTime.query(), d.reader.PERIOD_LENGTH.query()]),
+          READ_TIMEOUT_MS,
+          'Periodo',
+        );
+        return {
+          current: Number(toBig(unwrap(current, 'currentPeriod'))),
+          start: toBig(unwrap(start, 'startTime')),
+          length: toBig(unwrap(length, 'PERIOD_LENGTH')),
+        };
       } catch (error) {
-        d.log.warn('ranking', describeError(error));
-        throw new Error('No se pudo leer el ranking', { cause: error });
+        d.log.warn('periodo', describeError(error));
+        throw new Error('No se pudo leer el periodo', { cause: error });
       }
     },
 
@@ -476,8 +545,12 @@ export function createHub(deps?: HubDeps): Hub {
       const who = account;
       if (!who) return null;
       try {
-        const [best, username] = await Promise.all([readBest(who.h160Address), readUsername(who.h160Address)]);
-        return { best, username };
+        const [best, lifetime, username] = await Promise.all([
+          readBest(who.h160Address),
+          readLifetime(who.h160Address),
+          readUsername(who.h160Address),
+        ]);
+        return { best, lifetime, username };
       } catch (error) {
         d.log.warn('mi récord', describeError(error));
         throw new Error('No se pudo leer tu récord', { cause: error });

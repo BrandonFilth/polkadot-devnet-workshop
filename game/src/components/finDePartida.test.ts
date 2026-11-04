@@ -1,5 +1,25 @@
 import { describe, expect, it } from 'vitest';
-import { finButtons, saveOptions } from './FinDePartida';
+import { finButtons, finSummary, saveOptions } from './FinDePartida';
+
+describe('finSummary: puntaje, récord del periodo y récord de por vida', () => {
+  it('con cuenta y récords leídos', () => {
+    expect(finSummary({ score: 500, connected: true, mine: { best: 300n, lifetime: 900n, username: 'ana' } })).toEqual([
+      'Puntaje: 500',
+      'Récord del periodo: 300',
+      'Récord de por vida: 900',
+    ]);
+  });
+
+  it('sin cuenta o leyendo: «—»', () => {
+    const empty = ['Puntaje: 500', 'Récord del periodo: —', 'Récord de por vida: —'];
+    expect(finSummary({ score: 500, connected: false, mine: { best: 300n, lifetime: 900n, username: '' } })).toEqual(empty);
+    expect(finSummary({ score: 500, connected: true, mine: null })).toEqual(empty);
+  });
+
+  it("lectura fallida ('error'): «—»", () => {
+    expect(finSummary({ score: 0, connected: true, mine: 'error' })).toEqual(['Puntaje: 0', 'Récord del periodo: —', 'Récord de por vida: —']);
+  });
+});
 
 describe('finButtons: el popup de fin no lleva el ranking dentro', () => {
   it('con récord por guardar: Guardar, Jugar otra vez, Ver ranking, Inicio', () => {

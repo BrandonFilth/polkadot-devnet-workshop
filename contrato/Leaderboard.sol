@@ -3,8 +3,13 @@ pragma solidity 0.8.28;
 
 /**
  * @title  Leaderboard
- * @notice Marcador del juego: guarda el mejor puntaje de cada jugador y, si el jugador quiere,
- *         un username único. No tiene dueño: nadie puede borrar ni cambiar puntajes ajenos.
+ * @notice Marcador del juego por periodos de 3 días: guarda el mejor puntaje de cada jugador en
+ *         cada periodo, su récord de por vida y, si el jugador quiere, un username único.
+ *         No tiene dueño: nadie puede borrar ni cambiar puntajes ajenos.
+ *
+ *         El ranking se reinicia solo cada 3 días: el periodo actual sale de la hora del bloque,
+ *         así que no hace falta que nadie llame una función para reiniciarlo. Los periodos
+ *         anteriores quedan guardados y se pueden leer como historial.
  *
  *         Cada jugador es una dirección (msg.sender). Dentro de la Polkadot App esa dirección es
  *         la cuenta que el Host deriva para el juego, así que es distinta en cada app.
@@ -12,31 +17,43 @@ pragma solidity 0.8.28;
 contract Leaderboard {
     // ---------------------------------------------------------------- estado
 
-    /// Mejor puntaje de cada jugador. 0 significa que todavía no ha guardado ninguno.
-    mapping(address => uint256) public bestScore;
+    /// Duración de cada periodo del ranking.
+    uint256 public constant PERIOD_LENGTH = 3 days;
 
-    /// Username de cada jugador. Vacío si no ha puesto uno.
+    /// Hora (Unix, segundos) en que empieza el periodo 0. Se fija al desplegar.
+    uint256 public immutable startTime;
+
+    /// Mejor puntaje de cada jugador en cada periodo. 0 significa que no guardó ninguno en ese periodo.
+    mapping(uint256 => mapping(address => uint256)) public scoreOf;
+
+    /// Quiénes guardaron al menos un puntaje en cada periodo, en el orden en que llegaron.
+    /// Un mapping no se puede recorrer, así que estas listas son las que permiten leerlos todos.
+    mapping(uint256 => address[]) private playersIn;
+
+    /// Mejor puntaje de cada jugador sumando todos los periodos. Solo sube.
+    mapping(address => uint256) public lifetimeBest;
+
+    /// Username de cada jugador. Vacío si no ha puesto uno. Es el mismo en todos los periodos.
     mapping(address => string) public usernameOf;
 
     /// Relación al revés, username -> jugador. Es lo que hace que un username sea único.
     /// La clave es el hash del username para no guardar el texto dos veces.
     mapping(bytes32 => address) private holderOf;
 
-    /// Todos los que han guardado al menos un puntaje, en el orden en que llegaron.
-    /// Un mapping no se puede recorrer, así que esta lista es la que permite leerlos todos.
-    address[] private players;
-
     // ---------------------------------------------------------------- eventos
 
-    /// Un jugador subió su récord.
-    event NewHighScore(address indexed player, uint256 score);
+    /// Un jugador subió su récord del periodo.
+    event NewHighScore(address indexed player, uint256 indexed period, uint256 score);
+
+    /// Un jugador subió su récord de por vida.
+    event NewLifetimeBest(address indexed player, uint256 score);
 
     /// Un jugador puso o cambió su username.
     event UsernameSet(address indexed player, string username);
 
     // ---------------------------------------------------------------- errores
 
-    /// El puntaje no supera el récord que ya tienes.
+    /// El puntaje no supera el récord que ya tienes en este periodo.
     error ScoreNotHigher(uint256 current, uint256 submitted);
 
     /// El username debe tener de 3 a 16 caracteres: a-z, 0-9 o _.
@@ -45,18 +62,35 @@ contract Leaderboard {
     /// Otro jugador ya usa ese username.
     error UsernameTaken();
 
+    /// La hora de inicio no puede ser 0 ni estar en el futuro.
+    error InvalidStart();
+
+    // ---------------------------------------------------------------- desplegar
+
+    /// @param start Hora (Unix, segundos) en que empieza el periodo 0. No puede estar en el futuro.
+    constructor(uint256 start) {
+        if (start == 0 || start > block.timestamp) revert InvalidStart();
+        startTime = start;
+    }
+
     // ---------------------------------------------------------------- escribir
 
-    /// Guarda tu puntaje si es mejor que tu récord.
+    /// Guarda tu puntaje si es mejor que tu récord del periodo actual.
     function submitScore(uint256 score) external {
-        uint256 current = bestScore[msg.sender];
+        uint256 p = currentPeriod();
+        uint256 current = scoreOf[p][msg.sender];
         if (score <= current) revert ScoreNotHigher(current, score);
 
-        // Primera vez que este jugador guarda un puntaje: entra a la lista.
-        if (current == 0) players.push(msg.sender);
+        // Primera vez que este jugador guarda un puntaje en este periodo: entra a la lista.
+        if (current == 0) playersIn[p].push(msg.sender);
 
-        bestScore[msg.sender] = score;
-        emit NewHighScore(msg.sender, score);
+        scoreOf[p][msg.sender] = score;
+        emit NewHighScore(msg.sender, p, score);
+
+        if (score > lifetimeBest[msg.sender]) {
+            lifetimeBest[msg.sender] = score;
+            emit NewLifetimeBest(msg.sender, score);
+        }
     }
 
     /// Pone o cambia tu username. Si cambias, el anterior queda libre para otro jugador.
@@ -79,9 +113,30 @@ contract Leaderboard {
 
     // ---------------------------------------------------------------- leer
 
-    /// Cuántos jugadores han guardado al menos un puntaje.
+    /// Número del periodo actual. El primero es el 0.
+    function currentPeriod() public view returns (uint256) {
+        return (block.timestamp - startTime) / PERIOD_LENGTH;
+    }
+
+    /// Cuándo empieza y cuándo termina el periodo `p` (Unix, segundos). `endsAt` ya es del siguiente.
+    function periodBounds(uint256 p) external view returns (uint256 startsAt, uint256 endsAt) {
+        startsAt = startTime + p * PERIOD_LENGTH;
+        endsAt = startsAt + PERIOD_LENGTH;
+    }
+
+    /// Mejor puntaje de un jugador en el periodo actual.
+    function bestScore(address player) external view returns (uint256) {
+        return scoreOf[currentPeriod()][player];
+    }
+
+    /// Cuántos jugadores han guardado al menos un puntaje en el periodo actual.
     function playerCount() external view returns (uint256) {
-        return players.length;
+        return playersIn[currentPeriod()].length;
+    }
+
+    /// Cuántos jugadores guardaron al menos un puntaje en el periodo `p`.
+    function playerCountIn(uint256 p) external view returns (uint256) {
+        return playersIn[p].length;
     }
 
     /// Qué jugador tiene un username. Devuelve 0x000… si nadie lo tiene.
@@ -90,7 +145,7 @@ contract Leaderboard {
     }
 
     /**
-     * @notice Lee jugadores por páginas, con su username y su mejor puntaje.
+     * @notice Lee jugadores del periodo actual por páginas, con su username y su mejor puntaje.
      *         Vienen en el orden en que llegaron: la app los ordena de mayor a menor.
      * @param offset Desde qué jugador empezar (0 es el primero).
      * @param limit  Cuántos devolver como máximo.
@@ -100,7 +155,28 @@ contract Leaderboard {
         view
         returns (address[] memory addrs, string[] memory usernames, uint256[] memory scores)
     {
-        uint256 total = players.length;
+        return page(currentPeriod(), offset, limit);
+    }
+
+    /// Igual que getScores, pero de un periodo `p` cualquiera (sirve para el historial).
+    function getScoresIn(uint256 p, uint256 offset, uint256 limit)
+        external
+        view
+        returns (address[] memory addrs, string[] memory usernames, uint256[] memory scores)
+    {
+        return page(p, offset, limit);
+    }
+
+    // ---------------------------------------------------------------- interno
+
+    /// Una página de jugadores del periodo `p`.
+    function page(uint256 p, uint256 offset, uint256 limit)
+        private
+        view
+        returns (address[] memory addrs, string[] memory usernames, uint256[] memory scores)
+    {
+        address[] storage list = playersIn[p];
+        uint256 total = list.length;
         uint256 n = 0;
         if (offset < total) {
             n = total - offset;
@@ -111,14 +187,12 @@ contract Leaderboard {
         usernames = new string[](n);
         scores = new uint256[](n);
         for (uint256 i = 0; i < n; i++) {
-            address p = players[offset + i];
-            addrs[i] = p;
-            usernames[i] = usernameOf[p];
-            scores[i] = bestScore[p];
+            address a = list[offset + i];
+            addrs[i] = a;
+            usernames[i] = usernameOf[a];
+            scores[i] = scoreOf[p][a];
         }
     }
-
-    // ---------------------------------------------------------------- interno
 
     /// 3 a 16 caracteres, solo a-z, 0-9 y _. Así no hay usernames vacíos, con espacios o con
     /// mayúsculas que parezcan otro ("Ana" y "ana").

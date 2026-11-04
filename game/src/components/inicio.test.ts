@@ -104,12 +104,12 @@ describe('inicio: vista', () => {
 
   it('Username solo con cuenta: «Leyendo…» deshabilitado mientras se lee, después el username', () => {
     expect(inicioView({ ...base, connected: true }).username).toEqual({ label: 'Leyendo…', disabled: true });
-    expect(inicioView({ ...base, connected: true, mine: { best: 0n, username: '' } }).username).toEqual({
+    expect(inicioView({ ...base, connected: true, mine: { best: 0n, lifetime: 0n, username: '' } }).username).toEqual({
       label: 'Elige un username',
       disabled: false,
     });
-    expect(inicioView({ ...base, connected: true, mine: { best: 10n, username: 'ana' } }).username?.label).toBe('ana');
-    const v = inicioView({ ...base, connected: true, mine: { best: 10n, username: 'ana' } });
+    expect(inicioView({ ...base, connected: true, mine: { best: 10n, lifetime: 10n, username: 'ana' } }).username?.label).toBe('ana');
+    const v = inicioView({ ...base, connected: true, mine: { best: 10n, lifetime: 10n, username: 'ana' } });
     expect(v.connect).toBeNull();
     expect(v.suggestion).toBeNull();
   });

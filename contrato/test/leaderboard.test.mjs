@@ -1,9 +1,11 @@
 // Reglas de Leaderboard.sol. Correr: pnpm test (dentro de contrato/)
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { deploy, expectRevert, player } from './harness.mjs';
+import { deploy, expectRevert, NOW, player } from './harness.mjs';
 
 const ZERO = '0x0000000000000000000000000000000000000000';
+const DAY = 86_400n;
+const PERIOD = 3n * DAY;
 
 describe('submitScore', () => {
   it('guarda el primer puntaje y suma al jugador a la lista', async () => {
@@ -129,5 +131,174 @@ describe('getScores', () => {
     const top = addrs.map((a, i) => ({ a, s: scores[i] })).sort((x, y) => (y.s > x.s ? 1 : y.s < x.s ? -1 : 0));
     assert.deepEqual(top.map((t) => t.s), [900n, 300n, 40n, 15n]);
     assert.equal(top[0].a, player(2));
+  });
+});
+
+describe('periodos', () => {
+  it('el constructor rechaza un inicio en 0 o en el futuro', async () => {
+    await expectRevert(deploy([0n]), 'InvalidStart');
+    await expectRevert(deploy([NOW + 1n]), 'InvalidStart');
+  });
+
+  it('el constructor acepta empezar ahora y guarda startTime', async () => {
+    const c = await deploy([NOW]);
+    assert.equal(await c.read('startTime'), NOW);
+    assert.equal(await c.read('PERIOD_LENGTH'), 259_200n);
+  });
+
+  it('currentPeriod sube cada 3 días', async () => {
+    const c = await deploy();
+    assert.equal(await c.read('currentPeriod'), 0n);
+    c.warp(PERIOD);
+    assert.equal(await c.read('currentPeriod'), 1n);
+    c.warp(PERIOD - 1n);
+    assert.equal(c.now(), NOW + 2n * PERIOD - 1n);
+    assert.equal(await c.read('currentPeriod'), 1n);
+    c.warp(1n);
+    assert.equal(await c.read('currentPeriod'), 2n);
+  });
+
+  it('currentPeriod es 2 un segundo antes de los 9 días', async () => {
+    const c = await deploy();
+    c.warp(3n * PERIOD - 1n);
+    assert.equal(await c.read('currentPeriod'), 2n);
+  });
+
+  it('periodBounds da el inicio y el fin de un periodo', async () => {
+    const c = await deploy();
+    assert.deepEqual(await c.read('periodBounds', [2n]), [NOW + 6n * DAY, NOW + 9n * DAY]);
+    assert.deepEqual(await c.read('periodBounds', [0n]), [NOW, NOW + PERIOD]);
+  });
+
+  it('al cambiar de periodo el ranking empieza vacío y acepta un puntaje menor', async () => {
+    const c = await deploy();
+    await c.send(player(1), 'submitScore', [500n]);
+    c.warp(PERIOD);
+    assert.equal(await c.read('bestScore', [player(1)]), 0n);
+    assert.equal(await c.read('playerCount'), 0n);
+    assert.equal((await c.read('getScores', [0n, 10n]))[0].length, 0);
+
+    await c.send(player(1), 'submitScore', [100n]);
+    assert.equal(await c.read('bestScore', [player(1)]), 100n);
+    assert.equal(await c.read('playerCount'), 1n);
+  });
+
+  it('ScoreNotHigher usa el récord del periodo nuevo', async () => {
+    const c = await deploy();
+    await c.send(player(1), 'submitScore', [500n]);
+    c.warp(PERIOD);
+    await c.send(player(1), 'submitScore', [100n]);
+    const e = await expectRevert(c.send(player(1), 'submitScore', [100n]), 'ScoreNotHigher');
+    assert.deepEqual(e.args, [100n, 100n]);
+  });
+
+  it('los periodos anteriores se conservan como historial', async () => {
+    const c = await deploy();
+    await c.send(player(1), 'submitScore', [500n]);
+    await c.send(player(2), 'submitScore', [40n]);
+    c.warp(PERIOD);
+    await c.send(player(2), 'submitScore', [70n]);
+
+    const [addrs, , scores] = await c.read('getScoresIn', [0n, 0n, 10n]);
+    assert.deepEqual(addrs, [player(1), player(2)]);
+    assert.deepEqual(scores, [500n, 40n]);
+    assert.equal(await c.read('scoreOf', [0n, player(1)]), 500n);
+    assert.equal(await c.read('scoreOf', [1n, player(2)]), 70n);
+    assert.equal(await c.read('playerCountIn', [0n]), 2n);
+    assert.equal(await c.read('playerCountIn', [1n]), 1n);
+  });
+
+  it('getScoresIn pagina igual que getScores', async () => {
+    const c = await deploy();
+    for (let i = 1; i <= 3; i++) await c.send(player(i), 'submitScore', [BigInt(i)]);
+    c.warp(PERIOD);
+    const [addrs, , scores] = await c.read('getScoresIn', [0n, 1n, 1n]);
+    assert.deepEqual(addrs, [player(2)]);
+    assert.deepEqual(scores, [2n]);
+    assert.equal((await c.read('getScoresIn', [0n, 10n, 10n]))[0].length, 0);
+    assert.equal((await c.read('getScoresIn', [7n, 0n, 10n]))[0].length, 0);
+  });
+
+  it('NewHighScore trae el periodo', async () => {
+    const c = await deploy();
+    c.warp(2n * PERIOD);
+    const { events } = await c.send(player(1), 'submitScore', [10n]);
+    assert.equal(events[0].eventName, 'NewHighScore');
+    assert.equal(events[0].args.player, player(1));
+    assert.equal(events[0].args.period, 2n);
+    assert.equal(events[0].args.score, 10n);
+  });
+
+  it('el username es el mismo en todos los periodos', async () => {
+    const c = await deploy();
+    await c.send(player(1), 'setUsername', ['ana']);
+    await c.send(player(1), 'submitScore', [10n]);
+    c.warp(PERIOD);
+    await c.send(player(1), 'submitScore', [5n]);
+    assert.equal(await c.read('usernameOf', [player(1)]), 'ana');
+    const [, current] = await c.read('getScores', [0n, 10n]);
+    const [, previous] = await c.read('getScoresIn', [0n, 0n, 10n]);
+    assert.deepEqual(current, ['ana']);
+    assert.deepEqual(previous, ['ana']);
+    await expectRevert(c.send(player(2), 'setUsername', ['ana']), 'UsernameTaken');
+  });
+});
+
+describe('lifetimeBest', () => {
+  it('guarda el primer puntaje y emite NewLifetimeBest', async () => {
+    const c = await deploy();
+    const { events } = await c.send(player(1), 'submitScore', [120n]);
+    assert.equal(await c.read('lifetimeBest', [player(1)]), 120n);
+    assert.deepEqual(events.map((e) => e.eventName), ['NewHighScore', 'NewLifetimeBest']);
+    assert.equal(events[1].args.player, player(1));
+    assert.equal(events[1].args.score, 120n);
+  });
+
+  it('persiste entre periodos', async () => {
+    const c = await deploy();
+    await c.send(player(1), 'submitScore', [900n]);
+    c.warp(5n * PERIOD);
+    assert.equal(await c.read('lifetimeBest', [player(1)]), 900n);
+    assert.equal(await c.read('bestScore', [player(1)]), 0n);
+  });
+
+  it('un puntaje menor en un periodo nuevo no lo baja ni emite NewLifetimeBest', async () => {
+    const c = await deploy();
+    await c.send(player(1), 'submitScore', [900n]);
+    c.warp(PERIOD);
+    const { events } = await c.send(player(1), 'submitScore', [300n]);
+    assert.deepEqual(events.map((e) => e.eventName), ['NewHighScore']);
+    assert.equal(await c.read('bestScore', [player(1)]), 300n);
+    assert.equal(await c.read('lifetimeBest', [player(1)]), 900n);
+  });
+
+  it('sube cuando un envío del periodo lo supera', async () => {
+    const c = await deploy();
+    await c.send(player(1), 'submitScore', [900n]);
+    c.warp(PERIOD);
+    await c.send(player(1), 'submitScore', [300n]);
+    const { events } = await c.send(player(1), 'submitScore', [1_000n]);
+    assert.deepEqual(events.map((e) => e.eventName), ['NewHighScore', 'NewLifetimeBest']);
+    assert.equal(events[1].args.score, 1_000n);
+    assert.equal(await c.read('lifetimeBest', [player(1)]), 1_000n);
+  });
+
+  it('solo sube: un récord del periodo que no supera el de por vida no lo cambia', async () => {
+    const c = await deploy();
+    await c.send(player(1), 'submitScore', [900n]);
+    c.warp(PERIOD);
+    await c.send(player(1), 'submitScore', [300n]);
+    await c.send(player(1), 'submitScore', [600n]);
+    assert.equal(await c.read('bestScore', [player(1)]), 600n);
+    assert.equal(await c.read('lifetimeBest', [player(1)]), 900n);
+  });
+
+  it('es de cada jugador', async () => {
+    const c = await deploy();
+    await c.send(player(1), 'submitScore', [900n]);
+    await c.send(player(2), 'submitScore', [50n]);
+    assert.equal(await c.read('lifetimeBest', [player(1)]), 900n);
+    assert.equal(await c.read('lifetimeBest', [player(2)]), 50n);
+    assert.equal(await c.read('lifetimeBest', [player(3)]), 0n);
   });
 });
