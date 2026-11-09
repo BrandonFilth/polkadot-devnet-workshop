@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { LeaderboardContract, TxOptions } from '../contract/leaderboard';
+import { TX_EXT_VERSION } from '../contract/config';
 import { createHub, productIdFromHost, type Hub, type HubDeps, type SignerAccount } from './hub';
 import type { ProgressStep } from './progress';
 
@@ -153,6 +154,65 @@ describe('hub (sin red, con dobles)', () => {
     const failed = await hub.saveScore(700);
     expect(failed.ok).toBe(false);
     expect(hub.getState().busy).toBe(false);
+  });
+
+  it('3b. Invalid.Payment con PGAS: reconecta, reintenta y guarda los dos intentos en los detalles', async () => {
+    const { hub, world, deps } = await connectedHub({ readPgas: vi.fn(async () => 549_800_000_000n) });
+    const first = Object.assign(new Error('Transaction failed before inclusion: Invalid.Payment'), {
+      type: 'Invalid',
+      value: { type: 'Payment' },
+    });
+    const second = new Error('Transaction failed before inclusion: Invalid.Payment', { cause: { reason: 'otra vez' } });
+    world.usernameTx.mockResolvedValueOnce({ ok: false, error: first }).mockResolvedValueOnce({ ok: false, error: second });
+    const r = await hub.setUsername('ana_92');
+    expect(r.ok).toBe(false);
+    expect(r.ok === false && r.kind).toBe('host-payment');
+    expect(deps.connectChain).toHaveBeenCalledTimes(1);
+    expect(world.usernameTx).toHaveBeenCalledTimes(2);
+    const details = r.ok === false ? r.details ?? '' : '';
+    expect(details).toContain('intento 1: host-payment · PGAS 54.98');
+    expect(details).toContain('"type":"Invalid"');
+    expect(details).toContain('recuperación: reconectar → reintento');
+    expect(details).toContain('intento 2: host-payment');
+    expect(details).toContain('causa: {"reason":"otra vez"}');
+    // Los detalles llegan al popup de estados.
+    expect(hub.getState().progress?.details).toBe(details);
+  });
+
+  it('3c. el firmante se pide en el pipeline TX_EXT_VERSION (1 = AsPgas, comisión en PGAS)', async () => {
+    const { deps } = await connectedHub();
+    expect(TX_EXT_VERSION).toBe(1);
+    expect(deps.writer).toHaveBeenCalledWith(expect.anything(), ME, { productId: 'polka-man.dot', txExtVersion: 1 });
+  });
+
+  it('3d. si el Host no acepta el pipeline 1, rearma el firmante con el 0 y reintenta una vez', async () => {
+    const { hub, deps, world } = await connectedHub();
+    vi.mocked(deps.writer).mockClear();
+    world.usernameTx.mockResolvedValueOnce({ ok: false, error: new Error('chain declares no transaction-extension pipeline version 1') });
+    const r = await hub.setUsername('ana_92');
+    expect(r.ok).toBe(true);
+    expect(world.usernameTx).toHaveBeenCalledTimes(2);
+    expect(deps.writer).toHaveBeenCalledTimes(1);
+    expect(deps.writer).toHaveBeenCalledWith(expect.anything(), ME, { productId: 'polka-man.dot', txExtVersion: 0 });
+
+    // El resto de la sesión (también al reconectar) firma en el 0.
+    vi.mocked(deps.writer).mockClear();
+    world.usernameTx.mockResolvedValueOnce({ ok: false, error: new Error('Host provider is not connected') });
+    await hub.setUsername('ana_93');
+    expect(deps.writer).toHaveBeenCalledWith(expect.anything(), ME, { productId: 'polka-man.dot', txExtVersion: 0 });
+  });
+
+  it('3e. sin PAS para el depósito (StorageDepositNotEnoughFunds) lo dice y no reconecta', async () => {
+    const { hub, deps, world } = await connectedHub();
+    const error = Object.assign(new Error('Dry-run failed for "setUsername"'), {
+      dispatchError: { type: 'Module', value: { type: 'Revive', value: { type: 'StorageDepositNotEnoughFunds' } } },
+    });
+    world.usernameTx.mockResolvedValueOnce({ ok: false, error });
+    const r = await hub.setUsername('ana_92');
+    expect(r.ok === false && r.kind).toBe('no-pas');
+    expect(r.message).toMatch(/PAS/);
+    expect(world.usernameTx).toHaveBeenCalledTimes(1);
+    expect(deps.connectChain).not.toHaveBeenCalled();
   });
 
   it('3. Invalid.Payment con PGAS 0 es no-gas: pide gas una vez y firma dos veces', async () => {

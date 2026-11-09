@@ -22,8 +22,10 @@ import {
   PRODUCT_DOMAIN,
   READ_TIMEOUT_MS,
   SIGN_TIMEOUT_MS,
+  TX_EXT_VERSION,
 } from '../contract/config';
 import { revertMessage, INVALID_USERNAME_MESSAGE } from '../contract/errors';
+import { formatStart, type EventInfo } from '../contract/eventStart';
 import { decodeScores, leaderboardAbi, toScoreArg, type LeaderboardContract, type QueryResult, type TxOptions, type TxResult } from '../contract/leaderboard';
 import { formatPgas, PGAS_LOW, readPgas as readPgasRpc } from '../contract/pgas';
 import { topScores } from '../contract/ranking';
@@ -114,7 +116,12 @@ export interface HubDeps {
   createSigner(productId: string): SignerLike; // envuelve new SignerManager({...})
   requestAllowance(): Promise<'Allocated' | 'Rejected' | 'NotAvailable'>; // SmartContractAllowance
   reader: LeaderboardContract; // withHostFallback(createRpcContract(...), ...)
-  writer(runtime: ChainRuntime, account: SignerAccount): LeaderboardContract; // createContract(...)
+  /** createContract(...) con el firmante de la cuenta del Product en el pipeline `txExtVersion`. */
+  writer(
+    runtime: ChainRuntime,
+    account: SignerAccount,
+    opts: { productId: string; txExtVersion: number },
+  ): LeaderboardContract | Promise<LeaderboardContract>;
   /** Saldo PGAS: pgas.ts por ETH-RPC y, si da null, Assets.Account(PGAS_ASSET_ID, ss58) en la cadena
    *  del Host (como readAccount() de la referencia). null = no se pudo leer. Nunca lanza. */
   readPgas(account: { h160: `0x${string}`; ss58: string }): Promise<bigint | null>;
@@ -132,6 +139,7 @@ const REREADS = 3;
 const REREAD_MS = 2_000;
 const ACCOUNT_TIMEOUT_MS = 60_000;
 const ALLOWANCE_TIMEOUT_MS = 90_000;
+const PROVIDER_TIMEOUT_MS = 8_000;
 
 /* ---------------------------------------------------------------- ayudas */
 
@@ -188,6 +196,8 @@ export function createHub(deps?: HubDeps): Hub {
   let signer: SignerLike | null = null;
   let account: SignerAccount | null = null;
   let writer: LeaderboardContract | null = null;
+  /** Pipeline con que se firma. Empieza en TX_EXT_VERSION; si el Host no lo acepta, queda en 0 la sesión. */
+  let txExtVersion = TX_EXT_VERSION;
 
   const set = (patch: Partial<HubState>) => {
     state = { ...state, ...patch };
@@ -241,7 +251,7 @@ export function createHub(deps?: HubDeps): Hub {
     const result = await withTimeout(manager.getProductAccount(productId, DERIVATION_INDEX), ACCOUNT_TIMEOUT_MS, 'Cuenta del Product');
     if (!result.ok) throw result.error;
     account = result.value;
-    writer = d.writer(chain, result.value);
+    writer = await d.writer(chain, result.value, { productId, txExtVersion });
     set({ account: { h160: result.value.h160Address, ss58: result.value.address } });
   };
 
@@ -293,19 +303,40 @@ export function createHub(deps?: HubDeps): Hub {
     };
     let result = await run();
     if (result.ok) return { ok: true };
-    let problem = classifyTxError(result.error, await pgasNow(), PGAS_LOW, formatPgas);
+    let pgas = await pgasNow();
+    let problem = classifyTxError(result.error, pgas, PGAS_LOW, formatPgas);
     d.log.warn('tx', problem.kind, problem.raw);
+    const attempts = [attemptDetail(1, problem.kind, pgas, result.error)];
 
     let retry = false;
-    if (problem.kind === 'no-gas') retry = (await askAllowance()) !== 'Rejected';
-    else if (autoReconnect(problem.kind)) retry = await reconnect();
+    let recovery = '';
+    if (problem.kind === 'pipeline' && txExtVersion !== 0 && chain && account && productId) {
+      // El Host no acepta el pipeline nuevo: se firma como antes (pipeline 0) el resto de la sesión.
+      recovery = `firmar en el pipeline 0 (el ${txExtVersion} no se aceptó)`;
+      txExtVersion = 0;
+      try {
+        writer = await d.writer(chain, account, { productId, txExtVersion });
+        retry = true;
+      } catch (error) {
+        d.log.warn('firmante del pipeline 0', describeError(error));
+      }
+    } else if (problem.kind === 'no-gas') {
+      recovery = 'pedir gas';
+      retry = (await askAllowance()) !== 'Rejected';
+    } else if (autoReconnect(problem.kind)) {
+      recovery = 'reconectar';
+      retry = await reconnect();
+    }
+    if (recovery) attempts.push(`recuperación: ${recovery} → ${retry ? 'reintento' : 'sin reintento'}`);
     if (retry) {
       result = await run();
       if (result.ok) return { ok: true };
-      problem = classifyTxError(result.error, await pgasNow(), PGAS_LOW, formatPgas);
+      pgas = await pgasNow();
+      problem = classifyTxError(result.error, pgas, PGAS_LOW, formatPgas);
       d.log.warn('tx (reintento)', problem.kind, problem.raw);
+      attempts.push(attemptDetail(2, problem.kind, pgas, result.error));
     }
-    return { ok: false, problem };
+    return { ok: false, problem: { ...problem, raw: attempts.join('\n\n') } };
   };
 
   /** Lecturas del jugador conectado. */
@@ -775,12 +806,28 @@ function defaultDeps(): HubDeps {
 
     reader: withHostFallback(createRpcContract(), () => hostContract),
 
-    writer(runtime, account) {
+    async writer(runtime, account, { productId, txExtVersion }) {
       const real = runtime as RealChain;
       const sdkAccount = account as unknown as WalletSdk.SignerAccount;
+      // SignerAccount.getSigner() siempre firma en el pipeline 0 (comisión en PAS). Para el pipeline 1
+      // (AsPgas, comisión en PGAS) el firmante se pide al proveedor de cuentas del Host con txExtVersion.
+      let signer = sdkAccount.getSigner();
+      if (txExtVersion !== 0) {
+        try {
+          const provider = await withTimeout((await host()).getAccountsProvider(), PROVIDER_TIMEOUT_MS, 'Proveedor de cuentas');
+          if (!provider) throw new Error('el Host no entregó el proveedor de cuentas');
+          signer = provider.getProductAccountSigner(
+            { dotNsIdentifier: productId, derivationIndex: DERIVATION_INDEX, publicKey: sdkAccount.publicKey },
+            { txExtVersion },
+          ) as typeof signer;
+          log.info('firmante en el pipeline', txExtVersion);
+        } catch (error) {
+          log.warn(`no se pudo pedir el firmante del pipeline ${txExtVersion}; uso el 0`, describeError(error));
+        }
+      }
       return real.contracts.createContract(real.runtime, LEADERBOARD_ADDRESS, leaderboardAbi, {
         defaultOrigin: sdkAccount.address,
-        defaultSigner: sdkAccount.getSigner(),
+        defaultSigner: signer,
       }) as unknown as LeaderboardContract;
     },
 

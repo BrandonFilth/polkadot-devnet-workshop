@@ -17,6 +17,21 @@ describe('clasificación de errores de transacción', () => {
     expect(autoReconnect(p.kind)).toBe(true);
   });
 
+  it('host-payment pide PAS y ya no culpa a la Polkadot App', () => {
+    const p = classify(payment, 229n * ONE);
+    expect(p.message).toMatch(/PAS/);
+    expect(p.message).not.toMatch(/actualiza la Polkadot App/);
+  });
+
+  it('pipeline no aceptado y depósito sin PAS tienen su propio tipo', () => {
+    expect(classify(new Error('chain declares no transaction-extension pipeline version 1'), ONE).kind).toBe('pipeline');
+    const deposit = Object.assign(new Error('Dry-run failed'), { dispatchError: { value: { value: { type: 'StorageDepositNotEnoughFunds' } } } });
+    const p = classify(deposit, ONE);
+    expect(p.kind).toBe('no-pas');
+    expect(autoReconnect(p.kind)).toBe(false);
+    expect(autoReconnect('pipeline')).toBe(false);
+  });
+
   it('Invalid.Payment con exactamente 1 PGAS también es host-payment', () => {
     expect(classify(payment, ONE).kind).toBe('host-payment');
   });

@@ -7,6 +7,12 @@ export const CHAIN_ID = 420_420_417;
 /** Tu nombre .dot (capítulo 6). La cuenta de cada app sale de este nombre. */
 export const PRODUCT_DOMAIN = 'polka-man.dot';
 export const DERIVATION_INDEX = 0;
+/**
+ * Pipeline de extensiones con que se firma en Asset Hub. Desde el runtime 2005005 (5 nov 2026) hay dos:
+ * el 0 (el que usa el SDK por defecto) cobra la comisión en PAS; el 1 trae AsPgas y la cobra en PGAS.
+ * Ver paritytech/product-sdk#339. Si un Host no acepta el 1, hub.ts reintenta una vez con el 0.
+ */
+export const TX_EXT_VERSION = 1;
 export const PGAS_ASSET_ID = 2_000_000_000;
 export const TOKEN_DECIMALS = 10;
 export const PRODUCT_CONTEXT_TIMEOUT_MS = 3_000;
