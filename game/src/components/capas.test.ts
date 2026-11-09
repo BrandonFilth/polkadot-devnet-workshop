@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { capas, type CapasInput } from './capas';
 
-const none: Omit<CapasInput, 'phase'> = { menuOpen: false, usernameOpen: false, avisoOpen: false, txOpen: false };
+const none: Omit<CapasInput, 'phase'> = { menuOpen: false, usernameOpen: false, adminOpen: false, avisoOpen: false, txOpen: false };
 
 describe('capas', () => {
   it('jugando sin nada encima: arriba el juego y nada inerte', () => {
@@ -36,6 +36,19 @@ describe('capas', () => {
       top: 'tx',
       inert: ['juego', 'inicio', 'aviso'],
     });
+  });
+
+  it('panel de admin sobre inicio, y el popup de estados encima del panel', () => {
+    expect(capas({ ...none, phase: 'titulo', adminOpen: true })).toMatchObject({ top: 'admin', inert: ['juego', 'inicio'] });
+    expect(capas({ ...none, phase: 'titulo', adminOpen: true, txOpen: true })).toMatchObject({
+      top: 'tx',
+      inert: ['juego', 'inicio', 'admin'],
+    });
+  });
+
+  it('sin adminOpen (campo opcional) el panel no cuenta', () => {
+    const { adminOpen: _omit, ...rest } = none;
+    expect(capas({ ...rest, phase: 'titulo' }).open).toEqual(['juego', 'inicio']);
   });
 
   it('pausa con menú: arriba el menú', () => {

@@ -17,7 +17,7 @@
  */
 import type { TxErrorKind } from '../lib/txErrors';
 
-export type ProgressOp = 'conectar' | 'guardar' | 'username';
+export type ProgressOp = 'conectar' | 'guardar' | 'username' | 'inicio';
 
 export type ProgressStep =
   | 'conectando'
@@ -72,6 +72,7 @@ export const STEPS: Record<ProgressOp, ProgressStep[]> = {
   conectar: ['conectando', 'permiso-gas'],
   guardar: ['simulando', 'firma', 'enviando', 'confirmando', 'actualizando'],
   username: ['simulando', 'firma', 'enviando', 'confirmando', 'actualizando'],
+  inicio: ['simulando', 'firma', 'enviando', 'confirmando', 'actualizando'],
 };
 
 /** Título corto por tipo de error (lib/txErrors). */
@@ -147,8 +148,8 @@ export function progressView(p: Progress | null, ops: readonly ProgressOp[]): Pr
     return { step, label: STEP_LABEL[step], status };
   });
   let line = p.message;
-  // Al guardar el username se relee la cuenta, no el ranking.
-  if (p.op === 'username' && p.step === 'actualizando') line = USERNAME_UPDATING;
+  // Al guardar el username o la hora de inicio se relee el contrato, no el ranking.
+  if ((p.op === 'username' || p.op === 'inicio') && p.step === 'actualizando') line = USERNAME_UPDATING;
   if (p.step === 'error' && p.kind) line = `${KIND_TITLE[p.kind]}. ${p.message}`;
   return { steps, line, tone: p.step === 'listo' ? 'listo' : p.step === 'error' ? 'error' : 'curso' };
 }

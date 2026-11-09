@@ -1477,3 +1477,51 @@ button:focus-visible {
 .progreso[data-tone='error'] .progreso-linea {
   color: var(--accent);
 }
+/* Panel de admin: usa .modal y .modal-box; aquí solo lo propio. */
+.admin-info {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  margin: 0;
+  font-size: 14px;
+}
+
+.admin-info dt {
+  color: var(--muted);
+}
+
+.admin-info dd {
+  margin: 0;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.admin input:disabled {
+  opacity: 0.5;
+}
+
+.admin-preview,
+.admin-aviso {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--ink);
+}
+
+.admin-aviso {
+  color: var(--accent);
+}
+
+.admin-preview:empty,
+.admin-aviso:empty {
+  display: none;
+}
+
+.admin input[type='date'] {
+  color-scheme: dark;
+}
+
+/* «Copiar detalles» del popup de estados: debajo de Cerrar, solo en errores con detalle. */
+.tx-copiar[hidden] {
+  display: none;
+}

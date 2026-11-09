@@ -67,12 +67,19 @@ export interface Hub {
   readTop(limit?: number): Promise<RankingRow[]>;
   /** Top de un periodo pasado (Ranking > Historial). */
   readTopIn(period: number, limit?: number): Promise<RankingRow[]>;
-  /** Periodo actual y lo necesario para calcular las fechas de cualquier periodo. */
-  readPeriods(): Promise<{ current: number; start: bigint; length: bigint }>;
+  /**
+   * Periodo actual y lo necesario para calcular las fechas de cualquier periodo.
+   * `started` = isStarted() del contrato; con false, `start` es 0n (sin fecha) o una hora futura.
+   */
+  readPeriods(): Promise<{ current: number; start: bigint; length: bigint; started: boolean }>;
+  /** Admin del contrato y hora de inicio (0n = sin fecha). Se lee por ETH-RPC, también fuera del Host. */
+  readEvent(): Promise<EventInfo>;
   /** `best` = récord del periodo actual; `lifetime` = récord de por vida. */
   readMine(): Promise<{ best: bigint; lifetime: bigint; username: string } | null>;
   saveScore(score: number): Promise<Result>;
   setUsername(name: string): Promise<Result>;
+  /** Solo el admin: fija o cambia la hora de inicio (segundos Unix) mientras el ranking no abre. */
+  setStartTime(start: bigint): Promise<Result>;
 }
 
 /** TrUAPI del Host. hub.ts solo comprueba que exista. */
@@ -351,7 +358,7 @@ export function createHub(deps?: HubDeps): Hub {
   };
 
   interface WriteSpec {
-    op: Extract<ProgressOp, 'guardar' | 'username'>;
+    op: Extract<ProgressOp, 'guardar' | 'username' | 'inicio'>;
     simulate: (who: SignerAccount) => Promise<QueryResult<unknown>>;
     send: (c: LeaderboardContract, opts: TxOptions) => Promise<TxOutcome>;
     landed: (who: SignerAccount) => Promise<boolean>;
@@ -547,6 +554,20 @@ export function createHub(deps?: HubDeps): Hub {
       }
     },
 
+    async readEvent() {
+      try {
+        const [admin, start] = await withTimeout(
+          Promise.all([d.reader.admin.query(), d.reader.startTime.query()]),
+          READ_TIMEOUT_MS,
+          'Evento',
+        );
+        return { admin: String(unwrap(admin, 'admin')) as `0x${string}`, start: toBig(unwrap(start, 'startTime')) };
+      } catch (error) {
+        d.log.warn('evento', describeError(error));
+        throw new Error('No se pudo leer la hora de inicio', { cause: error });
+      }
+    },
+
     async readMine() {
       const who = account;
       if (!who) return null;
@@ -598,6 +619,23 @@ export function createHub(deps?: HubDeps): Hub {
         saved: `Username guardado: ${name}.`,
         sent: 'Username enviado. Puede tardar unos segundos en aparecer.',
         savedAfterTimeout: 'Tu username quedó guardado.',
+      });
+    },
+
+    async setStartTime(start) {
+      if (typeof start !== 'bigint' || start <= 0n) return { ok: false, message: 'La hora de inicio no es válida.' };
+      if (state.busy) return { ok: false, message: BUSY };
+      if (!account || !writer) return { ok: false, message: NO_ACCOUNT };
+      const label = formatStart(Number(start));
+      return write({
+        op: 'inicio',
+        simulate: (who) => d.reader.setStartTime.query(start, { from: who.h160Address, origin: who.address }),
+        send: (c, opts) => c.setStartTime.tx(start, opts),
+        landed: async () => toBig(unwrap(await withTimeout(d.reader.startTime.query(), READ_TIMEOUT_MS, 'startTime'), 'startTime')) === start,
+        rejected: 'El contrato rechazó la hora de inicio.',
+        saved: `Hora de inicio guardada: ${label}.`,
+        sent: 'Hora de inicio enviada. Puede tardar unos segundos en aparecer.',
+        savedAfterTimeout: 'La hora de inicio quedó guardada.',
       });
     },
   };

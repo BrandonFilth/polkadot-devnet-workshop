@@ -1,5 +1,8 @@
 // Arma el DOM y conecta motor, dibujo, controles y componentes.
 import { createAudio } from './audio/audio';
+import { createAdmin } from './components/Admin';
+import { createBilletera } from './components/Billetera';
+import { isAdminAccount, type EventInfo } from './contract/eventStart';
 import { createSoundPrefs, safeStorage } from './audio/prefs';
 import { capas, type Capa } from './components/capas';
 import { createControles } from './components/Controles';
@@ -128,6 +131,24 @@ export function startApp(root: HTMLElement): void {
     );
   };
 
+  // Admin y hora de inicio del contrato: se leen al arrancar (por ETH-RPC, también fuera del Host), al conectar,
+  // al terminar una partida y después de guardar en el panel de admin. null = todavía no se lee o falló.
+  let event: EventInfo | null = null;
+  let eventSeq = 0;
+  const refreshEvent = () => {
+    const seq = ++eventSeq;
+    hub.readEvent().then(
+      (e) => {
+        if (seq === eventSeq) event = e;
+      },
+      () => {
+        if (seq === eventSeq) event = null;
+      },
+    );
+  };
+  refreshEvent();
+  const isAdmin = () => isAdminAccount(event, hub.getState().account?.h160);
+
   // Capas: lo de abajo de la superficie de arriba queda inerte (applyLayers, más abajo).
   const layers = () => applyLayers();
 
@@ -143,13 +164,20 @@ export function startApp(root: HTMLElement): void {
     mine: () => mine,
     onSaved: () => refreshMine(),
     openUsername,
+    event: () => event,
   });
 
-  // Al pasar de sin cuenta a una cuenta, se relee el récord.
+  // Panel de admin: solo se abre desde la pantalla de inicio y solo con la cuenta admin.
+  const admin = createAdmin(root, hub, () => refreshEvent(), layers);
+
+  // Al pasar de sin cuenta a una cuenta, se relee el récord (y el admin, por si cambió en Remix).
   let hadAccount = hub.getState().account !== null;
   hub.subscribe((s) => {
     const has = s.account !== null;
-    if (has && !hadAccount) refreshMine();
+    if (has && !hadAccount) {
+      refreshMine();
+      refreshEvent();
+    }
     if (!has) {
       mineSeq++;
       mine = null;
@@ -194,6 +222,7 @@ export function startApp(root: HTMLElement): void {
     onPhase(phase) {
       if (phase === 'fin') {
         fin.enter();
+        refreshEvent();
         if (hub.getState().account !== null) refreshMine();
       }
     },
@@ -208,6 +237,11 @@ export function startApp(root: HTMLElement): void {
     onUsername: openUsername,
     onToggle: layers,
     sonido: createSonidoToggles(prefs, tap, 'iconos').element,
+    billetera: createBilletera(hub).element,
+    isAdmin,
+    onAdmin: () => {
+      if (isAdmin()) admin.open();
+    },
   });
 
   // Popup de estados: el último en #app, por encima de todo lo demás (salvo «Gira tu teléfono»).
@@ -220,6 +254,7 @@ export function startApp(root: HTMLElement): void {
     fin: overlay.element,
     menu: menu.element,
     username: username.element,
+    admin: admin.element,
     aviso: inicio.aviso,
     tx: tx.element,
   };
@@ -236,6 +271,7 @@ export function startApp(root: HTMLElement): void {
       phase: state.phase,
       menuOpen: menu.isOpen,
       usernameOpen: username.isOpen,
+      adminOpen: admin.isOpen,
       avisoOpen: inicio.avisoOpen,
       txOpen: tx.isOpen,
     });
@@ -247,7 +283,7 @@ export function startApp(root: HTMLElement): void {
     setInert(canvas, top !== 'juego');
     setInert(controles.element, top !== 'juego');
     // HUD: el botón Menú sigue a la mano en pausa, fin y con el menú abierto (lo cierra).
-    setInert(header, top === 'inicio' || top === 'username' || top === 'aviso' || top === 'tx');
+    setInert(header, top === 'inicio' || top === 'username' || top === 'admin' || top === 'aviso' || top === 'tx');
     for (const [capa, el] of Object.entries(LAYER_ELEMENTS) as Array<[Capa, HTMLElement]>) {
       if (capa === 'pausa' || capa === 'fin') continue;
       setInert(el, c.inert.includes(capa));

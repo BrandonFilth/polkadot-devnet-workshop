@@ -44,6 +44,9 @@ function makeWorld() {
     getScores: { query: vi.fn(async (..._a: unknown[]) => ok<unknown>([[OTHER, ME.h160Address], ['prueba_ok', ''], [1240n, 300n]])) },
     submitScore: { query: vi.fn(async (..._a: unknown[]): Promise<{ success: boolean; value: unknown }> => ok<unknown>(undefined)) },
     setUsername: { query: vi.fn(async (..._a: unknown[]): Promise<{ success: boolean; value: unknown }> => ok<unknown>(undefined)) },
+    admin: { query: vi.fn(async (..._a: unknown[]) => ok<unknown>(ME.h160Address)) },
+    isStarted: { query: vi.fn(async (..._a: unknown[]) => ok<unknown>(true)) },
+    setStartTime: { query: vi.fn(async (..._a: unknown[]): Promise<{ success: boolean; value: unknown }> => ok<unknown>(undefined)) },
   };
   // Como submitAndWatch de product-sdk-tx 0.5.3 con waitFor 'finalized': signing → broadcasting →
   // in-block → finalized y luego resuelve.
@@ -58,12 +61,19 @@ function makeWorld() {
     store.username = name as string;
     return { ok: true, value: {} };
   });
+  // setStartTime cambia el startTime que devuelve el lector.
+  const startTx = vi.fn(async (start: unknown, opts?: TxOptions): Promise<{ ok: true; value: object } | { ok: false; error: unknown }> => {
+    sdkEvents(opts);
+    reader.startTime.query.mockResolvedValue(ok<unknown>(start));
+    return { ok: true, value: {} };
+  });
   const writer = {
     ...reader,
     submitScore: { query: reader.submitScore.query, tx },
     setUsername: { query: reader.setUsername.query, tx: usernameTx },
+    setStartTime: { query: reader.setStartTime.query, tx: startTx },
   };
-  return { store, reader, tx, usernameTx, writerContract: writer as unknown as LeaderboardContract };
+  return { store, reader, tx, usernameTx, startTx, writerContract: writer as unknown as LeaderboardContract };
 }
 
 type World = ReturnType<typeof makeWorld>;
@@ -403,5 +413,96 @@ describe('productIdFromHost', () => {
     ['', 'polka-man.dot'],
   ])('%s → %s', (host, expected) => {
     expect(productIdFromHost(host)).toBe(expected);
+  });
+});
+
+describe('hub: evento y panel de admin', () => {
+  const FUTURE = START + 30n * 86_400n;
+
+  it('readPeriods antes del evento: started false y startTime 0n', async () => {
+    const deps = fakeDeps();
+    deps.world.reader.isStarted.query.mockResolvedValue(ok<unknown>(false));
+    deps.world.reader.startTime.query.mockResolvedValue(ok<unknown>(0n));
+    deps.world.reader.currentPeriod.query.mockResolvedValue(ok<unknown>(0n));
+    const hub = createHub(deps);
+    expect(await hub.readPeriods()).toEqual({ current: 0, start: 0n, length: 259_200n, started: false });
+  });
+
+  it('readEvent devuelve el admin y la hora de inicio, también sin cuenta', async () => {
+    const deps = fakeDeps();
+    const hub = createHub(deps);
+    expect(await hub.readEvent()).toEqual({ admin: ME.h160Address, start: START });
+  });
+
+  it('readEvent con error lanza «No se pudo leer la hora de inicio»', async () => {
+    const deps = fakeDeps();
+    deps.world.reader.admin.query.mockRejectedValue(new Error('RPC caído'));
+    const hub = createHub(deps);
+    await expect(hub.readEvent()).rejects.toThrow('No se pudo leer la hora de inicio');
+  });
+
+  it('antes del evento, guardar récord revierte con NotStarted en la simulación y no pide firma', async () => {
+    const { hub, world } = await connectedHub();
+    world.reader.submitScore.query.mockResolvedValue({ success: false, value: { error: 'NotStarted', args: [] } });
+    const r = await hub.saveScore(500);
+    expect(r.ok).toBe(false);
+    expect(r.message).toBe('El ranking todavía no abre: tu récord no se guarda hasta que empiece el evento.');
+    expect(world.tx).not.toHaveBeenCalled();
+    expect(hub.getState().busy).toBe(false);
+  });
+
+  it('setStartTime: simula como la cuenta, firma una vez, relee startTime y termina en Listo', async () => {
+    const { hub, world } = await connectedHub();
+    const steps = recordSteps(hub);
+    const r = await hub.setStartTime(FUTURE);
+    expect(r.ok).toBe(true);
+    expect(r.message).toMatch(/^Hora de inicio guardada: .+ \(hora de México\)\.$/);
+    expect(world.reader.setStartTime.query).toHaveBeenCalledWith(FUTURE, { from: ME.h160Address, origin: ME.address });
+    expect(world.startTx).toHaveBeenCalledTimes(1);
+    expect(world.startTx.mock.calls[0]![0]).toBe(FUTURE);
+    expect(steps).toEqual(['simulando', 'firma', 'enviando', 'confirmando', 'actualizando', 'listo']);
+    expect(hub.getState().progress?.op).toBe('inicio');
+    expect(hub.getState().busy).toBe(false);
+  });
+
+  it('setStartTime de una cuenta que no es admin: NotAdmin en la simulación, sin firma', async () => {
+    const { hub, world } = await connectedHub();
+    world.reader.setStartTime.query.mockResolvedValue({ success: false, value: { error: 'NotAdmin', args: [] } });
+    const r = await hub.setStartTime(FUTURE);
+    expect(r).toEqual({ ok: false, message: 'Solo el admin del ranking puede hacer esto.' });
+    expect(world.startTx).not.toHaveBeenCalled();
+  });
+
+  it('setStartTime con el ranking ya abierto: StartLocked, sin firma', async () => {
+    const { hub, world } = await connectedHub();
+    world.reader.setStartTime.query.mockResolvedValue({ success: false, value: { error: 'StartLocked', args: [] } });
+    const r = await hub.setStartTime(FUTURE);
+    expect(r).toEqual({ ok: false, message: 'El ranking ya empezó: la hora de inicio ya no se puede cambiar.' });
+    expect(world.startTx).not.toHaveBeenCalled();
+  });
+
+  it('setStartTime sin cuenta, con 0 o con otra firma en curso no simula ni firma', async () => {
+    const deps = fakeDeps();
+    const hub = createHub(deps);
+    await hub.start();
+    expect(await hub.setStartTime(FUTURE)).toEqual({ ok: false, message: 'Conecta tu cuenta primero.' });
+    expect(deps.world.reader.setStartTime.query).not.toHaveBeenCalled();
+
+    const connected = await connectedHub();
+    expect(await connected.hub.setStartTime(0n)).toEqual({ ok: false, message: 'La hora de inicio no es válida.' });
+    let release: () => void = () => undefined;
+    connected.world.tx.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          release = () => resolve({ ok: true, value: {} });
+        }),
+    );
+    connected.world.reader.bestScore.query.mockResolvedValue(ok<unknown>(500n));
+    const saving = connected.hub.saveScore(500);
+    expect(await connected.hub.setStartTime(FUTURE)).toEqual({ ok: false, message: 'Espera a que termine la firma en curso.' });
+    await vi.waitFor(() => expect(connected.world.tx).toHaveBeenCalledTimes(1));
+    release();
+    await saving;
+    expect(connected.world.reader.setStartTime.query).not.toHaveBeenCalled();
   });
 });

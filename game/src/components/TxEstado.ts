@@ -11,6 +11,7 @@ export const TX_TITLE: Record<ProgressOp, string> = {
   conectar: 'Conectando',
   guardar: 'Guardando récord',
   username: 'Guardando username',
+  inicio: 'Guardando hora de inicio',
 };
 
 export interface TxPopupView {

@@ -38,20 +38,22 @@ export interface InicioView {
   status: string | null;
   /** Botón Username: solo con cuenta. */
   username: { label: string; disabled: boolean } | null;
+  /** Botón Admin: solo si la cuenta conectada es el admin del contrato. */
+  admin: { disabled: boolean } | null;
 }
 
 const mineName = (m: Mine) => (m !== null && m !== 'error' ? m.username : '');
 
 /** Qué muestra la pantalla de inicio. Jugar y Ranking siempre están. */
-export function inicioView(i: { host: HostPhase; connected: boolean; mine: Mine; busy: boolean }): InicioView {
-  if (i.host === 'fuera') return { connect: null, suggestion: null, status: INICIO_FUERA, username: null };
+export function inicioView(i: { host: HostPhase; connected: boolean; mine: Mine; busy: boolean; admin?: boolean }): InicioView {
+  if (i.host === 'fuera') return { connect: null, suggestion: null, status: INICIO_FUERA, username: null, admin: null };
   if (i.connected) {
     const known = i.mine !== null && i.mine !== 'error';
     const username =
       i.mine === null
         ? { label: 'Leyendo…', disabled: true }
         : { label: known && mineName(i.mine) !== '' ? mineName(i.mine) : 'Elige un username', disabled: i.busy };
-    return { connect: null, suggestion: null, status: 'Cuenta conectada', username };
+    return { connect: null, suggestion: null, status: 'Cuenta conectada', username, admin: i.admin ? { disabled: i.busy } : null };
   }
   if (i.host === 'buscando' || i.host === 'conectando') {
     return {
@@ -59,6 +61,7 @@ export function inicioView(i: { host: HostPhase; connected: boolean; mine: Mine;
       suggestion: INICIO_SUGERENCIA,
       status: null,
       username: null,
+      admin: null,
     };
   }
   if (i.host === 'error') {
@@ -67,6 +70,7 @@ export function inicioView(i: { host: HostPhase; connected: boolean; mine: Mine;
       suggestion: INICIO_SUGERENCIA,
       status: 'No hay conexión con la Polkadot App.',
       username: null,
+      admin: null,
     };
   }
   return {
@@ -74,6 +78,7 @@ export function inicioView(i: { host: HostPhase; connected: boolean; mine: Mine;
     suggestion: INICIO_SUGERENCIA,
     status: null,
     username: null,
+    admin: null,
   };
 }
 
@@ -126,6 +131,12 @@ export function createInicio(
     onToggle?: () => void;
     /** Toggles de Música y Efectos (variante 'iconos'); van arriba a la derecha. */
     sonido?: HTMLElement;
+    /** Botón para copiar la dirección de la cuenta conectada; va en la esquina superior derecha. */
+    billetera?: HTMLElement;
+    /** La cuenta conectada es el admin del contrato. */
+    isAdmin?: () => boolean;
+    /** Abre el panel de admin. */
+    onAdmin?: () => void;
   },
 ): Inicio {
   const { state, hub } = opts;
@@ -183,7 +194,13 @@ export function createInicio(
   username.type = 'button';
   username.className = 'overlay-secondary';
   username.addEventListener('click', () => opts.onUsername());
-  row.append(ranking, username);
+  const admin = document.createElement('button');
+  admin.type = 'button';
+  admin.className = 'overlay-secondary inicio-admin';
+  admin.textContent = 'Admin';
+  admin.hidden = true;
+  admin.addEventListener('click', () => opts.onAdmin?.());
+  row.append(ranking, username, admin);
 
   // Conectar con la sugerencia debajo; el estado (fuera del Host, sin conexión o conectada) en el mismo bloque.
   cuenta.append(connect, suggestion, status);
@@ -299,7 +316,13 @@ export function createInicio(
       if (!active?.closest?.('.menu, .modal, .tx')) jugar.focus({ preventScroll: true, focusVisible: false } as FocusOptions);
     }
     const s = hub.getState();
-    const view = inicioView({ host: s.host, connected: s.account !== null, mine: opts.mine(), busy: s.busy });
+    const view = inicioView({
+      host: s.host,
+      connected: s.account !== null,
+      mine: opts.mine(),
+      busy: s.busy,
+      admin: opts.isAdmin?.() ?? false,
+    });
     const key = JSON.stringify(view);
     if (key === shownKey) return;
     shownKey = key;
@@ -323,6 +346,8 @@ export function createInicio(
         view.username.label === 'Elige un username' || view.username.label === 'Leyendo…' ? view.username.label : `Username: ${view.username.label}`,
       );
     }
+    admin.hidden = view.admin === null;
+    admin.disabled = view.admin?.disabled ?? true;
     // Si conectó desde el aviso o algo cambió, el aviso sigue a la conexión.
     if (!aviso.hidden) avisoConectar.disabled = s.host !== 'listo' || s.busy || s.account !== null;
   };
