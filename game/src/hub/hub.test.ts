@@ -232,10 +232,10 @@ describe('hub (sin red, con dobles)', () => {
 });
 
 describe('hub: periodos, historial y récord de por vida', () => {
-  it('readPeriods devuelve el periodo actual, startTime y PERIOD_LENGTH', async () => {
+  it('readPeriods devuelve el periodo actual, startTime, PERIOD_LENGTH e isStarted', async () => {
     const deps = fakeDeps();
     const hub = createHub(deps);
-    expect(await hub.readPeriods()).toEqual({ current: 2, start: START, length: 259_200n });
+    expect(await hub.readPeriods()).toEqual({ current: 2, start: START, length: 259_200n, started: true });
   });
 
   it('readPeriods con error lanza «No se pudo leer el periodo»', async () => {

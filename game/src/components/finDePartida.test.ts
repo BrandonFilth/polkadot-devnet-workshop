@@ -1,5 +1,23 @@
 import { describe, expect, it } from 'vitest';
-import { finButtons, finSummary, saveOptions } from './FinDePartida';
+import { finButtons, finNotice, finSummary, OUTSIDE_NOTICE, saveOptions } from './FinDePartida';
+
+describe('finNotice: el aviso en lugar del botón', () => {
+  it('ranking cerrado: dice cuándo abre y que no se guarda', () => {
+    expect(finNotice('cerrado', { admin: `0x${'1'.repeat(40)}`, start: 1_794_204_000n })).toBe(
+      'El ranking abre el 9 nov 2026, 00/00/00 (hora de México). Tu puntaje no se guarda hasta entonces.',
+    );
+    expect(finNotice('cerrado', { admin: `0x${'1'.repeat(40)}`, start: 0n })).toBe(
+      'El ranking todavía no tiene fecha de inicio. Tu puntaje no se guarda hasta entonces.',
+    );
+  });
+
+  it('los demás avisos no cambian', () => {
+    expect(finNotice('fuera', null)).toBe(OUTSIDE_NOTICE);
+    expect(finNotice('no-supera', null)).toBe('No supera tu récord');
+    expect(finNotice('cero', null)).toBe('No supera tu récord');
+    expect(finNotice('guardar', null)).toBe('');
+  });
+});
 
 describe('finSummary: puntaje, récord del periodo y récord de por vida', () => {
   it('con cuenta y récords leídos', () => {
@@ -33,7 +51,7 @@ describe('finButtons: el popup de fin no lleva el ranking dentro', () => {
   });
 
   it('«ranking» es un botón que abre su pestaña, nunca una lista', () => {
-    for (const o of ['guardar', 'conectar', 'cargando', 'no-supera', 'cero', 'fuera'] as const) {
+    for (const o of ['guardar', 'conectar', 'cargando', 'no-supera', 'cero', 'fuera', 'cerrado'] as const) {
       expect(finButtons(o).filter((b) => b === 'ranking')).toHaveLength(1);
       expect(finButtons(o)).not.toContain('lista');
     }
@@ -71,6 +89,23 @@ describe('saveOptions', () => {
   it('7. no supera el récord → no-supera, sin botón', () => {
     expect(saveOptions({ ...base, score: 100, best: 100n })).toEqual({ option: 'no-supera', disabled: false });
     expect(saveOptions({ ...base, score: 50, best: 100n })).toEqual({ option: 'no-supera', disabled: false });
+  });
+
+  it('8. ranking todavía cerrado → cerrado, sin botón ni firma (aunque supere el récord o no haya cuenta)', () => {
+    expect(saveOptions({ ...base, score: 900, started: false })).toEqual({ option: 'cerrado', disabled: false });
+    expect(saveOptions({ ...base, connected: false, started: false })).toEqual({ option: 'cerrado', disabled: false });
+    expect(saveOptions({ ...base, best: null, started: false }).option).toBe('cerrado');
+    expect(finButtons('cerrado')).toEqual(['jugar', 'ranking', 'inicio']);
+  });
+
+  it('9. ranking abierto o sin saber → las reglas de siempre', () => {
+    expect(saveOptions({ ...base, score: 101, started: true }).option).toBe('guardar');
+    expect(saveOptions({ ...base, score: 101 }).option).toBe('guardar');
+  });
+
+  it('10. score 0 y fuera del Host ganan a cerrado', () => {
+    expect(saveOptions({ ...base, score: 0, started: false }).option).toBe('cero');
+    expect(saveOptions({ ...base, host: 'fuera', connected: false, started: false }).option).toBe('fuera');
   });
 
   describe('precedencia', () => {

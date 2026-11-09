@@ -74,7 +74,7 @@ export function withDebug(hub: Hub, state: GameState): Hub {
   let over: Partial<HubState> = {};
   let rows: RankingRow[] | null = null;
   let mine: { best: bigint; lifetime: bigint; username: string } | null = null;
-  let periods: { current: number; start: bigint; length: bigint } | null = null;
+  let periods: { current: number; start: bigint; length: bigint; started: boolean } | null = null;
   const listeners = new Set<(s: HubState) => void>();
   const getState = (): HubState => ({ ...hub.getState(), ...over });
   const notify = () => {
@@ -104,7 +104,7 @@ export function withDebug(hub: Hub, state: GameState): Hub {
       // Medianoche de hoy en Monterrey (UTC−6 todo el año) = 06:00 UTC.
       const today = Math.floor((Date.now() / 1000 - 6 * 3_600) / DAY) * DAY + 6 * 3_600;
       const start = startUnix ?? today - (current * 3 + 1) * DAY;
-      periods = { current, start: BigInt(start), length: 259_200n };
+      periods = { current, start: BigInt(start), length: 259_200n, started: true };
     },
     ranking(n) {
       rows = Array.from({ length: n }, (_, i) => ({

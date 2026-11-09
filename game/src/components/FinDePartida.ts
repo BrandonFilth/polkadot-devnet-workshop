@@ -1,7 +1,9 @@
 // Bloque de 'fin': puntaje, récord del periodo y de por vida, el botón que decide saveOptions() y el mensaje del último Result.
+import { eventStarted, notOpenText, type EventInfo } from '../contract/eventStart';
 import type { HostPhase, Hub, Result } from '../hub/hub';
 
-export type SaveOption = 'fuera' | 'conectar' | 'cero' | 'cargando' | 'guardar' | 'no-supera';
+/** 'cerrado' = el ranking todavía no abre: se juega, pero no se ofrece guardar (no se pide firma). */
+export type SaveOption = 'fuera' | 'conectar' | 'cero' | 'cargando' | 'guardar' | 'no-supera' | 'cerrado';
 
 export const OUTSIDE_NOTICE =
   'Abre Polka-Man dentro de Polkadot Desktop o de la Polkadot App para guardar tu récord. Aquí puedes jugar y ver el ranking.';
@@ -13,9 +15,12 @@ export function saveOptions(i: {
   score: number;
   best: bigint | null | 'error';
   busy: boolean;
+  /** El ranking ya abrió. undefined = no se sabe (no se pudo leer): se ofrece guardar y el contrato decide. */
+  started?: boolean;
 }): { option: SaveOption; disabled: boolean } {
   if (i.score === 0) return { option: 'cero', disabled: false };
   if (i.host === 'fuera') return { option: 'fuera', disabled: false };
+  if (i.started === false) return { option: 'cerrado', disabled: false };
   if (!i.connected) return { option: 'conectar', disabled: i.busy };
   if (i.best === null) return { option: 'cargando', disabled: true };
   // Con 'error' se ofrece guardar: saveScore simula antes de firmar.
@@ -35,6 +40,14 @@ export function finSummary(i: { score: number; connected: boolean; mine: Mine })
     `Récord del periodo: ${known ? known.best : '—'}`,
     `Récord de por vida: ${known ? known.lifetime : '—'}`,
   ];
+}
+
+/** Aviso en lugar del botón de guardar. Vacío cuando hay botón. */
+export function finNotice(option: SaveOption, event: EventInfo | null): string {
+  if (option === 'fuera') return OUTSIDE_NOTICE;
+  if (option === 'cero' || option === 'no-supera') return 'No supera tu récord';
+  if (option === 'cerrado') return `${notOpenText(event?.start ?? 0n)} Tu puntaje no se guarda hasta entonces.`;
+  return '';
 }
 
 export type FinButton = 'guardar' | 'jugar' | 'ranking' | 'inicio';
@@ -69,6 +82,8 @@ export function createFinDePartida(opts: {
   /** Tras un saveScore con ok:true. */
   onSaved: () => void;
   openUsername: () => void;
+  /** Admin y hora de inicio del contrato; null = todavía no se lee o falló. */
+  event?: () => EventInfo | null;
 }): FinDePartida {
   const { hub } = opts;
   const element = document.createElement('div');
@@ -124,11 +139,13 @@ export function createFinDePartida(opts: {
     const connected = s.account !== null;
     const best = !connected ? null : mine === null || mine === 'error' ? mine : mine.best;
     const score = opts.score();
-    const decided = saveOptions({ host: s.host, connected, score, best, busy: s.busy });
+    const event = opts.event?.() ?? null;
+    const started = event ? eventStarted(event.start, Date.now() / 1000) : undefined;
+    const decided = saveOptions({ host: s.host, connected, score, best, busy: s.busy, ...(started === undefined ? {} : { started }) });
     option = decided.option;
     const lines = finSummary({ score, connected, mine });
     const showName = savedOk && mine !== null && mine !== 'error' && mine.username === '';
-    const key = [...lines, decided.option, decided.disabled, lastMessage, showName].join('|');
+    const key = [...lines, decided.option, decided.disabled, lastMessage, showName, event?.start ?? ''].join('|');
     if (key === shownKey) return;
     shownKey = key;
 
@@ -144,8 +161,7 @@ export function createFinDePartida(opts: {
     button.disabled = decided.disabled;
     if (label !== undefined) button.textContent = label;
     notice.hidden = label !== undefined;
-    notice.textContent =
-      decided.option === 'fuera' ? OUTSIDE_NOTICE : decided.option === 'cero' || decided.option === 'no-supera' ? 'No supera tu récord' : '';
+    notice.textContent = finNotice(decided.option, event);
     message.textContent = lastMessage;
     message.hidden = lastMessage === '';
     nameLink.hidden = !showName;

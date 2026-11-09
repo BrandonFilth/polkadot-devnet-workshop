@@ -1,6 +1,6 @@
 import { encodeErrorResult, hexToBytes, toFunctionSelector, type Abi } from 'viem';
 import { describe, expect, it } from 'vitest';
-import { revertMessage } from './errors';
+import { NOT_ADMIN_MESSAGE, NOT_STARTED_MESSAGE, revertMessage, START_LOCKED_MESSAGE } from './errors';
 import { leaderboardAbi } from './leaderboard';
 
 const abi = leaderboardAbi as unknown as Abi;
@@ -27,6 +27,22 @@ describe('revertMessage', () => {
   it('forma 3: el nombre del error en el JSON serializado', () => {
     expect(revertMessage({ message: 'execution reverted: InvalidUsername()' })).toBe('El username debe tener de 3 a 16 caracteres: a-z, 0-9 o _.');
     expect(revertMessage('revert UsernameTaken')).toBe('Ese username ya es de otro jugador.');
+  });
+
+  it('errores del evento y del admin, por nombre y por selector', () => {
+    expect(revertMessage({ error: 'NotStarted' })).toBe(NOT_STARTED_MESSAGE);
+    expect(revertMessage({ error: 'NotAdmin' })).toBe(NOT_ADMIN_MESSAGE);
+    expect(revertMessage({ error: 'StartLocked' })).toBe(START_LOCKED_MESSAGE);
+    expect(revertMessage({ error: 'InvalidStart' })).toBe('La hora de inicio no es válida.');
+    expect(revertMessage({ error: 'InvalidAdmin' })).toBe('Esa dirección no puede ser admin.');
+    for (const [errorName, text] of [
+      ['NotStarted', NOT_STARTED_MESSAGE],
+      ['NotAdmin', NOT_ADMIN_MESSAGE],
+      ['StartLocked', START_LOCKED_MESSAGE],
+    ] as const) {
+      const data = encodeErrorResult({ abi, errorName });
+      expect(revertMessage({ type: 'Revive', value: { revert: { data } } })).toBe(text);
+    }
   });
 
   it('no reconoce otros errores', () => {

@@ -525,8 +525,13 @@ export function createHub(deps?: HubDeps): Hub {
 
     async readPeriods() {
       try {
-        const [current, start, length] = await withTimeout(
-          Promise.all([d.reader.currentPeriod.query(), d.reader.startTime.query(), d.reader.PERIOD_LENGTH.query()]),
+        const [current, start, length, started] = await withTimeout(
+          Promise.all([
+            d.reader.currentPeriod.query(),
+            d.reader.startTime.query(),
+            d.reader.PERIOD_LENGTH.query(),
+            d.reader.isStarted.query(),
+          ]),
           READ_TIMEOUT_MS,
           'Periodo',
         );
@@ -534,6 +539,7 @@ export function createHub(deps?: HubDeps): Hub {
           current: Number(toBig(unwrap(current, 'currentPeriod'))),
           start: toBig(unwrap(start, 'startTime')),
           length: toBig(unwrap(length, 'PERIOD_LENGTH')),
+          started: unwrap(started, 'isStarted') === true,
         };
       } catch (error) {
         d.log.warn('periodo', describeError(error));

@@ -1,7 +1,7 @@
 // Pon aquí la dirección de TU PROPIO contrato Leaderboard (el que tú desplegaste).
 // Este valor es el contrato de Polka-Man, el que usa polka-man.dot.
-// TODO: poner aquí la dirección del Leaderboard v2 (periodos de 3 días) cuando se despliegue en Remix. Hasta entonces pnpm test:red falla.
-export const LEADERBOARD_ADDRESS = '0x0aAf511a454c6A522b37210ca6931Cde1c400Ac9' as const;
+// Leaderboard v3: periodos de 3 días, un admin y hora de inicio que fija el admin desde la app.
+export const LEADERBOARD_ADDRESS = '0x079D136B033AF0317fdA178d6C9C323f0996afce' as const;
 export const ETH_RPC_URL = 'https://eth-rpc-testnet.polkadot.io';
 export const CHAIN_ID = 420_420_417;
 /** Tu nombre .dot (capítulo 6). La cuenta de cada app sale de este nombre. */

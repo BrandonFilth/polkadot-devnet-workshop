@@ -6,11 +6,29 @@ const SIGNATURES = {
   ScoreNotHigher: 'ScoreNotHigher(uint256,uint256)',
   InvalidUsername: 'InvalidUsername()',
   UsernameTaken: 'UsernameTaken()',
+  NotStarted: 'NotStarted()',
+  NotAdmin: 'NotAdmin()',
+  InvalidAdmin: 'InvalidAdmin()',
+  InvalidStart: 'InvalidStart()',
+  StartLocked: 'StartLocked()',
 } as const;
 
 type ErrorName = keyof typeof SIGNATURES;
 
 export const INVALID_USERNAME_MESSAGE = 'El username debe tener de 3 a 16 caracteres: a-z, 0-9 o _.';
+export const NOT_STARTED_MESSAGE = 'El ranking todavía no abre: tu récord no se guarda hasta que empiece el evento.';
+export const NOT_ADMIN_MESSAGE = 'Solo el admin del ranking puede hacer esto.';
+export const START_LOCKED_MESSAGE = 'El ranking ya empezó: la hora de inicio ya no se puede cambiar.';
+
+const MESSAGES: Record<Exclude<ErrorName, 'ScoreNotHigher'>, string> = {
+  InvalidUsername: INVALID_USERNAME_MESSAGE,
+  UsernameTaken: 'Ese username ya es de otro jugador.',
+  NotStarted: NOT_STARTED_MESSAGE,
+  NotAdmin: NOT_ADMIN_MESSAGE,
+  InvalidAdmin: 'Esa dirección no puede ser admin.',
+  InvalidStart: 'La hora de inicio no es válida.',
+  StartLocked: START_LOCKED_MESSAGE,
+};
 
 function message(name: ErrorName, args: readonly unknown[] | undefined): string {
   if (name === 'ScoreNotHigher') {
@@ -18,8 +36,7 @@ function message(name: ErrorName, args: readonly unknown[] | undefined): string 
     const known = typeof current === 'bigint' || typeof current === 'number' || (typeof current === 'string' && current !== '');
     return known ? `Ese puntaje no supera tu récord (${String(current)}).` : 'Ese puntaje no supera tu récord.';
   }
-  if (name === 'InvalidUsername') return INVALID_USERNAME_MESSAGE;
-  return 'Ese username ya es de otro jugador.';
+  return MESSAGES[name];
 }
 
 const NAMES = Object.keys(SIGNATURES) as ErrorName[];

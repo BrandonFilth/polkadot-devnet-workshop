@@ -43,8 +43,12 @@ export interface LeaderboardContract {
   periodBounds: Read<[bigint], unknown>;
   getScores: Read<[bigint, bigint], unknown>;
   getScoresIn: Read<[bigint, bigint, bigint], unknown>;
+  admin: Read<[], Hex>;
+  isStarted: Read<[], boolean>;
   submitScore: Write<[bigint]>;
   setUsername: Write<[string]>;
+  setStartTime: Write<[bigint]>;
+  setAdmin: Write<[Hex]>;
 }
 
 export interface ScoreEntry {

@@ -1,6 +1,7 @@
 // Ranking con dos vistas. Actual: TOP 10 del periodo de 3 días en curso, con sus fechas y cuánto falta
 // para el reinicio. Historial: los periodos anteriores (hasta RANKING_HISTORY_PERIODS); al tocar uno se
 // ve su TOP 10. Cada vista tiene cargando, vacío y error con Reintentar.
+import { notOpenText } from '../contract/eventStart';
 import { formatCountdown, formatPeriod, historyPeriods, periodRange } from '../contract/periods';
 import { shortAddress } from '../contract/ranking';
 import { RANKING_HISTORY_PERIODS } from '../engine/rules';
@@ -132,6 +133,14 @@ export function createRanking(hub: Hub): Ranking {
     Promise.all([hub.readPeriods(), hub.readTop(RANKING_TOP)]).then(
       ([periods, rows]) => {
         if (mySeq !== seq) return;
+        // Antes del evento no hay periodo: se dice cuándo abre en vez de mostrar fechas.
+        if (!periods.started) {
+          heading.textContent = 'TOP 10';
+          reinicio.textContent = notOpenText(periods.start);
+          reinicio.hidden = false;
+          status('Todavía no hay récords');
+          return;
+        }
         const now = nowSec();
         const range = periodRange(periods.start, periods.length, periods.current);
         heading.textContent = `TOP 10 · ${formatPeriod(range, now)}`;
@@ -172,7 +181,7 @@ export function createRanking(hub: Hub): Ranking {
     hub.readPeriods().then(
       (periods) => {
         if (mySeq !== seq) return;
-        const past = historyPeriods(periods.current, RANKING_HISTORY_PERIODS);
+        const past = periods.started ? historyPeriods(periods.current, RANKING_HISTORY_PERIODS) : [];
         if (past.length === 0) {
           status('Todavía no hay periodos anteriores');
           return;

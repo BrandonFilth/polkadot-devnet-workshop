@@ -1,11 +1,11 @@
 // Prueba de integración contra el devnet real (proyecto `red`: `pnpm test:red`). Solo lecturas y
 // simulaciones con el rpcReader del juego: sin llaves ni firmas.
-// Falla a propósito hasta que LEADERBOARD_ADDRESS (contract/config.ts) apunte al Leaderboard v2
-// (periodos de 3 días) ya desplegado: la dirección actual es la del contrato anterior.
+// Contrato v3: un admin y hora de inicio. Las pruebas que dependen de si el ranking ya abrió leen
+// isStarted() antes y revisan el caso que toca.
 import { bytesToHex, createPublicClient, http } from 'viem';
 import { describe, expect, it } from 'vitest';
 import { CHAIN_ID, ETH_RPC_URL, LEADERBOARD_ADDRESS } from './config';
-import { revertMessage } from './errors';
+import { NOT_ADMIN_MESSAGE, NOT_STARTED_MESSAGE, revertMessage } from './errors';
 import { decodeScores } from './leaderboard';
 import { readPgas } from './pgas';
 import { createRpcContract } from './rpcReader';
@@ -21,17 +21,43 @@ const players = countResult.success ? BigInt(countResult.value as bigint) : 0n;
 const firstPage = players > 0n ? await contract.getScores.query(0n, 50n) : null;
 const scores = firstPage?.success ? decodeScores(firstPage.value) : [];
 const existingUsername = scores.find((s) => s.username !== '')?.username;
+const startedResult = await contract.isStarted.query();
+const started = startedResult.success && startedResult.value === true;
+const startResult = await contract.startTime.query();
+const startTime = startResult.success ? BigInt(startResult.value as bigint) : -1n;
 
 describe('Leaderboard en Products Devnet', () => {
   it('el ETH-RPC es la cadena 420420417', async () => {
     expect(await client.getChainId()).toBe(CHAIN_ID);
   });
 
-  it('hay código desplegado del tamaño del contrato compilado (7,179 bytes)', async () => {
+  it('hay código desplegado en LEADERBOARD_ADDRESS', async () => {
     const code = await client.getCode({ address: LEADERBOARD_ADDRESS });
-    // El runtime de Leaderboard.sol (solc 0.8.28, sin optimizador) mide 7,179 bytes; la metadata
-    // puede cambiar pero no su tamaño.
-    expect(code ? (code.length - 2) / 2 : 0).toBe(7_179);
+    // El tamaño depende de los ajustes de Remix al compilar (optimizador), así que solo se pide que exista.
+    expect(code ? (code.length - 2) / 2 : 0).toBeGreaterThan(0);
+  });
+
+  it('startTime() e isStarted() responden y cuadran: sin hora de inicio no está abierto', () => {
+    expect(startResult.success).toBe(true);
+    expect(startedResult.success).toBe(true);
+    if (startTime === 0n) expect(started).toBe(false);
+    if (started) expect(startTime > 0n).toBe(true);
+  });
+
+  it('admin() responde con una dirección distinta de 0x000…', async () => {
+    const r = await contract.admin.query();
+    expect(r.success).toBe(true);
+    expect(String(r.value)).toMatch(/^0x[0-9a-fA-F]{40}$/);
+    expect(BigInt(String(r.value))).not.toBe(0n);
+  });
+
+  it('una cuenta que no es admin no puede simular setStartTime ni setAdmin (NotAdmin)', async () => {
+    const a = await contract.setStartTime.query(BigInt(Math.floor(Date.now() / 1000) + 86_400));
+    expect(a.success).toBe(false);
+    expect(revertMessage(a.value)).toBe(NOT_ADMIN_MESSAGE);
+    const b = await contract.setAdmin.query(from as `0x${string}`);
+    expect(b.success).toBe(false);
+    expect(revertMessage(b.value)).toBe(NOT_ADMIN_MESSAGE);
   });
 
   it('playerCount() responde', () => {
@@ -45,7 +71,23 @@ describe('Leaderboard en Products Devnet', () => {
     expect(BigInt(r.value as bigint) >= 0n).toBe(true);
   });
 
-  it('periodBounds(currentPeriod) contiene la hora actual', async () => {
+  it.skipIf(started || startTime !== 0n)('sin hora de inicio, periodBounds revierte con NotStarted', async () => {
+    const r = await contract.periodBounds.query(0n);
+    expect(r.success).toBe(false);
+    expect(revertMessage(r.value)).toBe(NOT_STARTED_MESSAGE);
+  });
+
+  it.skipIf(started)('antes del evento: submitScore revierte con NotStarted y el ranking está vacío', async () => {
+    const r = await contract.submitScore.query(1n);
+    expect(r.success).toBe(false);
+    expect(revertMessage(r.value)).toBe(NOT_STARTED_MESSAGE);
+    expect(players).toBe(0n);
+    const period = await contract.currentPeriod.query();
+    expect(period.success).toBe(true);
+    expect(BigInt(period.value as bigint)).toBe(0n);
+  });
+
+  it.skipIf(!started)('periodBounds(currentPeriod) contiene la hora actual', async () => {
     const period = await contract.currentPeriod.query();
     expect(period.success).toBe(true);
     const r = await contract.periodBounds.query(BigInt(period.value as bigint));
@@ -65,12 +107,12 @@ describe('Leaderboard en Products Devnet', () => {
     }
   });
 
-  it('una cuenta nueva puede simular submitScore(1)', async () => {
+  it.skipIf(!started)('una cuenta nueva puede simular submitScore(1)', async () => {
     const r = await contract.submitScore.query(1n);
     expect(r.success).toBe(true);
   });
 
-  it('submitScore(0) revierte con ScoreNotHigher', async () => {
+  it.skipIf(!started)('submitScore(0) revierte con ScoreNotHigher', async () => {
     const r = await contract.submitScore.query(0n);
     expect(r.success).toBe(false);
     expect(revertMessage(r.value)).toBe('Ese puntaje no supera tu récord (0).');

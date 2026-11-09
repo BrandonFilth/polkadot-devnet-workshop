@@ -8,26 +8,47 @@ const names = (type: string) =>
     .sort();
 
 describe('ABI de Leaderboard', () => {
-  it('trae las 15 funciones, 4 errores y 3 eventos del contrato v2 (periodos de 3 días)', () => {
+  it('trae las 19 funciones, 8 errores y 5 eventos del contrato v3 (admin y hora de inicio)', () => {
     expect(names('function')).toEqual([
       'PERIOD_LENGTH',
+      'admin',
       'bestScore',
       'currentPeriod',
       'getScores',
       'getScoresIn',
+      'isStarted',
       'lifetimeBest',
       'periodBounds',
       'playerCount',
       'playerCountIn',
       'playerOf',
       'scoreOf',
+      'setAdmin',
+      'setStartTime',
       'setUsername',
       'startTime',
       'submitScore',
       'usernameOf',
     ]);
-    expect(names('error')).toEqual(['InvalidStart', 'InvalidUsername', 'ScoreNotHigher', 'UsernameTaken']);
-    expect(names('event')).toEqual(['NewHighScore', 'NewLifetimeBest', 'UsernameSet']);
+    expect(names('error')).toEqual([
+      'InvalidAdmin',
+      'InvalidStart',
+      'InvalidUsername',
+      'NotAdmin',
+      'NotStarted',
+      'ScoreNotHigher',
+      'StartLocked',
+      'UsernameTaken',
+    ]);
+    expect(names('event')).toEqual(['AdminChanged', 'NewHighScore', 'NewLifetimeBest', 'StartTimeSet', 'UsernameSet']);
+  });
+
+  it('el constructor no lleva parámetros y setStartTime/setAdmin reciben uint256/address', () => {
+    const ctor = leaderboardAbi.find((e) => e.type === 'constructor') as { inputs: unknown[] } | undefined;
+    expect(ctor?.inputs).toEqual([]);
+    const fn = (name: string) => leaderboardAbi.find((e) => (e as { name?: string }).name === name) as { inputs: Array<{ type: string }> };
+    expect(fn('setStartTime').inputs.map((i) => i.type)).toEqual(['uint256']);
+    expect(fn('setAdmin').inputs.map((i) => i.type)).toEqual(['address']);
   });
 });
 
