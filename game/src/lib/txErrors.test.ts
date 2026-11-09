@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { autoReconnect, classifyTxError } from './txErrors';
+import { autoReconnect, classifyTxError, errorDetail } from './txErrors';
 
 const ONE = 10_000_000_000n;
 const fmt = (v: bigint) => (Number(v) / 1e10).toFixed(2);
@@ -80,5 +80,18 @@ describe('clasificación de errores de transacción', () => {
     expect(p.kind).toBe('other');
     expect(p.raw).toContain('Revive');
     expect(autoReconnect(p.kind)).toBe(false);
+  });
+
+  it('errorDetail trae nombre, mensaje, campos propios y la causa; nunca el stack', () => {
+    const e = Object.assign(new Error('Invalid.Payment', { cause: new TypeError('pago') }), { value: { type: 'Payment' }, fee: 12n });
+    const d = errorDetail(e);
+    expect(d).toContain('Error: Invalid.Payment');
+    expect(d).toContain('"value":{"type":"Payment"}');
+    expect(d).toContain('"fee":"12"');
+    expect(d).toContain('causa: TypeError: pago');
+    expect(d).not.toMatch(/\n\s+at /);
+    expect(errorDetail({ raw: new Uint8Array([1, 255]) })).toBe('{"raw":"0x01ff"}');
+    expect(errorDetail('texto')).toBe('texto');
+    expect(errorDetail('x'.repeat(7_000)).length).toBe(6_001);
   });
 });

@@ -37,6 +37,8 @@ export interface Progress {
   reached: ProgressStep[];
   message: string;
   kind?: TxErrorKind;
+  /** Error completo de la red o del Host, para «Copiar detalles». Solo en 'error'. */
+  details?: string;
 }
 
 export const PROGRESS_TEXT: Record<ProgressStep, string> = {
@@ -110,10 +112,14 @@ export function advance(p: Progress, step: ProgressStep): Progress {
   return { ...p, step, reached, message: PROGRESS_TEXT[step] };
 }
 
-export function finish(p: Progress, result: { ok: true; message: string } | { ok: false; message: string; kind?: TxErrorKind }): Progress {
+export function finish(
+  p: Progress,
+  result: { ok: true; message: string } | { ok: false; message: string; kind?: TxErrorKind; details?: string },
+): Progress {
   if (result.ok) return { op: p.op, step: 'listo', reached: p.reached, message: result.message };
   const done: Progress = { op: p.op, step: 'error', reached: p.reached, message: result.message };
   if (result.kind) done.kind = result.kind;
+  if (result.details) done.details = result.details;
   return done;
 }
 

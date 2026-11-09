@@ -41,6 +41,44 @@ const text = (error: unknown): string => {
   }
 };
 
+const MAX_DETAIL = 6_000;
+
+const serialise = (value: unknown): string => {
+  try {
+    return (
+      JSON.stringify(value, (_k, v) => {
+        if (typeof v === 'bigint') return v.toString();
+        if (v instanceof Uint8Array) return `0x${Array.from(v, (b) => b.toString(16).padStart(2, '0')).join('')}`;
+        return v;
+      }) ?? String(value)
+    );
+  } catch {
+    return String(value);
+  }
+};
+
+/**
+ * Todo lo que trae el error, para diagnosticar: nombre, mensaje, campos propios (los errores del
+ * SDK y de polkadot-api guardan ahí el tipo, p. ej. `{ type: 'Invalid', value: { type: 'Payment' } }`)
+ * y la cadena de `cause`. Solo para «Copiar detalles»; la clasificación usa el texto corto.
+ */
+export function errorDetail(error: unknown, depth = 0): string {
+  let out: string;
+  if (error instanceof Error) {
+    out = `${error.name}: ${error.message}`;
+    const own: Record<string, unknown> = {};
+    for (const key of Object.keys(error)) if (key !== 'stack' && key !== 'cause') own[key] = (error as unknown as Record<string, unknown>)[key];
+    if (Object.keys(own).length) out += `\ncampos: ${serialise(own)}`;
+    const cause = (error as { cause?: unknown }).cause;
+    if (cause !== undefined && depth < 3) out += `\ncausa: ${errorDetail(cause, depth + 1)}`;
+  } else {
+    out = typeof error === 'string' ? error : serialise(error);
+  }
+  return out.length > MAX_DETAIL ? `${out.slice(0, MAX_DETAIL)}…` : out;
+}
+
+const PIPELINE = /transaction-extension pipeline|extension ?version|txExtVersion|Unsupported(Extrinsic|Transaction|Extension)Version/i;
+const STORAGE_DEPOSIT = /StorageDepositNotEnoughFunds|StorageDepositLimitExhausted/;
 const PAYMENT = /Invalid\.?\s*Payment/i;
 const SESSION = /Invalid\.?\s*(Stale|Future|AncientBirthBlock|BadProof|BadSigner)|\bnonce\b|outdated/i;
 const REJECTED = /reject|denied|cancel|declin|user (refused|closed)|SigningRejected/i;

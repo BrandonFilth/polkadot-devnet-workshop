@@ -55,6 +55,8 @@ describe('progreso: máquina de estados', () => {
     const failed = finish(p, { ok: false, message: 'No se aprobó.', kind: 'rejected' });
     expect(failed).toMatchObject({ step: 'error', message: 'No se aprobó.', kind: 'rejected' });
     expect(finish(p, { ok: false, message: 'Revirtió.' }).kind).toBeUndefined();
+    expect(finish(p, { ok: false, message: 'x', details: 'Error: Invalid.Payment' }).details).toBe('Error: Invalid.Payment');
+    expect(finish(p, { ok: false, message: 'x' }).details).toBeUndefined();
   });
 });
 

@@ -29,7 +29,7 @@ import { formatPgas, PGAS_LOW, readPgas as readPgasRpc } from '../contract/pgas'
 import { topScores } from '../contract/ranking';
 import { createRpcContract, withHostFallback } from '../contract/rpcReader';
 import { describeError, withTimeout } from '../lib/format';
-import { autoReconnect, classifyTxError, type TxErrorKind, type TxProblem } from '../lib/txErrors';
+import { autoReconnect, classifyTxError, errorDetail, type TxErrorKind, type TxProblem } from '../lib/txErrors';
 import { isValidUsername } from '../lib/username';
 import { advance, begin, finish, stepForSdkStatus, type Progress, type ProgressOp, type ProgressStep } from './progress';
 
@@ -156,6 +156,11 @@ export function productIdFromHost(host: string): string {
   if (/^localhost(:\d{1,5})?$/.test(h) || h.endsWith('.dot')) return h;
   const label = /^([a-z0-9-]+)\.(?:app\.)?(?:dev-)?dot\.li$/.exec(h)?.[1];
   return label ? `${label}.dot` : PRODUCT_DOMAIN;
+}
+
+/** Un intento fallido para «Copiar detalles»: tipo, PGAS leído en ese momento y el error completo. */
+function attemptDetail(n: number, kind: TxErrorKind, pgas: bigint | null, error: unknown): string {
+  return `intento ${n}: ${kind} · PGAS ${pgas === null ? 'desconocido' : formatPgas(pgas)}\n${errorDetail(error)}`;
 }
 
 type TxOutcome = { ok: true; value?: TxResult } | { ok: false; error: unknown };
@@ -405,7 +410,7 @@ export function createHub(deps?: HubDeps): Hub {
       }
     } catch (error) {
       d.log.warn('escritura', describeError(error));
-      result = { ok: false, message: describeError(error) };
+      result = { ok: false, message: describeError(error), details: errorDetail(error) };
     }
     return endOp(result);
   };

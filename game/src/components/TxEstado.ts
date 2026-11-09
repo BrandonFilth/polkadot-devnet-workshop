@@ -1,10 +1,47 @@
 // Popup de estados: aparte y por encima de todo (fin, username, inicio). Simulando → Firma en tu teléfono →
 // Enviando → Confirmando en la blockchain → Actualizando → Listo o el error. Mientras hay una firma en curso
 // no se puede cerrar y bloquea lo de abajo; al terminar muestra el resultado con «Cerrar».
-import type { Hub } from '../hub/hub';
+import { CHAIN_ID, LEADERBOARD_ADDRESS } from '../contract/config';
+import { COPY_FEEDBACK_MS } from '../engine/rules';
+import type { Hub, HubState } from '../hub/hub';
 import { KIND_TITLE, progressView, type Progress, type ProgressOp } from '../hub/progress';
+import { copyText, type ClipboardEnv } from '../lib/clipboard';
 
-const OPS: readonly ProgressOp[] = ['conectar', 'guardar', 'username'];
+export const COPY_DETAILS_LABEL = 'Copiar detalles';
+export const DETAILS_COPIED_LABEL = 'Detalles copiados';
+export const DETAILS_FAILED_LABEL = 'No se pudo copiar';
+
+/** El popup ofrece «Copiar detalles» solo en un error que trae el error completo. */
+export function canCopyDetails(progress: Progress | null): boolean {
+  return progress?.step === 'error' && typeof progress.details === 'string' && progress.details !== '';
+}
+
+/**
+ * Texto que se copia para diagnosticar: qué operación, en qué paso falló, el mensaje, la cuenta (direcciones
+ * públicas), el contrato, el navegador del Host y el error completo de cada intento. Nada secreto.
+ */
+export function diagnosticReport(
+  progress: Progress,
+  ctx: { account: HubState['account']; allowance: HubState['allowance']; userAgent: string; now: Date },
+): string {
+  return [
+    'Polka-Man · detalles del error',
+    `fecha: ${ctx.now.toISOString()}`,
+    `operación: ${progress.op}`,
+    `pasos alcanzados: ${progress.reached.join(' → ')}`,
+    `tipo: ${progress.kind ?? 'sin tipo'}`,
+    `mensaje: ${progress.message}`,
+    `cuenta H160: ${ctx.account?.h160 ?? '—'}`,
+    `cuenta SS58: ${ctx.account?.ss58 ?? '—'}`,
+    `permiso de gas: ${ctx.allowance ?? '—'}`,
+    `contrato: ${LEADERBOARD_ADDRESS} · chainId ${CHAIN_ID}`,
+    `navegador: ${ctx.userAgent || '—'}`,
+    '',
+    progress.details ?? '',
+  ].join('\n');
+}
+
+const OPS: readonly ProgressOp[] = ['conectar', 'guardar', 'username', 'inicio'];
 
 /** Título mientras la operación sigue en curso. */
 export const TX_TITLE: Record<ProgressOp, string> = {
@@ -45,6 +82,7 @@ export function createTxEstado(
   parent: HTMLElement,
   hub: Pick<Hub, 'getState' | 'subscribe'>,
   onToggle: () => void = () => {},
+  clipboard?: ClipboardEnv,
 ): TxEstado {
   const element = document.createElement('div');
   element.className = 'tx';
@@ -71,11 +109,16 @@ export function createTxEstado(
   close.type = 'button';
   close.className = 'overlay-action';
   close.textContent = 'Cerrar';
+  const copy = document.createElement('button');
+  copy.type = 'button';
+  copy.className = 'overlay-secondary tx-copiar';
+  copy.textContent = COPY_DETAILS_LABEL;
+  copy.hidden = true;
 
   const steps = document.createElement('div');
   steps.className = 'progreso';
   steps.append(list, line);
-  box.append(title, steps, close);
+  box.append(title, steps, close, copy);
   element.append(box);
   parent.append(element);
 
@@ -119,6 +162,8 @@ export function createTxEstado(
       }),
     );
     line.textContent = pv.line;
+    copy.hidden = !(view.closable && canCopyDetails(s.progress));
+    copy.textContent = COPY_DETAILS_LABEL;
     close.hidden = !view.closable;
     if (view.closable) close.focus({ preventScroll: true });
     else if (!box.contains(document.activeElement)) box.focus({ preventScroll: true });
@@ -131,6 +176,23 @@ export function createTxEstado(
   };
   close.addEventListener('click', dismiss);
 
+  let copyTimer: ReturnType<typeof setTimeout> | null = null;
+  copy.addEventListener('click', async () => {
+    const s = hub.getState();
+    if (!s.progress || !canCopyDetails(s.progress)) return;
+    const report = diagnosticReport(s.progress, {
+      account: s.account,
+      allowance: s.allowance,
+      userAgent: typeof navigator === 'undefined' ? '' : navigator.userAgent,
+      now: new Date(),
+    });
+    copy.textContent = (await copyText(report, clipboard)) ? DETAILS_COPIED_LABEL : DETAILS_FAILED_LABEL;
+    if (copyTimer) clearTimeout(copyTimer);
+    copyTimer = setTimeout(() => {
+      copy.textContent = COPY_DETAILS_LABEL;
+    }, COPY_FEEDBACK_MS);
+  });
+
   // Las teclas del popup no llegan al juego ni a lo de abajo. El foco se queda dentro.
   element.addEventListener('keydown', (e) => {
     e.stopPropagation();
@@ -139,7 +201,13 @@ export function createTxEstado(
       dismiss();
     } else if (e.key === 'Tab') {
       e.preventDefault();
-      (closable ? close : box).focus({ preventScroll: true });
+      if (!closable) {
+        box.focus({ preventScroll: true });
+        return;
+      }
+      // Con «Copiar detalles» visible, Tab alterna entre los dos botones.
+      const target = !copy.hidden && document.activeElement === close ? copy : close;
+      target.focus({ preventScroll: true });
     }
   });
 
