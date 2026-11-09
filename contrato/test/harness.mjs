@@ -52,11 +52,16 @@ export class Reverted extends Error {
 /** Hora (Unix, segundos) del primer bloque de cada despliegue de prueba. */
 export const NOW = 1_800_000_000n;
 
+/** Cuenta que despliega el contrato y, por eso, queda como admin. */
+export const ADMIN = player(99);
+
 /**
- * Despliega Leaderboard con `args` para el constructor (por defecto `start = NOW`).
+ * Despliega Leaderboard (el constructor no lleva parámetros) desde ADMIN.
+ * Después el admin llama setStartTime(start) para abrir el ranking; por defecto start = NOW.
+ * Con `{ start: null }` el ranking queda sin hora de inicio.
  * El reloj empieza en NOW y solo avanza con `warp(segundos)`.
  */
-export async function deploy(args = [NOW]) {
+export async function deploy({ start = NOW } = {}) {
   const { abi, bytecode } = compile();
   const vm = await createVM();
   let number = 1n;
@@ -86,7 +91,7 @@ export async function deploy(args = [NOW]) {
     }
   };
 
-  const created = await run(player(99), encodeDeployData({ abi, bytecode, args }));
+  const created = await run(ADMIN, encodeDeployData({ abi, bytecode }));
   if (created.execResult.exceptionError) throw revert(created.execResult.returnValue);
   const address = created.createdAddress.toString();
 
@@ -110,6 +115,8 @@ export async function deploy(args = [NOW]) {
   const warp = (seconds) => {
     now += BigInt(seconds);
   };
+
+  if (start !== null) await send(ADMIN, 'setStartTime', [start]);
 
   return { address, send, read, warp, now: () => now };
 }

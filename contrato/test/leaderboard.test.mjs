@@ -1,7 +1,7 @@
 // Reglas de Leaderboard.sol. Correr: pnpm test (dentro de contrato/)
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { deploy, expectRevert, NOW, player } from './harness.mjs';
+import { ADMIN, deploy, expectRevert, NOW, player } from './harness.mjs';
 
 const ZERO = '0x0000000000000000000000000000000000000000';
 const DAY = 86_400n;
@@ -135,13 +135,8 @@ describe('getScores', () => {
 });
 
 describe('periodos', () => {
-  it('el constructor rechaza un inicio en 0 o en el futuro', async () => {
-    await expectRevert(deploy([0n]), 'InvalidStart');
-    await expectRevert(deploy([NOW + 1n]), 'InvalidStart');
-  });
-
-  it('el constructor acepta empezar ahora y guarda startTime', async () => {
-    const c = await deploy([NOW]);
+  it('guarda startTime y el periodo dura 3 días', async () => {
+    const c = await deploy();
     assert.equal(await c.read('startTime'), NOW);
     assert.equal(await c.read('PERIOD_LENGTH'), 259_200n);
   });
@@ -300,5 +295,209 @@ describe('lifetimeBest', () => {
     assert.equal(await c.read('lifetimeBest', [player(1)]), 900n);
     assert.equal(await c.read('lifetimeBest', [player(2)]), 50n);
     assert.equal(await c.read('lifetimeBest', [player(3)]), 0n);
+  });
+});
+
+describe('admin', () => {
+  it('quien despliega queda como admin y el constructor no lleva parámetros', async () => {
+    const c = await deploy({ start: null });
+    assert.equal(await c.read('admin'), ADMIN);
+    assert.equal(await c.read('startTime'), 0n);
+  });
+
+  it('setAdmin le pasa el puesto a otra dirección y emite AdminChanged', async () => {
+    const c = await deploy({ start: null });
+    const { events } = await c.send(ADMIN, 'setAdmin', [player(7)]);
+    assert.equal(await c.read('admin'), player(7));
+    assert.equal(events[0].eventName, 'AdminChanged');
+    assert.equal(events[0].args.previousAdmin, ADMIN);
+    assert.equal(events[0].args.newAdmin, player(7));
+  });
+
+  it('el admin anterior pierde el acceso y el nuevo puede actuar', async () => {
+    const c = await deploy({ start: null });
+    await c.send(ADMIN, 'setAdmin', [player(7)]);
+    await expectRevert(c.send(ADMIN, 'setStartTime', [NOW + DAY]), 'NotAdmin');
+    await expectRevert(c.send(ADMIN, 'setAdmin', [ADMIN]), 'NotAdmin');
+    await c.send(player(7), 'setStartTime', [NOW + DAY]);
+    assert.equal(await c.read('startTime'), NOW + DAY);
+    await c.send(player(7), 'setAdmin', [player(8)]);
+    assert.equal(await c.read('admin'), player(8));
+  });
+
+  it('solo el admin puede llamar setAdmin', async () => {
+    const c = await deploy({ start: null });
+    await expectRevert(c.send(player(1), 'setAdmin', [player(1)]), 'NotAdmin');
+    assert.equal(await c.read('admin'), ADMIN);
+  });
+
+  it('setAdmin rechaza la dirección 0x000…', async () => {
+    const c = await deploy({ start: null });
+    await expectRevert(c.send(ADMIN, 'setAdmin', [ZERO]), 'InvalidAdmin');
+    assert.equal(await c.read('admin'), ADMIN);
+  });
+
+  it('el admin no tiene ventaja con los puntajes: solo cambia el suyo', async () => {
+    const c = await deploy();
+    await c.send(player(1), 'submitScore', [500n]);
+    await c.send(ADMIN, 'submitScore', [10n]);
+    assert.equal(await c.read('bestScore', [player(1)]), 500n);
+    assert.equal(await c.read('bestScore', [ADMIN]), 10n);
+  });
+});
+
+describe('setStartTime', () => {
+  it('el admin fija la hora de inicio y emite StartTimeSet', async () => {
+    const c = await deploy({ start: null });
+    const { events } = await c.send(ADMIN, 'setStartTime', [NOW + DAY]);
+    assert.equal(await c.read('startTime'), NOW + DAY);
+    assert.equal(events[0].eventName, 'StartTimeSet');
+    assert.equal(events[0].args.start, NOW + DAY);
+  });
+
+  it('solo el admin puede llamarla', async () => {
+    const c = await deploy({ start: null });
+    await expectRevert(c.send(player(1), 'setStartTime', [NOW]), 'NotAdmin');
+    assert.equal(await c.read('startTime'), 0n);
+  });
+
+  it('rechaza 0', async () => {
+    const c = await deploy({ start: null });
+    await expectRevert(c.send(ADMIN, 'setStartTime', [0n]), 'InvalidStart');
+  });
+
+  it('se puede cambiar varias veces mientras la hora de inicio no llega', async () => {
+    const c = await deploy({ start: null });
+    await c.send(ADMIN, 'setStartTime', [NOW + 5n * DAY]);
+    await c.send(ADMIN, 'setStartTime', [NOW + 2n * DAY]);
+    c.warp(DAY);
+    await c.send(ADMIN, 'setStartTime', [NOW + 10n * DAY]);
+    assert.equal(await c.read('startTime'), NOW + 10n * DAY);
+  });
+
+  it('acepta la hora actual o una pasada y abre el ranking de inmediato', async () => {
+    const actual = await deploy({ start: null });
+    await actual.send(ADMIN, 'setStartTime', [NOW]);
+    assert.equal(await actual.read('isStarted'), true);
+
+    const pasada = await deploy({ start: null });
+    await pasada.send(ADMIN, 'setStartTime', [NOW - 2n * PERIOD]);
+    assert.equal(await pasada.read('isStarted'), true);
+    assert.equal(await pasada.read('currentPeriod'), 2n);
+  });
+
+  it('queda bloqueada en cuanto llega la hora de inicio', async () => {
+    const c = await deploy({ start: null });
+    await c.send(ADMIN, 'setStartTime', [NOW + DAY]);
+    c.warp(DAY - 1n);
+    await c.send(ADMIN, 'setStartTime', [NOW + DAY]); // un segundo antes todavía se puede
+    c.warp(1n);
+    await expectRevert(c.send(ADMIN, 'setStartTime', [NOW + 5n * DAY]), 'StartLocked');
+    c.warp(10n * PERIOD);
+    await expectRevert(c.send(ADMIN, 'setStartTime', [NOW + 50n * PERIOD]), 'StartLocked');
+    assert.equal(await c.read('startTime'), NOW + DAY);
+  });
+
+  it('cambiar de admin no desbloquea la hora de inicio', async () => {
+    const c = await deploy();
+    await c.send(ADMIN, 'setAdmin', [player(7)]);
+    await expectRevert(c.send(player(7), 'setStartTime', [NOW + DAY]), 'StartLocked');
+  });
+});
+
+describe('isStarted', () => {
+  it('es false sin hora de inicio', async () => {
+    const c = await deploy({ start: null });
+    assert.equal(await c.read('isStarted'), false);
+  });
+
+  it('es false antes de la hora de inicio y true desde ese segundo', async () => {
+    const c = await deploy({ start: NOW + DAY });
+    assert.equal(await c.read('isStarted'), false);
+    c.warp(DAY - 1n);
+    assert.equal(await c.read('isStarted'), false);
+    c.warp(1n);
+    assert.equal(await c.read('isStarted'), true);
+    c.warp(100n * PERIOD);
+    assert.equal(await c.read('isStarted'), true);
+  });
+});
+
+describe('antes de que abra el evento', () => {
+  /** Comprueba que nada quedó guardado en el ranking. */
+  const rankingVacio = async (c) => {
+    assert.equal(await c.read('playerCount'), 0n);
+    assert.equal(await c.read('playerCountIn', [0n]), 0n);
+    assert.equal(await c.read('bestScore', [player(1)]), 0n);
+    assert.equal(await c.read('scoreOf', [0n, player(1)]), 0n);
+    assert.equal(await c.read('lifetimeBest', [player(1)]), 0n);
+    assert.deepEqual(await c.read('getScores', [0n, 10n]), [[], [], []]);
+    assert.deepEqual(await c.read('getScoresIn', [0n, 0n, 10n]), [[], [], []]);
+  };
+
+  it('sin hora de inicio no se guarda ningún puntaje', async () => {
+    const c = await deploy({ start: null });
+    await expectRevert(c.send(player(1), 'submitScore', [120n]), 'NotStarted');
+    await expectRevert(c.send(ADMIN, 'submitScore', [120n]), 'NotStarted');
+    await rankingVacio(c);
+    assert.equal(await c.read('currentPeriod'), 0n);
+    await expectRevert(c.read('periodBounds', [0n]), 'NotStarted');
+  });
+
+  it('con hora de inicio futura no se guarda ningún puntaje hasta que llegue', async () => {
+    const c = await deploy({ start: NOW + DAY });
+    await expectRevert(c.send(player(1), 'submitScore', [120n]), 'NotStarted');
+    c.warp(DAY - 1n);
+    await expectRevert(c.send(player(1), 'submitScore', [120n]), 'NotStarted');
+    await rankingVacio(c);
+    assert.equal(await c.read('currentPeriod'), 0n);
+    assert.deepEqual(await c.read('periodBounds', [0n]), [NOW + DAY, NOW + DAY + PERIOD]);
+
+    c.warp(1n);
+    await c.send(player(1), 'submitScore', [120n]);
+    assert.equal(await c.read('bestScore', [player(1)]), 120n);
+    assert.equal(await c.read('playerCount'), 1n);
+    assert.equal(await c.read('lifetimeBest', [player(1)]), 120n);
+  });
+
+  it('el username sí se puede poner antes del evento', async () => {
+    const c = await deploy({ start: null });
+    await c.send(player(1), 'setUsername', ['ana']);
+    assert.equal(await c.read('usernameOf', [player(1)]), 'ana');
+  });
+});
+
+describe('reinicio cada 3 días', () => {
+  it('el ranking se reinicia en cada periodo y guarda el historial', async () => {
+    const start = NOW + DAY;
+    const c = await deploy({ start });
+    c.warp(DAY); // abre el evento
+
+    for (let p = 0n; p < 4n; p++) {
+      assert.equal(await c.read('currentPeriod'), p);
+      assert.equal(await c.read('playerCount'), 0n);
+      assert.equal(await c.read('bestScore', [player(1)]), 0n);
+      assert.deepEqual(await c.read('getScores', [0n, 10n]), [[], [], []]);
+
+      // Cada periodo acepta un puntaje menor que el del anterior.
+      const score = 1_000n - p * 100n;
+      const { events } = await c.send(player(1), 'submitScore', [score]);
+      assert.equal(events[0].args.period, p);
+      assert.equal(await c.read('bestScore', [player(1)]), score);
+      assert.equal(await c.read('playerCount'), 1n);
+
+      // Un segundo antes del final sigue siendo el mismo periodo.
+      c.warp(PERIOD - 1n);
+      assert.equal(await c.read('currentPeriod'), p);
+      assert.equal(await c.read('bestScore', [player(1)]), score);
+      c.warp(1n);
+      assert.equal(c.now(), start + (p + 1n) * PERIOD);
+    }
+
+    for (let p = 0n; p < 4n; p++) {
+      assert.equal(await c.read('playerCountIn', [p]), 1n);
+      assert.equal(await c.read('scoreOf', [p, player(1)]), 1_000n - p * 100n);
+    }
+    assert.equal(await c.read('lifetimeBest', [player(1)]), 1_000n);
   });
 });

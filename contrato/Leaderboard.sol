@@ -5,7 +5,13 @@ pragma solidity 0.8.28;
  * @title  Leaderboard
  * @notice Marcador del juego por periodos de 3 días: guarda el mejor puntaje de cada jugador en
  *         cada periodo, su récord de por vida y, si el jugador quiere, un username único.
- *         No tiene dueño: nadie puede borrar ni cambiar puntajes ajenos.
+ *
+ *         Tiene un solo admin (al desplegar, quien despliega). El admin solo puede fijar la hora
+ *         de inicio del ranking y pasarle el puesto a otra dirección. Nadie, ni el admin, puede
+ *         borrar ni cambiar puntajes ajenos.
+ *
+ *         Hasta que llega la hora de inicio no se guarda ningún puntaje. El admin puede cambiar
+ *         esa hora mientras no haya llegado; una vez que llega, ya no se puede cambiar.
  *
  *         El ranking se reinicia solo cada 3 días: el periodo actual sale de la hora del bloque,
  *         así que no hace falta que nadie llame una función para reiniciarlo. Los periodos
@@ -20,8 +26,11 @@ contract Leaderboard {
     /// Duración de cada periodo del ranking.
     uint256 public constant PERIOD_LENGTH = 3 days;
 
-    /// Hora (Unix, segundos) en que empieza el periodo 0. Se fija al desplegar.
-    uint256 public immutable startTime;
+    /// Única dirección que puede fijar la hora de inicio y cambiar de admin.
+    address public admin;
+
+    /// Hora (Unix, segundos) en que empieza el periodo 0. 0 significa que el admin aún no la fija.
+    uint256 public startTime;
 
     /// Mejor puntaje de cada jugador en cada periodo. 0 significa que no guardó ninguno en ese periodo.
     mapping(uint256 => mapping(address => uint256)) public scoreOf;
@@ -51,6 +60,12 @@ contract Leaderboard {
     /// Un jugador puso o cambió su username.
     event UsernameSet(address indexed player, string username);
 
+    /// El admin le pasó el puesto a otra dirección.
+    event AdminChanged(address indexed previousAdmin, address indexed newAdmin);
+
+    /// El admin fijó o cambió la hora de inicio del ranking.
+    event StartTimeSet(uint256 start);
+
     // ---------------------------------------------------------------- errores
 
     /// El puntaje no supera el récord que ya tienes en este periodo.
@@ -62,21 +77,57 @@ contract Leaderboard {
     /// Otro jugador ya usa ese username.
     error UsernameTaken();
 
-    /// La hora de inicio no puede ser 0 ni estar en el futuro.
+    /// Solo el admin puede llamar esta función.
+    error NotAdmin();
+
+    /// El nuevo admin no puede ser la dirección 0x000…: el puesto quedaría perdido.
+    error InvalidAdmin();
+
+    /// La hora de inicio no puede ser 0.
     error InvalidStart();
+
+    /// El ranking ya empezó: la hora de inicio ya no se puede cambiar.
+    error StartLocked();
+
+    /// El ranking todavía no empieza (no hay hora de inicio o aún no llega).
+    error NotStarted();
 
     // ---------------------------------------------------------------- desplegar
 
-    /// @param start Hora (Unix, segundos) en que empieza el periodo 0. No puede estar en el futuro.
-    constructor(uint256 start) {
-        if (start == 0 || start > block.timestamp) revert InvalidStart();
+    /// Quien despliega queda como admin.
+    constructor() {
+        admin = msg.sender;
+        emit AdminChanged(address(0), msg.sender);
+    }
+
+    modifier onlyAdmin() {
+        if (msg.sender != admin) revert NotAdmin();
+        _;
+    }
+
+    // ---------------------------------------------------------------- admin
+
+    /// Le pasa el puesto de admin a `newAdmin`. El admin actual deja de serlo.
+    function setAdmin(address newAdmin) external onlyAdmin {
+        if (newAdmin == address(0)) revert InvalidAdmin();
+        emit AdminChanged(admin, newAdmin);
+        admin = newAdmin;
+    }
+
+    /// Fija o cambia la hora (Unix, segundos) de inicio. Solo mientras el ranking no haya empezado.
+    /// Puede ser una hora pasada o la actual: en ese caso el ranking abre de inmediato.
+    function setStartTime(uint256 start) external onlyAdmin {
+        if (start == 0) revert InvalidStart();
+        if (isStarted()) revert StartLocked();
         startTime = start;
+        emit StartTimeSet(start);
     }
 
     // ---------------------------------------------------------------- escribir
 
     /// Guarda tu puntaje si es mejor que tu récord del periodo actual.
     function submitScore(uint256 score) external {
+        if (!isStarted()) revert NotStarted();
         uint256 p = currentPeriod();
         uint256 current = scoreOf[p][msg.sender];
         if (score <= current) revert ScoreNotHigher(current, score);
@@ -113,13 +164,22 @@ contract Leaderboard {
 
     // ---------------------------------------------------------------- leer
 
-    /// Número del periodo actual. El primero es el 0.
+    /// true si hay hora de inicio y ya llegó. Antes de eso submitScore revierte con NotStarted.
+    function isStarted() public view returns (bool) {
+        return startTime != 0 && block.timestamp >= startTime;
+    }
+
+    /// Número del periodo actual. El primero es el 0. Antes del inicio también devuelve 0
+    /// (usa isStarted para distinguirlo); ese periodo está vacío porque no se pudo guardar nada.
     function currentPeriod() public view returns (uint256) {
+        if (!isStarted()) return 0;
         return (block.timestamp - startTime) / PERIOD_LENGTH;
     }
 
     /// Cuándo empieza y cuándo termina el periodo `p` (Unix, segundos). `endsAt` ya es del siguiente.
+    /// Revierte con NotStarted si el admin aún no fija la hora de inicio.
     function periodBounds(uint256 p) external view returns (uint256 startsAt, uint256 endsAt) {
+        if (startTime == 0) revert NotStarted();
         startsAt = startTime + p * PERIOD_LENGTH;
         endsAt = startsAt + PERIOD_LENGTH;
     }
