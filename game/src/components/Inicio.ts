@@ -139,6 +139,7 @@ export function createInicio(
   const top = document.createElement('div');
   top.className = 'inicio-top';
   if (opts.sonido) top.append(opts.sonido);
+  if (opts.billetera) top.append(opts.billetera);
 
   const box = document.createElement('div');
   box.className = 'inicio-box';

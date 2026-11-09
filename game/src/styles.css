@@ -974,6 +974,47 @@ button:focus-visible {
   align-self: stretch;
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Billetera: la dirección EVM acortada; al tocarla se copia completa. Va al final = esquina superior derecha. */
+.billetera {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 6px 12px;
+  border: 1px solid var(--muted);
+  border-radius: 12px;
+  background: #0d0d0d;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.billetera[hidden] {
+  display: none;
+}
+
+.billetera:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.billetera-icono {
+  display: inline-flex;
+  color: var(--muted);
+}
+
+.billetera[data-estado='copiada'] {
+  border-color: var(--accent);
+}
+
+.billetera[data-estado='copiada'] .billetera-icono {
+  color: var(--accent);
 }
 
 /* Centro: portada, título y acciones (margin auto lo centra; si no cabe, se desplaza). */

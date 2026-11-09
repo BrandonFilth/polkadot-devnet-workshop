@@ -224,6 +224,9 @@ export const KEYBOARD_MIN_PX = 120;
 /** Milisegundos que el modal de username deja ver «Listo» antes de cerrarse. */
 export const DONE_VISIBLE_MS = 1200;
 
+/** Milisegundos que el botón de la billetera muestra «Copiada» (o el error) antes de volver a la dirección. */
+export const COPY_FEEDBACK_MS = 1500;
+
 /** Fantasmas en la ronda `round`. */
 export function ghostCount(round: number): number {
   return Math.min(GHOST_MAX, GHOST_START + Math.floor((round - 1) / GHOST_EVERY_ROUNDS));
