@@ -20,10 +20,12 @@ const running = new WeakMap<HTMLElement, number>();
 
 /** Escribe `text` en `el` letra por letra. Llamarlo otra vez con otro texto reinicia la animación. */
 export function typeInto(el: HTMLElement, text: string): void {
+  // El mismo texto otra vez: se deja seguir la animación en curso. Antes se cancelaba aquí y el texto se
+  // quedaba a medias (o vacío) cuando la pantalla se volvía a pintar con el mismo aviso.
+  if (el.dataset.typed === text) return;
   const prev = running.get(el);
   if (prev !== undefined) cancelAnimationFrame(prev);
   running.delete(el);
-  if (el.dataset.typed === text) return;
   el.dataset.typed = text;
 
   const sr = document.createElement('span');

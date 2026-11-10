@@ -3099,10 +3099,7 @@ button:focus-visible {
   height: 56px;
 }
 
-/* ---------- Barra superior: Polka-Man a la izquierda; billetera y Polkadot (blanco) a la derecha. ---------- */
-.shell-bar > .billetera {
-  margin-left: auto;
-}
+/* ---------- Barra superior: Polka-Man a la izquierda y Polkadot (blanco) a la derecha. ---------- */
 
 .shell-polkadot {
   display: inline-flex;
@@ -3128,12 +3125,6 @@ button:focus-visible {
   height: 22px;
 }
 
-/* Con la billetera a la vista en un celular angosto, Polkadot queda solo con su logo. */
-@media (max-width: 439px) {
-  .shell-bar:has(> .billetera:not([hidden])) .shell-polkadot-text {
-    display: none;
-  }
-}
 
 /* ---------- Sonido: la perilla blanca queda dentro del interruptor rosa (20 px de alto en el tema). ---------- */
 #app .sonido-switch {
@@ -3444,4 +3435,30 @@ button:focus-visible {
 /* Tu fila sigue en rosa aunque estés en el top 3. */
 #app .ranking-table tr.ranking-mine[data-top] td {
   color: var(--bg);
+}
+
+/* ---------- Jugar con cuenta: bienvenida con el username y, debajo, el botón para copiar tu dirección. ---------- */
+#app .inicio .inicio-cuenta .inicio-status {
+  font-family: var(--display);
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--accent);
+}
+
+.inicio-cuenta > .billetera {
+  align-self: center;
+}
+
+/* ---------- Fin de partida antes del evento: aviso destacado de que el récord no se guarda. ---------- */
+#app .fin-notice[data-tono='evento'] {
+  --fc: var(--gold);
+  margin: var(--px);
+  padding: 10px 12px;
+  background: var(--panel);
+  color: var(--gold);
+  box-shadow:
+    0 calc(-1 * var(--px)) 0 0 var(--fc),
+    0 var(--px) 0 0 var(--fc),
+    calc(-1 * var(--px)) 0 0 0 var(--fc),
+    var(--px) 0 0 0 var(--fc);
 }

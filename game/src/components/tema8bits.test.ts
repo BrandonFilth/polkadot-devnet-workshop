@@ -12,6 +12,9 @@ import { ICON, medalRows, medalSvg, pixelIcon, POLKADOT_LOGO, USDT_HTML, USDT_RO
 import rankingSource from './Ranking.ts?raw';
 import adminPremiosSource from './AdminPremios.ts?raw';
 import { hudBestText } from './Hud';
+import { inicioView, welcomeText } from './Inicio';
+import finSource from './FinDePartida.ts?raw';
+import typewriterSource from '../lib/typewriter.ts?raw';
 
 describe('tema 8 bits: fuentes', () => {
   it('Press Start 2P y Pixelify Sans vienen dentro de la app (sin internet) y se cargan antes de styles.css', () => {
@@ -93,10 +96,10 @@ describe('ajustes: Jugar, barra superior, ranking y podio de Premios', () => {
     expect(css).toMatch(/\.shell \.inicio \{\s*\n\s*flex: 1 0 auto;\s*\n\s*justify-content: center;/);
   });
 
-  it('la barra superior: Polka-Man a la izquierda; billetera y Polkadot (blanco, sin rosa) a la derecha', () => {
+  it('la barra superior: Polka-Man a la izquierda y Polkadot (blanco, sin rosa) a la derecha', () => {
     expect(shellSource).toMatch(/ICON\.jugar\}<\/span><span>POLKA-MAN<\/span>/);
     expect(shellSource).toMatch(/POLKADOT_LOGO\}<\/span><span class="shell-polkadot-text">POLKADOT<\/span>/);
-    expect(shellSource).toMatch(/bar\.append\(brand\);\s*\n\s*if \(opts\.billetera\) bar\.append\(opts\.billetera\);\s*\n\s*bar\.append\(polkadot\);/);
+    expect(shellSource).toMatch(/bar\.append\(brand, polkadot\);/);
     expect(css).toMatch(/\.shell-polkadot-mark \{[^}]*color: var\(--ink\)/);
     expect(POLKADOT_LOGO).toMatch(/fill="currentColor"/);
     expect(POLKADOT_LOGO.match(/<path /g)).toHaveLength(6);
@@ -208,5 +211,30 @@ describe('Ranking: top 3 con medallas y colores', () => {
     expect(css).toMatch(/#app \.ranking-table tr\[data-top='3'\] \{ --top: var\(--bronze\); \}/);
     expect(css).toMatch(/#app \.podium-step--2 \{ --fc: var\(--silver\); \}/);
     expect(css).toMatch(/#app \.podium-step--3 \{ --fc: var\(--bronze\); \}/);
+  });
+});
+
+describe('Jugar con cuenta y fin antes del evento', () => {
+  it('bienvenida con el username debajo de Jugar', () => {
+    expect(welcomeText({ best: 10n, lifetime: 10n, username: 'ana' })).toBe('¡Bienvenido, ana!');
+    expect(welcomeText({ best: 0n, lifetime: 0n, username: '' })).toBe('¡Bienvenido! Elige tu username en Perfil.');
+    expect(welcomeText(null)).toBe('¡Bienvenido!');
+    expect(welcomeText('error')).toBe('¡Bienvenido!');
+    expect(inicioView({ host: 'listo', connected: true, mine: { best: 1n, lifetime: 1n, username: 'ana' }, busy: false }).status).toBe('¡Bienvenido, ana!');
+  });
+
+  it('el aviso de que no se guarda antes del evento va destacado en dorado', () => {
+    expect(finSource).toMatch(/if \(decided\.option === 'cerrado'\) notice\.dataset\.tono = 'evento';/);
+    expect(css).toMatch(/#app \.fin-notice\[data-tono='evento'\] \{\s*\n\s*--fc: var\(--gold\);/);
+  });
+});
+
+describe('texto letra por letra: repetir el mismo texto no corta la animación', () => {
+  it('con el mismo texto sale antes de cancelar el cuadro en curso', () => {
+    const body = typewriterSource.replace(/\r\n/g, '\n');
+    const same = body.indexOf('if (el.dataset.typed === text) return;');
+    const cancel = body.indexOf('cancelAnimationFrame(prev)');
+    expect(same).toBeGreaterThan(0);
+    expect(same).toBeLessThan(cancel);
   });
 });

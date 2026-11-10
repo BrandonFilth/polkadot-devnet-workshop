@@ -63,11 +63,10 @@ describe('rutas', () => {
 });
 
 describe('barra de navegación', () => {
-  it('es un <nav> con aria-current en la pestaña activa y la billetera arriba a la derecha', () => {
+  it('es un <nav> con aria-current en la pestaña activa', () => {
     expect(shellSource).toMatch(/createElement\('nav'\)/);
     expect(shellSource).toMatch(/setAttribute\('aria-label', 'Secciones'\)/);
     expect(shellSource).toMatch(/setAttribute\('aria-current', 'page'\)/);
-    expect(shellSource).toMatch(/if \(opts\.billetera\) bar\.append\(opts\.billetera\);/);
   });
 
   it('respeta la zona segura de abajo y tiene áreas de toque de 48 px o más', () => {

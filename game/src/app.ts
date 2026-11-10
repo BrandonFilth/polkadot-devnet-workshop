@@ -315,6 +315,7 @@ export function startApp(root: HTMLElement): void {
     mine: () => mine,
     onToggle: layers,
     isAdmin,
+    billetera: createBilletera(hub).element,
   });
   const rankingTab = createRanking(hub);
   // «Binance» y «Nova Wallet» en Premios y Perfil: diálogo iOS / Android con el enlace a cada tienda.
@@ -338,7 +339,6 @@ export function startApp(root: HTMLElement): void {
     onApp: (app) => tiendas.open(app),
   });
   shell = createShell(root, {
-    billetera: createBilletera(hub).element,
     // En una partida, ir a otra pestaña la pausa (al volver a Jugar se sigue con Seguir).
     onTab: (tab) => {
       if (tab !== 'jugar') setPaused(state, true);

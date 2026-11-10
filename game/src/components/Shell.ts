@@ -1,4 +1,4 @@
-// Contenedor de la app: barra superior (Polka-Man a la izquierda; billetera y Polkadot a la derecha), una sección
+// Contenedor de la app: barra superior (Polka-Man a la izquierda y Polkadot a la derecha), una sección
 // por pestaña y la barra de navegación inferior Jugar · Ranking · Premios · Perfil.
 // Fuera de la partida la pestaña vive en el hash (#/ranking): el botón Atrás de Android vuelve a la anterior.
 // En una partida (setInGame) solo queda la barra de navegación encima del juego; las otras pestañas tapan el
@@ -25,8 +25,6 @@ export interface Shell {
 
 export interface ShellOptions {
   panels: Record<Tab, ShellPanel>;
-  /** Botón de la billetera (a la derecha, antes del logo de Polkadot). */
-  billetera?: HTMLElement;
   /** Al cambiar de pestaña. */
   onTab?(tab: Tab): void;
   /** Historial del navegador; se inyecta para probar sin DOM. */
@@ -62,9 +60,7 @@ export function createShell(parent: HTMLElement, opts: ShellOptions): Shell {
   const polkadot = document.createElement('p');
   polkadot.className = 'shell-polkadot';
   polkadot.innerHTML = `<span class="shell-polkadot-mark" aria-hidden="true">${POLKADOT_LOGO}</span><span class="shell-polkadot-text">POLKADOT</span>`;
-  bar.append(brand);
-  if (opts.billetera) bar.append(opts.billetera);
-  bar.append(polkadot);
+  bar.append(brand, polkadot);
 
   const main = document.createElement('main');
   main.className = 'shell-main';

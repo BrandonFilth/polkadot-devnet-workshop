@@ -10,7 +10,10 @@ export type SaveOption = 'fuera' | 'conectar' | 'cero' | 'cargando' | 'guardar' 
 export const OUTSIDE_NOTICE =
   'Abre Polka-Man dentro de Polkadot Desktop o de la Polkadot App para guardar tu récord. Aquí puedes jugar y ver el ranking.';
 
-/** Qué ofrecer al terminar. Gana la primera regla que aplica. */
+/**
+ * Qué ofrecer al terminar. Gana la primera regla que aplica. Antes del evento siempre gana 'cerrado' (también con
+ * 0 puntos o fuera del Host): el aviso de que los récords no se guardan hasta que inicie se ve en toda partida.
+ */
 export function saveOptions(i: {
   host: HostPhase;
   connected: boolean;
@@ -20,9 +23,9 @@ export function saveOptions(i: {
   /** El ranking ya abrió. undefined = no se sabe (no se pudo leer): se ofrece guardar y el contrato decide. */
   started?: boolean;
 }): { option: SaveOption; disabled: boolean } {
+  if (i.started === false) return { option: 'cerrado', disabled: false };
   if (i.score === 0) return { option: 'cero', disabled: false };
   if (i.host === 'fuera') return { option: 'fuera', disabled: false };
-  if (i.started === false) return { option: 'cerrado', disabled: false };
   if (!i.connected) return { option: 'conectar', disabled: i.busy };
   if (i.best === null) return { option: 'cargando', disabled: true };
   // Con 'error' se ofrece guardar: saveScore simula antes de firmar.
@@ -48,7 +51,7 @@ export function finSummary(i: { score: number; connected: boolean; mine: Mine })
 export function finNotice(option: SaveOption, event: EventInfo | null): string {
   if (option === 'fuera') return OUTSIDE_NOTICE;
   if (option === 'cero' || option === 'no-supera') return 'No supera tu récord';
-  if (option === 'cerrado') return `${notOpenText(event?.start ?? 0n)} Tu puntaje no se guarda hasta entonces.`;
+  if (option === 'cerrado') return `El evento todavía no empieza: los récords no se guardan hasta que inicie. ${notOpenText(event?.start ?? 0n)}`;
   return '';
 }
 
@@ -189,6 +192,9 @@ export function createFinDePartida(opts: {
     button.disabled = decided.disabled;
     if (label !== undefined) button.textContent = label;
     notice.hidden = label !== undefined;
+    // Antes del evento el aviso va destacado (marco dorado).
+    if (decided.option === 'cerrado') notice.dataset.tono = 'evento';
+    else delete notice.dataset.tono;
     typeInto(notice, finNotice(decided.option, event));
     message.textContent = lastMessage;
     message.hidden = lastMessage === '';

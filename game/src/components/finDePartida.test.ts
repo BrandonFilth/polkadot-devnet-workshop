@@ -2,12 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { finButtons, finNotice, finSummary, OUTSIDE_NOTICE, saveOptions } from './FinDePartida';
 
 describe('finNotice: el aviso en lugar del botón', () => {
-  it('ranking cerrado: dice cuándo abre y que no se guarda', () => {
+  it('antes del evento: avisa que los récords no se guardan hasta que inicie y cuándo abre', () => {
     expect(finNotice('cerrado', { admin: `0x${'1'.repeat(40)}`, start: 1_794_204_000n })).toBe(
-      'El ranking abre el 9 nov 2026, 00/00/00 (hora de México). Tu puntaje no se guarda hasta entonces.',
+      'El evento todavía no empieza: los récords no se guardan hasta que inicie. El ranking abre el 9 nov 2026, 00/00/00 (hora de México).',
     );
     expect(finNotice('cerrado', { admin: `0x${'1'.repeat(40)}`, start: 0n })).toBe(
-      'El ranking todavía no tiene fecha de inicio. Tu puntaje no se guarda hasta entonces.',
+      'El evento todavía no empieza: los récords no se guardan hasta que inicie. El ranking todavía no tiene fecha de inicio.',
     );
   });
 
@@ -103,9 +103,12 @@ describe('saveOptions', () => {
     expect(saveOptions({ ...base, score: 101 }).option).toBe('guardar');
   });
 
-  it('10. score 0 y fuera del Host ganan a cerrado', () => {
-    expect(saveOptions({ ...base, score: 0, started: false }).option).toBe('cero');
-    expect(saveOptions({ ...base, host: 'fuera', connected: false, started: false }).option).toBe('fuera');
+  it('10. antes del evento el aviso gana también con 0 puntos y fuera del Host', () => {
+    expect(saveOptions({ ...base, score: 0, started: false }).option).toBe('cerrado');
+    expect(saveOptions({ ...base, host: 'fuera', connected: false, started: false }).option).toBe('cerrado');
+    // Ya abierto, vuelven las reglas de siempre.
+    expect(saveOptions({ ...base, score: 0, started: true }).option).toBe('cero');
+    expect(saveOptions({ ...base, host: 'fuera', connected: false, started: true }).option).toBe('fuera');
   });
 
   describe('precedencia', () => {

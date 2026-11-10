@@ -30,12 +30,10 @@ describe('billetera: vista', () => {
     expect(billeteraSource).not.toMatch(/ss58/);
   });
 
-  it('va en la esquina superior derecha: al final de la barra superior de la app', () => {
-    expect(shellSource).toMatch(/bar\.append\(brand\);\s*\n\s*if \(opts\.billetera\) bar\.append\(opts\.billetera\);/);
-    expect(css).toMatch(/\.shell-bar\s*\{[^}]*justify-content:\s*space-between/);
+  it('va en Jugar, debajo de la bienvenida (y en Perfil), no en la barra superior', () => {
+    expect(shellSource).not.toMatch(/billetera/);
     expect(css).toMatch(/\.billetera\s*\{/);
-    // La pantalla de inicio la sigue aceptando en su esquina, por si se usa sola.
-    expect(inicioSource).toMatch(/if \(opts\.billetera\) top\.append\(opts\.billetera\);/);
+    expect(inicioSource).toMatch(/cuenta\.append\(connect, suggestion, status, \.\.\.\(opts\.billetera \? \[opts\.billetera\] : \[\]\)\);/)
   });
 });
 

@@ -43,6 +43,14 @@ export interface InicioView {
 
 const mineName = (m: Mine) => (m !== null && m !== 'error' ? m.username : '');
 
+/** Bienvenida con la cuenta conectada: con username, «¡Bienvenido, ana!»; sin username, cómo elegirlo. */
+export function welcomeText(mine: Mine): string {
+  const name = mineName(mine);
+  if (name !== '') return `¡Bienvenido, ${name}!`;
+  if (mine !== null && mine !== 'error') return '¡Bienvenido! Elige tu username en Perfil.';
+  return '¡Bienvenido!';
+}
+
 /** Qué muestra la pantalla de inicio. Jugar y Ranking siempre están. */
 export function inicioView(i: { host: HostPhase; connected: boolean; mine: Mine; busy: boolean; admin?: boolean }): InicioView {
   if (i.host === 'fuera') return { connect: null, suggestion: null, status: INICIO_FUERA, username: null, admin: null };
@@ -52,7 +60,7 @@ export function inicioView(i: { host: HostPhase; connected: boolean; mine: Mine;
       i.mine === null
         ? { label: 'Leyendo…', disabled: true }
         : { label: known && mineName(i.mine) !== '' ? mineName(i.mine) : 'Elige un username', disabled: i.busy };
-    return { connect: null, suggestion: null, status: 'Cuenta conectada', username, admin: i.admin ? { disabled: i.busy } : null };
+    return { connect: null, suggestion: null, status: welcomeText(i.mine), username, admin: i.admin ? { disabled: i.busy } : null };
   }
   if (i.host === 'buscando' || i.host === 'conectando') {
     return {
@@ -128,7 +136,7 @@ export function createInicio(
     onToggle?: () => void;
     /** Toggles de Música y Efectos (variante 'iconos'); van arriba a la derecha. */
     sonido?: HTMLElement;
-    /** Botón para copiar la dirección de la cuenta conectada; va en la esquina superior derecha. */
+    /** Botón para copiar la dirección de la cuenta conectada; va debajo de la bienvenida. */
     billetera?: HTMLElement;
     /** La cuenta conectada es el admin del contrato. */
     isAdmin?: () => boolean;
@@ -145,7 +153,6 @@ export function createInicio(
   const top = document.createElement('div');
   top.className = 'inicio-top';
   if (opts.sonido) top.append(opts.sonido);
-  if (opts.billetera) top.append(opts.billetera);
 
   const box = document.createElement('div');
   box.className = 'inicio-box';
@@ -180,7 +187,8 @@ export function createInicio(
 
   // Conectar con la sugerencia debajo; el estado (fuera del Host, sin conexión o conectada) en el mismo bloque.
   // Ranking, Username y Admin viven en sus pestañas (components/Shell.ts).
-  cuenta.append(connect, suggestion, status);
+  // Con cuenta: la bienvenida y, debajo, el botón para copiar tu dirección (sin cuenta se oculta solo).
+  cuenta.append(connect, suggestion, status, ...(opts.billetera ? [opts.billetera] : []));
   acciones.append(jugar, cuenta);
   box.append(art, title, acciones);
   element.append(top, box, help);
