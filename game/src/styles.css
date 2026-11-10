@@ -26,6 +26,12 @@
   box-sizing: border-box;
 }
 
+/* `hidden` siempre oculta, aunque la clase del elemento ponga otro display (p. ej. .btn-block: inline-flex
+   dejaba a la vista «Conectar cuenta» en Perfil con la cuenta ya conectada). */
+[hidden] {
+  display: none !important;
+}
+
 /* Reglas exactas de design §4.6: solo el área de juego y los controles bloquean gestos. */
 html, body { height: 100%; margin: 0; overflow: hidden; overscroll-behavior: none; }
 #app { position: fixed; inset: 0;

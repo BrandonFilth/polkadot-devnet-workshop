@@ -15,6 +15,7 @@ import { hudBestText } from './Hud';
 import { inicioView, welcomeText } from './Inicio';
 import finSource from './FinDePartida.ts?raw';
 import typewriterSource from '../lib/typewriter.ts?raw';
+import perfilSource from './Perfil.ts?raw';
 
 describe('tema 8 bits: fuentes', () => {
   it('Press Start 2P y Pixelify Sans vienen dentro de la app (sin internet) y se cargan antes de styles.css', () => {
@@ -236,5 +237,12 @@ describe('texto letra por letra: repetir el mismo texto no corta la animación',
     const cancel = body.indexOf('cancelAnimationFrame(prev)');
     expect(same).toBeGreaterThan(0);
     expect(same).toBeLessThan(cancel);
+  });
+});
+
+describe('Perfil con la cuenta conectada', () => {
+  it('no muestra «Conectar cuenta»: el atributo hidden gana a cualquier display de clase', () => {
+    expect(css.replace(/\r\n/g, '\n')).toMatch(/\n\[hidden\] \{\n\s*display: none !important;\n\}/);
+    expect(perfilSource).toMatch(/connect\.hidden = view\.account\.state !== 'desconectada' && view\.account\.state !== 'error';/);
   });
 });
