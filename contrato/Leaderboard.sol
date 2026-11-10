@@ -7,8 +7,13 @@ pragma solidity 0.8.28;
  *         cada periodo, su récord de por vida y, si el jugador quiere, un username único.
  *
  *         Tiene un solo admin (al desplegar, quien despliega). El admin solo puede fijar la hora
- *         de inicio del ranking y pasarle el puesto a otra dirección. Nadie, ni el admin, puede
- *         borrar ni cambiar puntajes ajenos.
+ *         de inicio del ranking, registrar el pago de los premios y pasarle el puesto a otra
+ *         dirección. Nadie, ni el admin, puede borrar ni cambiar puntajes ajenos.
+ *
+ *         Premios: cada jugador registra la wallet EVM donde quiere recibir USDT. Por ronda (un
+ *         periodo de 3 días; la ronda N es el periodo N-1) el 1.º recibe 8 USDT, el 2.º 5 y el 3.º
+ *         3, durante 6 rondas. El admin los envía a mano y deja constancia pública con el hash de
+ *         la transacción (recordPrize). Cualquiera puede leer los ganadores y comprobar el pago.
  *
  *         Hasta que llega la hora de inicio no se guarda ningún puntaje. El admin puede cambiar
  *         esa hora mientras no haya llegado; una vez que llega, ya no se puede cambiar.
@@ -26,7 +31,7 @@ contract Leaderboard {
     /// Duración de cada periodo del ranking.
     uint256 public constant PERIOD_LENGTH = 3 days;
 
-    /// Única dirección que puede fijar la hora de inicio y cambiar de admin.
+    /// Única dirección que puede fijar la hora de inicio, registrar premios y cambiar de admin.
     address public admin;
 
     /// Hora (Unix, segundos) en que empieza el periodo 0. 0 significa que el admin aún no la fija.
@@ -49,6 +54,26 @@ contract Leaderboard {
     /// La clave es el hash del username para no guardar el texto dos veces.
     mapping(bytes32 => address) private holderOf;
 
+    /// Rondas con premio (la ronda N es el periodo N-1).
+    uint256 public constant PRIZE_ROUNDS = 6;
+
+    /// Lugares con premio por ronda.
+    uint256 public constant PRIZE_PLACES = 3;
+
+    /// Wallet de premios de cada jugador (dirección EVM). 0x000… si no ha registrado una.
+    mapping(address => address) public payoutOf;
+
+    /// Un premio pagado.
+    struct Prize {
+        address player; // cuenta del jugador en el juego
+        address wallet; // wallet a la que se envió el premio
+        bytes32 txHash; // hash de la transacción del pago
+        uint64 paidAt; // hora (Unix, segundos) en que el admin lo registró
+    }
+
+    /// Premios por ronda (1 a PRIZE_ROUNDS) y lugar (1 a PRIZE_PLACES).
+    mapping(uint256 => mapping(uint256 => Prize)) private prizes;
+
     // ---------------------------------------------------------------- eventos
 
     /// Un jugador subió su récord del periodo.
@@ -65,6 +90,12 @@ contract Leaderboard {
 
     /// El admin fijó o cambió la hora de inicio del ranking.
     event StartTimeSet(uint256 start);
+
+    /// Un jugador registró, cambió o borró su wallet de premios.
+    event PayoutWalletSet(address indexed player, address wallet);
+
+    /// El admin registró el pago de un premio.
+    event PrizeRecorded(uint256 indexed round, uint256 indexed place, address indexed player, address wallet, bytes32 txHash);
 
     // ---------------------------------------------------------------- errores
 
@@ -91,6 +122,21 @@ contract Leaderboard {
 
     /// El ranking todavía no empieza (no hay hora de inicio o aún no llega).
     error NotStarted();
+
+    /// La ronda de premios debe ser de 1 a PRIZE_ROUNDS.
+    error InvalidRound();
+
+    /// El lugar del premio debe ser de 1 a PRIZE_PLACES.
+    error InvalidPlace();
+
+    /// El jugador no puede ser la dirección 0x000….
+    error InvalidPlayer();
+
+    /// El hash de la transacción no puede ser 0.
+    error InvalidTxHash();
+
+    /// El jugador no tiene wallet de premios registrada.
+    error NoPayoutWallet();
 
     // ---------------------------------------------------------------- desplegar
 
@@ -123,7 +169,30 @@ contract Leaderboard {
         emit StartTimeSet(start);
     }
 
+    /**
+     * @notice Registra el pago del premio de `place` en `round` a `player`, con el hash del envío.
+     *         Guarda la wallet que el jugador tiene registrada en este momento. Se puede volver a
+     *         llamar para corregir un registro. La ronda N es el periodo N-1.
+     */
+    function recordPrize(uint256 round, uint256 place, address player, bytes32 txHash) external onlyAdmin {
+        checkRound(round);
+        checkPlace(place);
+        if (player == address(0)) revert InvalidPlayer();
+        if (txHash == bytes32(0)) revert InvalidTxHash();
+        address wallet = payoutOf[player];
+        if (wallet == address(0)) revert NoPayoutWallet();
+
+        prizes[round][place] = Prize(player, wallet, txHash, uint64(block.timestamp));
+        emit PrizeRecorded(round, place, player, wallet, txHash);
+    }
+
     // ---------------------------------------------------------------- escribir
+
+    /// Registra o cambia tu wallet de premios (dirección EVM). Con 0x000… la borras.
+    function setPayoutWallet(address wallet) external {
+        payoutOf[msg.sender] = wallet;
+        emit PayoutWalletSet(msg.sender, wallet);
+    }
 
     /// Guarda tu puntaje si es mejor que tu récord del periodo actual.
     function submitScore(uint256 score) external {
@@ -227,7 +296,43 @@ contract Leaderboard {
         return page(p, offset, limit);
     }
 
+    /// Wallets de premios de varios jugadores a la vez (para el ranking). 0x000… si no tienen.
+    function payoutsOf(address[] calldata players) external view returns (address[] memory wallets) {
+        wallets = new address[](players.length);
+        for (uint256 i = 0; i < players.length; i++) wallets[i] = payoutOf[players[i]];
+    }
+
+    /// Monto del premio de `place`, en USDT enteros: 8, 5 y 3.
+    function prizeAmount(uint256 place) external pure returns (uint256) {
+        checkPlace(place);
+        if (place == 1) return 8;
+        if (place == 2) return 5;
+        return 3;
+    }
+
+    /// El premio de `place` en `round`. Vacío (player 0x000…) si todavía no se registra.
+    function prizeOf(uint256 round, uint256 place) external view returns (Prize memory) {
+        checkRound(round);
+        checkPlace(place);
+        return prizes[round][place];
+    }
+
+    /// Los PRIZE_PLACES premios de `round`, del 1.º al 3.º.
+    function prizesOf(uint256 round) external view returns (Prize[] memory list) {
+        checkRound(round);
+        list = new Prize[](PRIZE_PLACES);
+        for (uint256 i = 0; i < PRIZE_PLACES; i++) list[i] = prizes[round][i + 1];
+    }
+
     // ---------------------------------------------------------------- interno
+
+    function checkRound(uint256 round) private pure {
+        if (round == 0 || round > PRIZE_ROUNDS) revert InvalidRound();
+    }
+
+    function checkPlace(uint256 place) private pure {
+        if (place == 0 || place > PRIZE_PLACES) revert InvalidPlace();
+    }
 
     /// Una página de jugadores del periodo `p`.
     function page(uint256 p, uint256 offset, uint256 limit)

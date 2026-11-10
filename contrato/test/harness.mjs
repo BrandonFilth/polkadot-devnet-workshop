@@ -10,12 +10,12 @@ import { decodeErrorResult, decodeEventLog, decodeFunctionResult, encodeDeployDa
 const require = createRequire(import.meta.url);
 const solc = require('solc');
 
-let compiled;
+const cache = new Map();
 
-/** Compila Leaderboard.sol una sola vez. */
-export function compile() {
-  if (compiled) return compiled;
-  const file = 'Leaderboard.sol';
+/** Compila `name` (de `name`.sol) una sola vez. Por defecto, Leaderboard. */
+export function compile(name = 'Leaderboard') {
+  if (cache.has(name)) return cache.get(name);
+  const file = `${name}.sol`;
   const source = readFileSync(new URL(`../${file}`, import.meta.url), 'utf8');
   const out = JSON.parse(solc.compile(JSON.stringify({
     language: 'Solidity',
@@ -28,13 +28,14 @@ export function compile() {
   const errors = (out.errors ?? []).filter((e) => e.severity === 'error');
   if (errors.length) throw new Error(errors.map((e) => e.formattedMessage).join('\n'));
   const warnings = (out.errors ?? []).filter((e) => e.severity === 'warning');
-  const c = out.contracts[file].Leaderboard;
-  compiled = {
+  const c = out.contracts[file][name];
+  const compiled = {
     abi: c.abi,
     bytecode: `0x${c.evm.bytecode.object}`,
     runtimeBytes: c.evm.deployedBytecode.object.length / 2,
     warnings: warnings.map((w) => w.formattedMessage),
   };
+  cache.set(name, compiled);
   return compiled;
 }
 
@@ -62,7 +63,14 @@ export const ADMIN = player(99);
  * El reloj empieza en NOW y solo avanza con `warp(segundos)`.
  */
 export async function deploy({ start = NOW } = {}) {
-  const { abi, bytecode } = compile();
+  const c = await deployContract('Leaderboard');
+  if (start !== null) await c.send(ADMIN, 'setStartTime', [start]);
+  return c;
+}
+
+/** Despliega `name` desde ADMIN en una EVM nueva. El reloj empieza en NOW. */
+async function deployContract(name) {
+  const { abi, bytecode } = compile(name);
   const vm = await createVM();
   let number = 1n;
   let now = NOW;
@@ -115,8 +123,6 @@ export async function deploy({ start = NOW } = {}) {
   const warp = (seconds) => {
     now += BigInt(seconds);
   };
-
-  if (start !== null) await send(ADMIN, 'setStartTime', [start]);
 
   return { address, send, read, warp, now: () => now };
 }
