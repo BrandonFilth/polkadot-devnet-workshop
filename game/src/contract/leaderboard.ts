@@ -45,6 +45,12 @@ export interface LeaderboardContract {
   getScoresIn: Read<[bigint, bigint, bigint], unknown>;
   admin: Read<[], Hex>;
   isStarted: Read<[], boolean>;
+  payoutOf: Read<[Hex], Hex>;
+  payoutsOf: Read<[readonly Hex[]], unknown>;
+  prizesOf: Read<[bigint], unknown>;
+  prizeAmount: Read<[bigint], Num>;
+  setPayoutWallet: Write<[Hex]>;
+  recordPrize: Write<[bigint, bigint, Hex, Hex]>;
   submitScore: Write<[bigint]>;
   setUsername: Write<[string]>;
   setStartTime: Write<[bigint]>;

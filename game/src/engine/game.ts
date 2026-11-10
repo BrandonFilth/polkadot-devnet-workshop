@@ -166,6 +166,16 @@ export function goToTitle(state: GameState): void {
   state.events = [];
 }
 
+/**
+ * Abandona la partida en curso y vuelve a la pantalla de inicio: el puntaje se pierde (no pasa por
+ * 'fin', así que no se ofrece guardar). Solo desde una partida en curso o en pausa.
+ */
+export function abandon(state: GameState): void {
+  if (state.phase !== 'pausa' && !isActive(state.phase)) return;
+  state.phase = 'fin';
+  goToTitle(state);
+}
+
 /** Pausa (true) o reanuda (false). Idempotente: repetir la llamada no cambia nada. */
 export function setPaused(state: GameState, paused: boolean): void {
   if (paused) {

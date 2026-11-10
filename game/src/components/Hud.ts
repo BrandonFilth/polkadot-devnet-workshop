@@ -1,5 +1,7 @@
-// HUD en DOM: puntaje, ronda, récord, vidas, botón de pausa (escritorio), botón Sonido y botón Menú. Solo toca el DOM cuando cambia un valor.
+// HUD en DOM, en dos filas: puntaje, ronda y récord arriba; vidas, botón de pausa (escritorio), Sonido y Menú abajo.
+// Solo toca el DOM cuando cambia un valor.
 import { togglePause, type GameState } from '../engine/game';
+import { ICON } from './icons';
 
 export interface Hud {
   /** Ajusta el HUD al estado actual. */
@@ -12,6 +14,12 @@ const MENU_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v
 
 const PAUSE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3v14H7zM14 5h3v14h-3z"/></svg>';
 const PLAY_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5 L19 12 L8 19 Z"/></svg>';
+
+/** Ceros que se muestran mientras no hay récord (sin cuenta, leyendo o si falló la lectura). */
+export const RECORD_PLACEHOLDER = '00000';
+
+/** «Récord: 1240», o «Récord: 00000» sin récord. */
+export const hudBestText = (r: bigint | null): string => `Récord: ${r === null ? RECORD_PLACEHOLDER : r.toString()}`;
 
 /** `record()` da el récord del jugador, o null sin cuenta, mientras se lee o si falló la lectura. */
 /** `sonido` (opcional) es el botón Sonido con su popover; va antes del botón Menú. */
@@ -30,9 +38,6 @@ export function createHud(
 
   const best = document.createElement('p');
   best.className = 'hud-best';
-  const info = document.createElement('div');
-  info.className = 'hud-info';
-  info.append(stats, best);
 
   const lives = document.createElement('span');
   lives.className = 'hud-lives';
@@ -52,7 +57,18 @@ export function createHud(
   menu.innerHTML = `${MENU_ICON}<span>Menú</span>`;
   menu.addEventListener('click', () => onMenu());
 
-  header.replaceChildren(info, lives, pause, ...(sonido ? [sonido] : []), menu);
+  // Dos filas para que todo quepa en un celular: arriba los números (puntos, ronda y récord); abajo las vidas
+  // a la izquierda y los botones a la derecha.
+  const top = document.createElement('div');
+  top.className = 'hud-fila hud-fila--datos';
+  top.append(stats, best);
+  const bottom = document.createElement('div');
+  bottom.className = 'hud-fila hud-fila--botones';
+  const actions = document.createElement('div');
+  actions.className = 'hud-acciones';
+  actions.append(pause, ...(sonido ? [sonido] : []), menu);
+  bottom.append(lives, actions);
+  header.replaceChildren(top, bottom);
 
   let shownBest: string | null = null;
   let shownScore: number | null = null;
@@ -64,7 +80,7 @@ export function createHud(
     menuButton: menu,
     sync() {
       const r = record();
-      const bestText = `Récord: ${r === null ? '—' : r.toString()}`;
+      const bestText = hudBestText(r);
       if (bestText !== shownBest) {
         shownBest = bestText;
         best.textContent = bestText;
@@ -82,8 +98,10 @@ export function createHud(
         lives.setAttribute('aria-label', `Vidas: ${state.lives}`);
         lives.replaceChildren(
           ...Array.from({ length: Math.max(0, state.lives) }, () => {
+            // Cada vida es un Polka-Man pixel (el mismo de la pestaña Jugar).
             const dot = document.createElement('span');
             dot.className = 'hud-life';
+            dot.innerHTML = ICON.jugar;
             return dot;
           }),
         );

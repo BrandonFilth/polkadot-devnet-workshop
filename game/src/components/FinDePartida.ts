@@ -1,5 +1,7 @@
 // Bloque de 'fin': puntaje, récord del periodo y de por vida, el botón que decide saveOptions() y el mensaje del último Result.
 import { eventStarted, notOpenText, type EventInfo } from '../contract/eventStart';
+import { shortAddress } from '../lib/format';
+import { typeInto } from '../lib/typewriter';
 import type { HostPhase, Hub, Result } from '../hub/hub';
 
 /** 'cerrado' = el ranking todavía no abre: se juega, pero no se ofrece guardar (no se pide firma). */
@@ -50,6 +52,16 @@ export function finNotice(option: SaveOption, event: EventInfo | null): string {
   return '';
 }
 
+/**
+ * Recordatorio de la wallet de premios después de guardar un récord. null = no se muestra (no guardó, o
+ * todavía no se sabe si tiene wallet).
+ */
+export function walletReminder(savedOk: boolean, payout: `0x${string}` | null | undefined): { text: string; action: string } | null {
+  if (!savedOk || payout === undefined) return null;
+  if (payout === null) return { text: 'Agrega tu wallet para recibir tu premio en USDT si quedas en el top 3.', action: 'Agregar wallet' };
+  return { text: `Si quedas en el top 3, tu premio llega a ${shortAddress(payout)}.`, action: 'Cambiar wallet' };
+}
+
 export type FinButton = 'guardar' | 'jugar' | 'ranking' | 'inicio';
 
 /**
@@ -84,6 +96,10 @@ export function createFinDePartida(opts: {
   openUsername: () => void;
   /** Admin y hora de inicio del contrato; null = todavía no se lee o falló. */
   event?: () => EventInfo | null;
+  /** Wallet de premios de la cuenta (para el recordatorio tras guardar). */
+  payout?: () => `0x${string}` | null | undefined;
+  /** «Agregar wallet» / «Cambiar wallet» del recordatorio. */
+  onWallet?: () => void;
 }): FinDePartida {
   const { hub } = opts;
   const element = document.createElement('div');
@@ -104,8 +120,19 @@ export function createFinDePartida(opts: {
   nameLink.className = 'link-button';
   nameLink.textContent = 'Ponle nombre a tu récord';
   nameLink.addEventListener('click', () => opts.openUsername());
+  // Recordatorio de la wallet de premios: en cada récord guardado.
+  const reminder = document.createElement('div');
+  reminder.className = 'fin-wallet';
+  reminder.setAttribute('role', 'status');
+  const reminderText = document.createElement('p');
+  const reminderButton = document.createElement('button');
+  reminderButton.type = 'button';
+  reminderButton.className = 'link-button';
+  reminderButton.addEventListener('click', () => opts.onWallet?.());
+  reminder.append(reminderText, reminderButton);
+  reminder.hidden = true;
   // Los pasos (Simulando → Firma en tu teléfono → …) van en el popup de estados (TxEstado), encima de este.
-  element.append(summary, notice, button, message, nameLink);
+  element.append(summary, notice, button, message, reminder, nameLink);
 
   let lastMessage = '';
   let savedOk = false;
@@ -145,7 +172,8 @@ export function createFinDePartida(opts: {
     option = decided.option;
     const lines = finSummary({ score, connected, mine });
     const showName = savedOk && mine !== null && mine !== 'error' && mine.username === '';
-    const key = [...lines, decided.option, decided.disabled, lastMessage, showName, event?.start ?? ''].join('|');
+    const remind = walletReminder(savedOk, opts.payout?.());
+    const key = [...lines, decided.option, decided.disabled, lastMessage, showName, event?.start ?? '', remind?.text ?? ''].join('|');
     if (key === shownKey) return;
     shownKey = key;
 
@@ -161,10 +189,15 @@ export function createFinDePartida(opts: {
     button.disabled = decided.disabled;
     if (label !== undefined) button.textContent = label;
     notice.hidden = label !== undefined;
-    notice.textContent = finNotice(decided.option, event);
+    typeInto(notice, finNotice(decided.option, event));
     message.textContent = lastMessage;
     message.hidden = lastMessage === '';
     nameLink.hidden = !showName;
+    reminder.hidden = remind === null;
+    if (remind) {
+      reminderText.textContent = remind.text;
+      reminderButton.textContent = remind.action;
+    }
   };
 
   return {

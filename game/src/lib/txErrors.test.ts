@@ -27,7 +27,8 @@ describe('clasificación de errores de transacción', () => {
     expect(classify(new Error('chain declares no transaction-extension pipeline version 1'), ONE).kind).toBe('pipeline');
     const deposit = Object.assign(new Error('Dry-run failed'), { dispatchError: { value: { value: { type: 'StorageDepositNotEnoughFunds' } } } });
     const p = classify(deposit, ONE);
-    expect(p.kind).toBe('no-pas');
+    expect(p.kind).toBe('no-gas');
+    expect(p.message).toMatch(/PGAS/);
     expect(autoReconnect(p.kind)).toBe(false);
     expect(autoReconnect('pipeline')).toBe(false);
   });

@@ -27,8 +27,9 @@ describe('ranking: su propia pestaña con una lista que se desplaza', () => {
     expect(body).toMatch(/background:\s*var\(--panel\)/);
   });
 
-  it('top 10 y «(tú)» en tu fila', () => {
-    expect(RANKING_TOP).toBe(10);
+  it('top 20 y «(tú)» en tu fila', () => {
+    expect(RANKING_TOP).toBe(20);
+    expect(rankingSource).not.toMatch(/TOP 10/);
     const row = { address: `0x${'1'.repeat(40)}` as `0x${string}`, username: 'ana', score: 900n, mine: true };
     expect(rankingCells(row, 0)).toEqual(['1', 'ana (tú)', '900']);
     expect(rankingCells({ ...row, mine: false }, 2)).toEqual(['3', 'ana', '900']);

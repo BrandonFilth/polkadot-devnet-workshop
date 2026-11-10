@@ -34,15 +34,22 @@ export function stageSize(v: Viewport): { width: number; height: number } {
 }
 
 /**
- * Celular en vertical: el laberinto va pegado al HUD con su alto exacto y la zona de controles se
- * queda con todo lo que sobra (nunca menos de CONTROLS_HEIGHT_PX). La casilla es la misma de siempre.
+ * Celular en vertical: lo que sobra debajo del laberinto se reparte. Primero la zona de controles toma lo
+ * que necesita para las flechas a tamaño completo; del resto, la mitad va a la fila del escenario
+ * (`stageHeight`), donde el laberinto queda centrado, así baja un poco y no queda pegado al HUD, y la otra
+ * mitad a los controles (nunca menos de CONTROLS_HEIGHT_PX). La casilla es la misma de siempre.
  * Si la fila no alcanza para las flechas a tamaño completo, se encogen (ver dpadSize).
  */
-export function portraitSplit(v: Viewport): { tile: number; mazeHeight: number; controlsHeight: number } {
+export function portraitSplit(v: Viewport): { tile: number; mazeHeight: number; stageHeight: number; controlsHeight: number } {
   const stage = stageSize({ ...v, touch: true });
   const layout = mazeLayout(MAZE_WIDTH, MAZE_HEIGHT, stage.width, stage.height);
   const mazeHeight = Math.min(layout.cssHeight, stage.height);
-  return { tile: layout.tile, mazeHeight, controlsHeight: CONTROLS_HEIGHT_PX + (stage.height - mazeHeight) };
+  // Primero los controles toman lo que les falta para las flechas a tamaño completo; el resto se reparte.
+  const spare = stage.height - mazeHeight;
+  const fullDpad = 3 * DPAD_BUTTON_PX + 2 * DPAD_GAP_PX + DPAD_PAD_PX;
+  const rest = spare - Math.min(spare, Math.max(0, fullDpad - CONTROLS_HEIGHT_PX));
+  const stageHeight = mazeHeight + Math.floor(rest / 2);
+  return { tile: layout.tile, mazeHeight, stageHeight, controlsHeight: CONTROLS_HEIGHT_PX + (stage.height - stageHeight) };
 }
 
 /**

@@ -17,7 +17,7 @@
  */
 import type { TxErrorKind } from '../lib/txErrors';
 
-export type ProgressOp = 'conectar' | 'guardar' | 'username' | 'inicio';
+export type ProgressOp = 'conectar' | 'guardar' | 'username' | 'inicio' | 'wallet' | 'premio';
 
 export type ProgressStep =
   | 'conectando'
@@ -75,6 +75,8 @@ export const STEPS: Record<ProgressOp, ProgressStep[]> = {
   guardar: ['simulando', 'firma', 'enviando', 'confirmando', 'actualizando'],
   username: ['simulando', 'firma', 'enviando', 'confirmando', 'actualizando'],
   inicio: ['simulando', 'firma', 'enviando', 'confirmando', 'actualizando'],
+  wallet: ['simulando', 'firma', 'enviando', 'confirmando', 'actualizando'],
+  premio: ['simulando', 'firma', 'enviando', 'confirmando', 'actualizando'],
 };
 
 /** Título corto por tipo de error (lib/txErrors). */
@@ -83,7 +85,6 @@ export const KIND_TITLE: Record<TxErrorKind, string> = {
   timeout: 'Sin respuesta a tiempo',
   'no-gas': 'Sin gas',
   'host-payment': 'Falta PAS para la comisión',
-  'no-pas': 'Falta PAS para el depósito',
   pipeline: 'Formato de firma no aceptado',
   session: 'Problema de conexión',
   connection: 'Problema de conexión',
@@ -157,7 +158,7 @@ export function progressView(p: Progress | null, ops: readonly ProgressOp[]): Pr
   });
   let line = p.message;
   // Al guardar el username o la hora de inicio se relee el contrato, no el ranking.
-  if ((p.op === 'username' || p.op === 'inicio') && p.step === 'actualizando') line = USERNAME_UPDATING;
+  if (p.op !== 'guardar' && p.step === 'actualizando') line = USERNAME_UPDATING;
   if (p.step === 'error' && p.kind) line = `${KIND_TITLE[p.kind]}. ${p.message}`;
   return { steps, line, tone: p.step === 'listo' ? 'listo' : p.step === 'error' ? 'error' : 'curso' };
 }

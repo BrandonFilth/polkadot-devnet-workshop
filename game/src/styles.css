@@ -1525,3 +1525,1923 @@ button:focus-visible {
 .tx-copiar[hidden] {
   display: none;
 }
+
+/* ======================================================================================================
+   App fuera de la partida (components/Shell.ts): barra superior, contenido por pestaña y barra inferior.
+   Misma paleta del juego; el rosa marca lo activo y lo importante. Todo opaco (sin rgba).
+   ====================================================================================================== */
+:root {
+  --tabbar-h: 64px;
+  --shellbar-h: 56px;
+  --radius: 16px;
+  --card: #0e0e0e;
+  --card-line: #222222;
+  --accent-ink: #ff5a8a;
+  --accent-deep: #3a0a19;
+  --gold: #ffd166;
+  --silver: #d6d6d0;
+  --bronze: #e3965a;
+}
+
+.shell {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  background: var(--bg);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+.shell[hidden] {
+  display: none;
+}
+
+.shell-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: calc(var(--shellbar-h) + env(safe-area-inset-top));
+  padding: env(safe-area-inset-top) 16px 0;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.shell-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+}
+
+.shell-mark {
+  display: inline-flex;
+  color: var(--accent);
+}
+
+.shell-main {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+.shell-panel {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 16px 16px 28px;
+  outline: none;
+}
+
+.shell-panel:not([hidden]) {
+  animation: panel-in 180ms ease-out;
+}
+
+.shell-panel[hidden] {
+  display: none;
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Barra de navegación inferior: 4 destinos, área de toque completa, indicador en píldora. */
+.tabbar {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  min-height: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+  padding: 6px 4px env(safe-area-inset-bottom);
+  border-top: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.tabbar-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 52px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.tabbar-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 30px;
+  border-radius: 15px;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.tabbar-btn[aria-current='page'] {
+  color: var(--ink);
+}
+
+.tabbar-btn[aria-current='page'] .tabbar-icon {
+  background: var(--accent-deep);
+  color: var(--accent);
+}
+
+.tabbar-btn:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -4px;
+  border-radius: 12px;
+}
+
+/* La pantalla Jugar es la de inicio de siempre, ahora dentro de su pestaña. */
+.shell .inicio {
+  position: static;
+  inset: auto;
+  z-index: auto;
+  min-height: 100%;
+  padding: 0;
+  overflow: visible;
+}
+
+.shell .inicio-top:empty,
+.shell .inicio-ayuda {
+  display: none;
+}
+
+.shell .inicio-box {
+  padding: 8px 0 0;
+  gap: 18px;
+}
+
+.shell-panel--jugar {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+/* Tarjetas */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0 0 14px;
+  padding: 18px;
+  border: 1px solid var(--card-line);
+  border-radius: var(--radius);
+  background: var(--card);
+  text-align: left;
+}
+
+.card[hidden] {
+  display: none;
+}
+
+.card--row {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+}
+
+.card h3 svg {
+  color: var(--accent);
+}
+
+.card-text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.card-note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.field-label {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.btn-block {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.btn-compact {
+  min-width: 0;
+  padding: 8px 16px;
+}
+
+.btn-danger {
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* Tarjeta de la ronda (en Jugar y en Premios). */
+.round-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin: 0 0 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--accent-deep);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--ink);
+  font-family: var(--mono);
+  text-align: left;
+  cursor: default;
+}
+
+.round-card-icon {
+  display: inline-flex;
+  padding: 8px;
+  border-radius: 12px;
+  background: var(--accent-deep);
+  color: var(--accent);
+}
+
+.round-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.round-card-text strong {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.round-card-text span {
+  font-size: 12px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.round-card-amounts {
+  display: flex;
+  gap: 4px;
+}
+
+.round-card-amounts span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  border-radius: 13px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bg);
+}
+
+.round-card-amounts [data-place='1'] { background: var(--gold); }
+.round-card-amounts [data-place='2'] { background: var(--silver); }
+.round-card-amounts [data-place='3'] { background: var(--bronze); }
+
+/* Premios */
+.premios-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0 0 16px;
+  text-align: center;
+}
+
+.premios-hero h2 {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(22px, 6.4vw, 30px);
+  line-height: 1.15;
+  color: var(--ink);
+}
+
+.premios-lead,
+.premios-facts {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.prize-podium {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: 8px;
+  margin: 8px 0 4px;
+  padding: 0;
+  list-style: none;
+}
+
+.prize-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 14px 6px 12px;
+  border: 1px solid var(--card-line);
+  border-radius: var(--radius) var(--radius) 8px 8px;
+  background: var(--card);
+}
+
+.prize-step--1 { order: 2; min-height: 132px; border-color: var(--gold); }
+.prize-step--2 { order: 1; min-height: 112px; }
+.prize-step--3 { order: 3; min-height: 98px; }
+
+.prize-place {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.prize-amount {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 34px;
+  line-height: 1;
+}
+
+.prize-step--1 .prize-amount { color: var(--gold); }
+.prize-step--2 .prize-amount { color: var(--silver); }
+.prize-step--3 .prize-amount { color: var(--bronze); }
+
+.prize-unit {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding-left: 22px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.steps strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.rounds {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rounds-status {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.round {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--card-line);
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+.round-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.round-name {
+  font-size: 14px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.chip {
+  flex: none;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.chip--en-juego { border-color: var(--accent); color: var(--accent); }
+.chip--por-pagar { border-color: var(--gold); color: var(--gold); }
+.chip--pagada { border-color: var(--ink); color: var(--ink); }
+
+.round-winners {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.round-winners li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.round-who {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.round-amount {
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.round-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  color: var(--accent);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.round-link svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Perfil */
+.perfil-title {
+  margin: 0 0 14px;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 24px;
+  color: var(--ink);
+}
+
+.card[data-state='conectada'] .card-text {
+  color: var(--ink);
+}
+
+.card[data-state='conectada'] .card-text::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  vertical-align: middle;
+}
+
+.perfil-address {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.perfil-address[hidden] {
+  display: none;
+}
+
+.perfil-address .billetera {
+  align-self: flex-start;
+}
+
+.perfil-wallet-now--ok {
+  color: var(--ink);
+}
+
+.card input[type='text'],
+.winner-form input {
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 1px solid var(--muted);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 15px;
+}
+
+.card input[type='text']:focus-visible,
+.winner-form input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.card input:disabled {
+  opacity: 0.5;
+}
+
+.card input[hidden],
+.card label[hidden] {
+  display: none;
+}
+
+.form-message {
+  margin: 0;
+  font-size: 14px;
+  color: var(--accent-ink);
+}
+
+.form-message:empty {
+  display: none;
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.form-actions[hidden] {
+  display: none;
+}
+
+.form-actions button {
+  flex: 1 1 140px;
+  min-width: 0;
+}
+
+.card--admin {
+  border-color: var(--accent-deep);
+}
+
+/* Ranking: podio y botón para copiar la wallet de cada jugador. */
+.shell .ranking {
+  text-align: left;
+}
+
+.podium {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: 8px;
+  margin: 4px 0 14px;
+  padding: 0;
+  list-style: none;
+}
+
+.podium-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 12px 6px 10px;
+  border: 1px solid var(--card-line);
+  border-radius: var(--radius) var(--radius) 8px 8px;
+  background: var(--card);
+  text-align: center;
+}
+
+.podium-step--1 { order: 2; min-height: 150px; border-color: var(--gold); }
+.podium-step--2 { order: 1; min-height: 128px; }
+.podium-step--3 { order: 3; min-height: 116px; }
+.podium-step--mine { box-shadow: inset 0 0 0 2px var(--accent); }
+
+.podium-place {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--bg);
+}
+
+.podium-step--1 .podium-place { background: var(--gold); }
+.podium-step--2 .podium-place { background: var(--silver); }
+.podium-step--3 .podium-place { background: var(--bronze); }
+
+.podium-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.podium-score {
+  font-size: 12px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.podium-prize {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.wallet-copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--muted);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.wallet-copy svg {
+  width: 18px;
+  height: 18px;
+}
+
+.wallet-copy:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.wallet-copy[data-estado='copiada'] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.ranking-wallet-col {
+  width: 52px;
+  text-align: center;
+}
+
+/* Fin de partida: recordatorio de la wallet tras guardar un récord. */
+.fin-wallet {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  max-width: 36ch;
+  padding: 10px 14px;
+  border: 1px solid var(--accent-deep);
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+.fin-wallet[hidden] {
+  display: none;
+}
+
+.overlay .fin-wallet p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+/* Pausa y menú: salir al menú principal. */
+.overlay-salir,
+.menu-salir {
+  border-color: var(--line);
+  color: var(--muted);
+}
+
+.overlay-salir[hidden],
+.menu-salir[hidden] {
+  display: none;
+}
+
+.menu-salir {
+  margin: 16px auto 0;
+}
+
+.abandonar .aviso-box[data-step='segunda'] {
+  border-color: var(--accent);
+}
+
+/* Panel de pago de premios (admin). */
+.modal-box--wide {
+  max-width: 480px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip-btn {
+  min-height: 40px;
+  padding: 6px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.chip-btn[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent-deep);
+  color: var(--ink);
+}
+
+.admin-premios-note:empty {
+  display: none;
+}
+
+.winners {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.winner {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--card-line);
+  border-radius: 12px;
+  background: var(--card);
+}
+
+.winner--pagado {
+  border-color: var(--line);
+}
+
+.winner-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.winner-place {
+  font-family: var(--display);
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.winner-who {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.winner-amount {
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.winner-paid,
+.winner-none {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.winner-paid a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--accent);
+}
+
+.winner-paid svg {
+  width: 14px;
+  height: 14px;
+}
+
+.copy-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  min-height: 40px;
+  padding: 6px 12px;
+  border: 1px solid var(--muted);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.copy-chip svg {
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+}
+
+.winner-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell-panel:not([hidden]) { animation: none; }
+  .tabbar-icon { transition: none; }
+}
+
+/* ======================================================================================================
+   TEMA 8 BITS (toda la app). Ventanas tipo RPG: panel azul noche con marco blanco hueso de esquinas
+   recortadas; botones de arcade con sombra dura que se hunden al tocarlos; fuentes pixel (Press Start 2P en
+   títulos, botones y números; Pixelify Sans en el texto); íconos de 16×16 (components/icons.ts); líneas de
+   escaneo de CRT; animaciones por cuadros (steps). La paleta mantiene el negro y el rosa de Polka-Man.
+   ====================================================================================================== */
+:root {
+  --bg: #050505;
+  --panel: #111122;
+  --card: #111122;
+  --ink: #f2f2ef;
+  --muted: #9a9aa6;
+  --line: #34345a;
+  --card-line: #f2f2ef;
+  --accent: #ff2867;
+  --accent-ink: #ff5a8a;
+  --accent-deep: #4a0d22;
+  --gold: #ffd166;
+  --silver: #c0c0c0;
+  --bronze: #e3965a;
+  --ok: #3ad06a;
+  --info: #4fc3f7;
+  --px: 4px;
+  --display: 'Press Start 2P', 'Space Mono', monospace;
+  --mono: 'Pixelify Sans', 'JetBrains Mono', monospace;
+  --radius: 0;
+}
+
+/* Nada redondo: todo es de pixeles. */
+#app *,
+#app *::before,
+#app *::after {
+  border-radius: 0 !important;
+}
+
+#app {
+  font-family: var(--mono);
+  font-size: 17px;
+}
+
+/* Texto solo para lectores de pantalla (lib/typewriter.ts lo usa para el texto completo). */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Líneas de escaneo de CRT: sutiles, encima de todo y sin bloquear toques. */
+#app::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0, 0, 0, 0.22) 2px 3px);
+}
+
+/* ---------- Marco pixel: 4 sombras duras, sin esquinas (como las ventanas de los RPG de NES). ---------- */
+#app .card,
+#app .round-card,
+#app .overlay-box,
+#app .modal-box,
+#app .aviso-box,
+#app .tx-box,
+#app .menu-sheet,
+#app .sonido-pop,
+#app .fin-wallet,
+#app .round,
+#app .winner,
+#app .prize-step,
+#app .podium-step,
+#app .ranking-scroll,
+#app .ranking > .ranking-vista {
+  --fc: var(--card-line);
+  border: 0;
+  background: var(--panel);
+  box-shadow:
+    0 calc(-1 * var(--px)) 0 0 var(--fc),
+    0 var(--px) 0 0 var(--fc),
+    calc(-1 * var(--px)) 0 0 0 var(--fc),
+    var(--px) 0 0 0 var(--fc);
+  margin: var(--px);
+}
+
+/* El marco ocupa --px por fuera: las tarjetas apiladas recuperan su separación original sin que los marcos se
+   toquen. */
+#app .card,
+#app .round-card,
+#app .ranking > .ranking-vista {
+  margin-bottom: calc(14px + var(--px));
+}
+
+#app .round,
+#app .winner,
+#app .prize-step,
+#app .podium-step,
+#app .ranking-scroll {
+  --fc: var(--line);
+}
+
+#app .round-card,
+#app .card--admin,
+#app .fin-wallet,
+#app .tx-box[data-tone='error'],
+#app .abandonar .aviso-box[data-step='segunda'] {
+  --fc: var(--accent);
+}
+
+#app .prize-step--1,
+#app .podium-step--1 {
+  --fc: var(--gold);
+}
+
+#app .podium-step--mine {
+  --fc: var(--accent);
+}
+
+/* Ventanas de diálogo: un poco más de aire por el marco. */
+#app .modal-box,
+#app .aviso-box,
+#app .tx-box {
+  padding: 22px 20px;
+}
+
+/* ---------- Botones de arcade: cara plana, marco, sombra dura abajo a la derecha y se hunden. ---------- */
+#app .overlay-action,
+#app .overlay-secondary,
+#app .billetera,
+#app .hud-menu,
+#app .hud-pause,
+#app .hud-sonido,
+#app .wallet-copy,
+#app .copy-chip,
+#app .chip-btn,
+#app .ranking-periodos button {
+  --fc: var(--ink);
+  --sh: #000000;
+  position: relative;
+  border: 0;
+  margin: var(--px);
+  box-shadow:
+    0 calc(-1 * var(--px)) 0 0 var(--fc),
+    0 var(--px) 0 0 var(--fc),
+    calc(-1 * var(--px)) 0 0 0 var(--fc),
+    var(--px) 0 0 0 var(--fc),
+    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 0 var(--sh);
+  transition: none;
+}
+
+#app .overlay-action {
+  --sh: #b3124a;
+  background: var(--accent);
+  color: var(--bg);
+  font-family: var(--display);
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+  padding: 14px 22px 16px;
+}
+
+#app .overlay-action:hover:not(:disabled) {
+  background: var(--accent-ink);
+}
+
+#app .overlay-secondary,
+#app .billetera,
+#app .hud-menu,
+#app .hud-pause,
+#app .hud-sonido,
+#app .wallet-copy,
+#app .copy-chip,
+#app .chip-btn,
+#app .ranking-periodos button {
+  --sh: #1f1f3a;
+  background: var(--panel);
+  color: var(--ink);
+}
+
+#app .overlay-secondary {
+  font-family: var(--display);
+  font-size: 11px;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  padding: 12px 16px 14px;
+}
+
+#app .overlay-secondary:hover:not(:disabled),
+#app .wallet-copy:hover,
+#app .copy-chip:hover,
+#app .chip-btn:hover {
+  background: #1b1b38;
+}
+
+/* Al tocar: el botón baja 4 px y pierde la sombra interior, como una tecla de arcade. */
+#app .overlay-action:active:not(:disabled),
+#app .overlay-secondary:active:not(:disabled),
+#app .billetera:active,
+#app .wallet-copy:active,
+#app .copy-chip:active,
+#app .chip-btn:active,
+#app .hud-menu:active,
+#app .hud-pause:active,
+#app .hud-sonido:active {
+  transform: translateY(var(--px));
+  box-shadow:
+    0 calc(-1 * var(--px)) 0 0 var(--fc),
+    0 var(--px) 0 0 var(--fc),
+    calc(-1 * var(--px)) 0 0 0 var(--fc),
+    var(--px) 0 0 0 var(--fc);
+}
+
+#app .btn-danger {
+  --fc: var(--accent);
+  color: var(--accent-ink);
+}
+
+#app .overlay-salir,
+#app .menu-salir {
+  --fc: var(--line);
+  color: var(--muted);
+}
+
+#app .link-button {
+  font-family: var(--display);
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--info);
+  text-decoration: none;
+  border-bottom: 2px dashed var(--info);
+  padding: 8px 2px 4px;
+}
+
+#app .wallet-copy[data-estado='copiada'],
+#app .billetera[data-estado='copiada'] {
+  --fc: var(--ok);
+  color: var(--ok);
+}
+
+#app .billetera {
+  min-height: 36px;
+  padding: 6px 10px 8px;
+  font-family: var(--display);
+  font-size: 10px;
+}
+
+/* Foco visible: marco cian por fuera, también en teclado físico. */
+#app button:focus-visible,
+#app a:focus-visible,
+#app input:focus-visible,
+#app [tabindex]:focus-visible {
+  outline: 3px solid var(--info);
+  outline-offset: 6px;
+}
+
+/* ---------- Tipografía ---------- */
+#app .inicio h1 {
+  font-size: clamp(22px, 8.6vw, 44px);
+  letter-spacing: 0.02em;
+  text-shadow: 4px 4px 0 var(--accent-deep);
+  line-height: 1.2;
+}
+
+#app .inicio-jugar {
+  font-size: 18px;
+  min-height: 64px;
+}
+
+#app .overlay h1 {
+  font-size: clamp(20px, 6.4vw, 36px);
+  line-height: 1.3;
+  text-shadow: 4px 4px 0 var(--accent-deep);
+}
+
+#app .rotate p {
+  font-size: clamp(16px, 4.4vmin, 28px);
+  line-height: 1.5;
+}
+
+#app .ranking h2,
+#app .modal h2,
+#app .aviso-box h2,
+#app .tx-box h2 {
+  font-size: 13px;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+}
+
+#app .card h3 {
+  font-size: 11px;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+}
+
+#app .perfil-title {
+  font-size: 18px;
+  line-height: 1.4;
+  margin: 4px 4px 18px;
+}
+
+#app .premios-hero h2 {
+  font-size: clamp(15px, 4.6vw, 20px);
+  line-height: 1.6;
+}
+
+#app .eyebrow {
+  font-family: var(--display);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+
+#app .shell-brand {
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+#app .prize-amount {
+  font-size: 26px;
+}
+
+#app .prize-place,
+#app .prize-unit,
+#app .podium-prize,
+#app .round-amount,
+#app .winner-amount,
+#app .winner-place,
+#app .podium-place {
+  font-family: var(--display);
+  font-size: 10px;
+}
+
+#app .podium-name,
+#app .round-card-text strong {
+  font-family: var(--display);
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+#app .card-text,
+#app .steps,
+#app .premios-lead,
+#app .premios-facts,
+#app .inicio p,
+#app .menu-text {
+  font-size: 17px;
+  line-height: 1.45;
+}
+
+#app .card-note,
+#app .round-card-text span,
+#app .field-label,
+#app .podium-score {
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+#app .hud {
+  font-size: 16px;
+  border-bottom: var(--px) solid var(--line);
+}
+
+#app .hud-stats {
+  font-family: var(--display);
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+/* ---------- Barra superior y barra de navegación ---------- */
+#app .shell-bar {
+  border-bottom: var(--px) solid var(--line);
+  background: var(--bg);
+}
+
+#app .tabbar {
+  border-top: var(--px) solid var(--line);
+  background: var(--bg);
+  gap: 4px;
+  padding-left: 6px;
+  padding-right: 6px;
+}
+
+#app .tabbar-btn {
+  font-family: var(--mono);
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  gap: 6px;
+}
+
+#app .tabbar-icon {
+  width: 52px;
+  height: 32px;
+  transition: none;
+}
+
+#app .tabbar-btn[aria-current='page'] {
+  color: var(--accent);
+}
+
+#app .tabbar-btn[aria-current='page'] .tabbar-icon {
+  background: var(--accent);
+  color: var(--bg);
+  box-shadow:
+    0 -3px 0 0 var(--accent),
+    0 3px 0 0 var(--accent),
+    -3px 0 0 0 var(--accent),
+    3px 0 0 0 var(--accent);
+}
+
+/* Cursor ▶ que parpadea junto a la pestaña activa. */
+#app .tabbar-btn[aria-current='page'] .tabbar-label::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 10px;
+  margin-right: 5px;
+  background: currentColor;
+  clip-path: polygon(0 0, 50% 0, 50% 20%, 100% 50%, 50% 80%, 50% 100%, 0 100%);
+  vertical-align: 0;
+  animation: px-blink 1s steps(1) infinite;
+}
+
+@keyframes px-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+#app .shell-panel:not([hidden]) {
+  animation: px-panel-in 160ms steps(4) both;
+}
+
+@keyframes px-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* ---------- Componentes ---------- */
+#app .round-card-icon {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+#app .round-card-amounts span {
+  font-family: var(--display);
+  font-size: 10px;
+  min-width: 28px;
+  height: 28px;
+}
+
+#app .chip {
+  border: 2px solid var(--line);
+  font-family: var(--display);
+  font-size: 8px;
+  line-height: 1.6;
+  padding: 4px 8px;
+}
+
+#app .chip--en-juego { border-color: var(--accent); color: var(--accent); }
+#app .chip--por-pagar { border-color: var(--gold); color: var(--gold); }
+#app .chip--pagada { border-color: var(--ok); color: var(--ok); }
+
+#app .chip-btn[aria-pressed='true'] {
+  --fc: var(--accent);
+  background: var(--accent);
+  color: var(--bg);
+}
+
+#app .round-link,
+#app .winner-paid a {
+  color: var(--info);
+}
+
+#app .card[data-state='conectada'] .card-text::before {
+  background: var(--ok);
+  animation: px-blink 1.2s steps(1) infinite;
+}
+
+#app .card input[type='text'],
+#app .winner-form input,
+#app .modal input {
+  border: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 17px;
+  margin: var(--px);
+  box-shadow:
+    0 -3px 0 0 var(--muted),
+    0 3px 0 0 var(--muted),
+    -3px 0 0 0 var(--muted),
+    3px 0 0 0 var(--muted);
+}
+
+#app .card input[type='text']:focus-visible,
+#app .winner-form input:focus-visible,
+#app .modal input:focus-visible {
+  outline: 0;
+  box-shadow:
+    0 -3px 0 0 var(--info),
+    0 3px 0 0 var(--info),
+    -3px 0 0 0 var(--info),
+    3px 0 0 0 var(--info);
+}
+
+#app .form-message {
+  color: var(--accent-ink);
+}
+
+#app .form-message:not(:empty)::before {
+  content: '! ';
+  font-family: var(--display);
+  font-size: 11px;
+}
+
+/* Ranking */
+#app .ranking-vista-btn {
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+#app .ranking-table {
+  font-size: 16px;
+}
+
+#app .ranking-table th {
+  font-family: var(--display);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+}
+
+#app .ranking-table thead th {
+  border-bottom: var(--px) solid var(--line);
+}
+
+#app .ranking-table tbody tr:nth-child(even) td {
+  background: #0b0b18;
+}
+
+#app .ranking-mine td {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+/* Menú de la partida */
+#app .menu-tab,
+#app .menu-close {
+  font-size: 11px;
+}
+
+#app .menu-tab[aria-selected='true'] {
+  box-shadow: inset 0 calc(-1 * var(--px)) 0 var(--accent);
+}
+
+/* Sonido: interruptores cuadrados. */
+#app .sonido-toggle {
+  border: 0;
+  margin: var(--px);
+  box-shadow:
+    0 -3px 0 0 var(--line),
+    0 3px 0 0 var(--line),
+    -3px 0 0 0 var(--line),
+    3px 0 0 0 var(--line);
+}
+
+/* Popup de estados: pasos como casillas. */
+#app .progreso-paso::before {
+  width: 10px;
+  height: 10px;
+  border-width: 2px;
+}
+
+#app .progreso-paso--actual::before {
+  animation: px-blink 0.8s steps(1) infinite;
+}
+
+/* Controles táctiles del juego: mismas casillas cuadradas. */
+#app .controles .dpad-btn {
+  border-width: var(--px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #app .shell-panel:not([hidden]),
+  #app .tabbar-btn[aria-current='page'] .tabbar-label::before,
+  #app .card[data-state='conectada'] .card-text::before,
+  #app .progreso-paso--actual::before {
+    animation: none;
+  }
+  #app .overlay-action:active:not(:disabled),
+  #app .overlay-secondary:active:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* ---------- Ajustes: Jugar centrado, marca Polkadot, ranking centrado y podio de Premios con medallas. ---------- */
+/* Jugar: la portada, POLKA-MAN y Jugar quedan al centro (vertical y horizontal) del espacio entre las barras. */
+.shell-panel--jugar > .jugar {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+}
+
+.shell .inicio {
+  flex: 1 0 auto;
+  justify-content: center;
+}
+
+.shell .inicio-box {
+  margin: 0;
+}
+
+
+/* Ranking: encabezado, contador, estados y tabla centrados. */
+.shell .ranking,
+.shell .ranking h2,
+.shell .ranking-reinicio,
+.shell .ranking-status,
+.shell .ranking-table th,
+.shell .ranking-table td {
+  text-align: center;
+}
+
+.shell .ranking-table {
+  margin: 0 auto;
+}
+
+/* Montos con «$» en las insignias de la tarjeta de la ronda. */
+#app .round-card-amounts span {
+  padding: 0 4px;
+}
+
+/* Podio de Premios: tres columnas iguales, bases alineadas abajo y contenido al centro de cada escalón. */
+#app .prize-podium {
+  align-items: end;
+  gap: 12px;
+  margin: 12px var(--px) 4px;
+}
+
+#app .prize-step {
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 10px 4px;
+}
+
+#app .prize-step--1 { height: 184px; }
+#app .prize-step--2 { height: 164px; }
+#app .prize-step--3 { height: 152px; }
+
+#app .prize-amount {
+  font-size: clamp(20px, 6.4vw, 28px);
+  line-height: 1;
+}
+
+#app .prize-step--1 .prize-amount {
+  font-size: clamp(24px, 7.6vw, 34px);
+}
+
+/* Medalla pixel: listón rosa, disco del color del lugar y número oscuro. */
+.prize-medal {
+  display: inline-flex;
+}
+
+.prize-medal .medal {
+  display: block;
+  width: 48px;
+  height: 48px;
+  image-rendering: pixelated;
+}
+
+.medal-ribbon { fill: var(--accent); }
+.medal-disc { fill: currentColor; }
+.medal-digit { fill: var(--bg); }
+
+.prize-step--1 .prize-medal { color: var(--gold); }
+.prize-step--2 .prize-medal { color: var(--silver); }
+.prize-step--3 .prize-medal { color: var(--bronze); }
+
+#app .prize-step--1 .prize-medal .medal {
+  width: 56px;
+  height: 56px;
+}
+
+/* ---------- Barra superior: Polka-Man a la izquierda; billetera y Polkadot (blanco) a la derecha. ---------- */
+.shell-bar > .billetera {
+  margin-left: auto;
+}
+
+.shell-polkadot {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-family: var(--display);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+}
+
+.shell-polkadot-mark {
+  display: inline-flex;
+  color: var(--ink);
+}
+
+#app .shell-mark svg,
+#app .shell-polkadot-mark svg {
+  display: block;
+  width: 22px;
+  height: 22px;
+}
+
+/* Con la billetera a la vista en un celular angosto, Polkadot queda solo con su logo. */
+@media (max-width: 439px) {
+  .shell-bar:has(> .billetera:not([hidden])) .shell-polkadot-text {
+    display: none;
+  }
+}
+
+/* ---------- Sonido: la perilla blanca queda dentro del interruptor rosa (20 px de alto en el tema). ---------- */
+#app .sonido-switch {
+  width: 40px;
+  height: 20px;
+}
+
+#app .sonido-switch::after {
+  top: 3px;
+  left: 23px;
+  width: 14px;
+  height: 14px;
+}
+
+#app .sonido-toggle[aria-pressed='false'] .sonido-switch::after {
+  left: 3px;
+}
+
+/* ---------- Partida: la barra superior sigue arriba y la de navegación abajo. ---------- */
+/* #app les deja su alto; app.ts recalcula el reparto vertical (portraitSplit lee este padding). */
+#app.con-tabbar {
+  padding-top: calc(var(--shellbar-h) + env(safe-area-inset-top));
+  padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+}
+
+/* Pestaña Jugar en partida: las dos barras a la vista; el medio es transparente y deja tocar el juego. */
+.shell[data-modo='juego'] {
+  background: transparent;
+  pointer-events: none;
+}
+
+.shell[data-modo='juego'] > .shell-bar,
+.shell[data-modo='juego'] > .tabbar {
+  pointer-events: auto;
+}
+
+.shell[data-modo='juego'] > .shell-main {
+  visibility: hidden;
+}
+
+/* Pausa, fin y menú empiezan debajo del HUD, que ahora va debajo de la barra superior. La pausa y el fin
+   terminan sobre la barra de navegación. */
+#app.con-tabbar .overlay:not(.overlay--quiet),
+#app.con-tabbar .menu {
+  top: calc(env(safe-area-inset-top) + var(--shellbar-h) + var(--hud-h));
+}
+
+#app.con-tabbar .overlay:not(.overlay--quiet) {
+  bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+}
+
+#app.con-tabbar .menu-sheet {
+  max-height: calc(var(--vv-h, 100dvh) - env(safe-area-inset-top) - var(--shellbar-h) - var(--hud-h) - 12px);
+}
+
+/* ---------- HUD de la partida en dos filas: datos arriba; récord y botones abajo. ---------- */
+#app .hud {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 0;
+  padding: 2px 6px 2px 10px;
+}
+
+.hud-fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.hud-fila--datos {
+  height: 28px;
+}
+
+.hud-fila--botones {
+  height: 48px;
+}
+
+.hud-fila .hud-stats,
+.hud-fila .hud-best {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Fila de arriba: puntos y ronda a la izquierda, récord a la derecha, con la misma letra. */
+#app .hud-fila .hud-best {
+  flex: none;
+  max-width: 45%;
+  font-family: var(--display);
+  font-size: 9px;
+  line-height: 1.6;
+  text-align: right;
+}
+
+/* Fila de abajo: vidas a la izquierda, botones a la derecha. */
+#app .hud-fila .hud-lives {
+  align-items: center;
+  gap: 4px;
+  height: 48px;
+  margin-left: 0;
+}
+
+/* Vidas: un Polka-Man pixel de 28 px por vida, centrado a la altura de los botones (40 px + marco). */
+#app .hud-life {
+  display: block;
+  width: 28px;
+  height: 28px;
+  background: none;
+  color: var(--accent);
+}
+
+#app .hud-life svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 360px) {
+  #app .hud-life { width: 24px; height: 24px; }
+}
+
+.hud-acciones {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+}
+
+#app .hud-menu,
+#app .hud-sonido,
+#app .hud-pause {
+  height: 40px;
+}
+
+/* Con dos filas hay lugar para la palabra «Menú» también en celulares angostos. */
+@media (max-width: 399px) {
+  #app .hud-menu span { display: inline; }
+  #app .hud-menu { width: auto; padding: 0 10px; }
+}
+
+/* ---------- Controles táctiles: pausa a la izquierda, flechas a la derecha. ---------- */
+#app .controles {
+  padding: 0 8px 0 24px;
+}
+
+/* ---------- «Binance» y «Nova Wallet»: botones con estilo de enlace y diálogo iOS / Android. ---------- */
+.app-link {
+  display: inline;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--info);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+/* Área de toque de 48 px sin mover el texto. */
+.app-link {
+  position: relative;
+}
+
+.app-link::after {
+  content: '';
+  position: absolute;
+  inset: -14px -6px;
+}
+
+.app-link:focus-visible {
+  outline: 2px solid var(--info);
+  outline-offset: 2px;
+}
+
+.tiendas-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+#app .tienda {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 60px;
+  padding: 10px 16px;
+  text-align: left;
+  text-decoration: none;
+}
+
+.tienda-icono {
+  display: inline-flex;
+  flex: none;
+  color: var(--ink);
+}
+
+.tienda-icono svg {
+  display: block;
+  width: 32px;
+  height: 32px;
+}
+
+.tienda[data-os='android'] .tienda-icono {
+  color: var(--ok);
+}
+
+.tienda-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tienda-texto small {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--muted);
+  letter-spacing: 0;
+}
+
+#app .tiendas-cerrar {
+  align-self: center;
+}
+
+/* ---------- Logo de USDT delante de la palabra «USDT». ---------- */
+.usdt {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.usdt-logo {
+  display: block;
+  flex: none;
+  width: 1.25em;
+  height: 1.25em;
+  min-width: 14px;
+  min-height: 14px;
+}
+
+.usdt-disc { fill: #26a17b; }
+.usdt-t { fill: #ffffff; }
+
+/* ---------- Ranking: colores de los 3 primeros (oro, plata y bronce) y medallas en el podio. ---------- */
+#app .podium-step--2 { --fc: var(--silver); }
+#app .podium-step--3 { --fc: var(--bronze); }
+#app .podium-step--1 { --top: var(--gold); }
+#app .podium-step--2 { --top: var(--silver); }
+#app .podium-step--3 { --top: var(--bronze); }
+
+/* Sin el botón de copiar el escalón es más bajo; el contenido va centrado. */
+#app .podium-step {
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 4px;
+}
+
+#app .podium-step--1 { min-height: 150px; }
+#app .podium-step--2 { min-height: 132px; }
+#app .podium-step--3 { min-height: 120px; }
+
+#app .podium-place {
+  width: auto;
+  height: auto;
+  background: none;
+  color: var(--top);
+}
+
+#app .podium-place .medal {
+  display: block;
+  width: 36px;
+  height: 36px;
+}
+
+#app .podium-step--1 .podium-place .medal {
+  width: 44px;
+  height: 44px;
+}
+
+#app .podium-name {
+  color: var(--top);
+}
+
+/* Tabla: posición y jugador del 1.º al 3.º con su color y una franja a la izquierda. */
+#app .ranking-table tr[data-top] td {
+  font-weight: 700;
+}
+
+#app .ranking-table tr[data-top] td:first-child {
+  box-shadow: inset var(--px) 0 0 var(--top);
+}
+
+#app .ranking-table tr[data-top] td:nth-child(-n + 2) {
+  color: var(--top);
+}
+
+#app .ranking-table tr[data-top='1'] { --top: var(--gold); }
+#app .ranking-table tr[data-top='2'] { --top: var(--silver); }
+#app .ranking-table tr[data-top='3'] { --top: var(--bronze); }
+
+/* Tu fila sigue en rosa aunque estés en el top 3. */
+#app .ranking-table tr.ranking-mine[data-top] td {
+  color: var(--bg);
+}

@@ -1,0 +1,26 @@
+/* Fuentes pixel del tema 8 bits, empaquetadas por Vite (subconjunto latino: incluye acentos, ñ y ¿).
+   Copiadas de @fontsource/press-start-2p 5.3.0 y @fontsource/pixelify-sans 5.3.0 (OFL-1.1; licencias en
+   public/licencias). Nada viene de internet. */
+@font-face {
+  font-family: 'Press Start 2P';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('./press-start-2p-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Pixelify Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('./pixelify-sans-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Pixelify Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url('./pixelify-sans-latin-600-normal.woff2') format('woff2');
+}

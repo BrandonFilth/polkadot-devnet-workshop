@@ -6,6 +6,7 @@ import { COPY_FEEDBACK_MS } from '../engine/rules';
 import type { Hub, HubState } from '../hub/hub';
 import { KIND_TITLE, progressView, type Progress, type ProgressOp } from '../hub/progress';
 import { copyText, type ClipboardEnv } from '../lib/clipboard';
+import { typeInto } from '../lib/typewriter';
 
 export const COPY_DETAILS_LABEL = 'Copiar detalles';
 export const DETAILS_COPIED_LABEL = 'Detalles copiados';
@@ -41,7 +42,7 @@ export function diagnosticReport(
   ].join('\n');
 }
 
-const OPS: readonly ProgressOp[] = ['conectar', 'guardar', 'username', 'inicio'];
+const OPS: readonly ProgressOp[] = ['conectar', 'guardar', 'username', 'inicio', 'wallet', 'premio'];
 
 /** Título mientras la operación sigue en curso. */
 export const TX_TITLE: Record<ProgressOp, string> = {
@@ -49,6 +50,8 @@ export const TX_TITLE: Record<ProgressOp, string> = {
   guardar: 'Guardando récord',
   username: 'Guardando username',
   inicio: 'Guardando hora de inicio',
+  wallet: 'Guardando tu wallet',
+  premio: 'Registrando el pago',
 };
 
 export interface TxPopupView {
@@ -161,7 +164,7 @@ export function createTxEstado(
         return li;
       }),
     );
-    line.textContent = pv.line;
+    typeInto(line, pv.line);
     copy.hidden = !(view.closable && canCopyDetails(s.progress));
     copy.textContent = COPY_DETAILS_LABEL;
     close.hidden = !view.closable;

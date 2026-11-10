@@ -184,8 +184,8 @@ export const VIEW_CROP_TILES = 0.5;
 /** Tamaño mínimo de casilla, en px CSS. */
 export const MIN_TILE_PX = 8;
 
-/** Alto de la barra superior (HUD + menú), en px CSS. */
-export const HUD_HEIGHT_PX = 44;
+/** Alto de la barra superior de la partida (HUD en dos filas: datos arriba, récord y botones abajo), en px CSS. */
+export const HUD_HEIGHT_PX = 84;
 
 /** Alto de la zona de controles táctiles (flechas y pausa), en px CSS. */
 export const CONTROLS_HEIGHT_PX = 132;

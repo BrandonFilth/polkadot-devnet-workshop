@@ -39,7 +39,8 @@ export default defineConfig({
           include: ['src/**/*.test.ts'],
           exclude: ['src/**/*.red.test.ts'],
           // styles.css llega como texto a los tests de superficies opacas y del ranking (components/ranking.test.ts).
-          css: { include: [/styles\.css/] },
+          // fonts/pixel.css llega igual a components/tema8bits.test.ts.
+          css: { include: [/styles\.css/, /pixel\.css/] },
         },
       },
       {

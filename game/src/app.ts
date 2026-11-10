@@ -1,8 +1,16 @@
 // Arma el DOM y conecta motor, dibujo, controles y componentes.
 import { createAudio } from './audio/audio';
+import { createAbandonar } from './components/Abandonar';
 import { createAdmin } from './components/Admin';
+import { createAdminPremios } from './components/AdminPremios';
 import { createBilletera } from './components/Billetera';
+import { createPerfil, type Payout } from './components/Perfil';
+import { createPremios } from './components/Premios';
+import { createStoreDialog } from './components/Tiendas';
+import { createRanking } from './components/Ranking';
+import { createShell, type Shell } from './components/Shell';
 import { isAdminAccount, type EventInfo } from './contract/eventStart';
+import { parseRoute, routeHash } from './lib/route';
 import { createSoundPrefs, safeStorage } from './audio/prefs';
 import { capas, type Capa } from './components/capas';
 import { createControles } from './components/Controles';
@@ -17,7 +25,7 @@ import { createTxEstado } from './components/TxEstado';
 import { createUsername } from './components/Username';
 import { attachAudioDebug, withDebug } from './dev/debug';
 import { createHub } from './hub/hub';
-import { createGame, drainEvents, goToTitle, setPaused, update } from './engine/game';
+import { abandon, createGame, drainEvents, goToTitle, setPaused, update } from './engine/game';
 import { MAZE, parseMaze } from './engine/maze';
 import {
   CONTROLS_HEIGHT_PX,
@@ -72,7 +80,7 @@ export function startApp(root: HTMLElement): void {
 
   root.replaceChildren(header, stage, controles.element, rotate);
 
-  // Celular en vertical: el laberinto pegado al HUD (--maze-h) y lo que sobra para los controles (styles.css).
+  // Celular en vertical: la fila del escenario (--maze-h, con el laberinto centrado) y lo demás para los controles.
   const portrait = window.matchMedia(PORTRAIT_PHONE);
   const syncSplit = () => {
     if (!portrait.matches) {
@@ -91,7 +99,8 @@ export function startApp(root: HTMLElement): void {
       safeLeft: px('padding-left'),
       touch: true,
     });
-    root.style.setProperty('--maze-h', `${split.mazeHeight}px`);
+    // Fila del escenario: el laberinto más la mitad de lo que sobra (el laberinto va centrado en ella).
+    root.style.setProperty('--maze-h', `${split.stageHeight}px`);
     // Alto real de la fila de controles: las flechas se encogen si no caben (regla .dpad de styles.css).
     root.style.setProperty('--controls-avail', `${split.controlsHeight}px`);
   };
@@ -114,6 +123,14 @@ export function startApp(root: HTMLElement): void {
   for (const type of ['click', 'keydown', 'touchend', 'pointerup']) document.addEventListener(type, unlockAudio, true);
   if (import.meta.env.DEV) attachAudioDebug(audio);
   const tap = () => audio.tap();
+  // «Blip» chiptune en botones, pestañas y enlaces de la interfaz. Los de sonido tienen su propio toque y las
+  // flechas del juego no suenan (se tocan sin parar).
+  document.addEventListener('click', (e) => {
+    const target = e.target instanceof Element ? e.target.closest('button, a[href]') : null;
+    if (!target || target.closest('.controles, .sonido-toggle, .hud-sonido-wrap')) return;
+    if ((target as HTMLButtonElement).disabled) return;
+    audio.blip();
+  });
 
   // Récord del jugador: app.ts es el único dueño de este valor.
   let mine: Mine = null;
@@ -158,17 +175,66 @@ export function startApp(root: HTMLElement): void {
     pauseForMenu(state);
     username.open(typeof mine === 'object' && mine ? mine.username : '');
   };
+  // Wallet de premios de la cuenta: se lee al conectar, al terminar una partida y después de guardarla.
+  // undefined = todavía no se lee o falló; null = no tiene.
+  let payout: Payout = undefined;
+  let payoutSeq = 0;
+  const refreshPayout = () => {
+    const seq = ++payoutSeq;
+    if (hub.getState().account === null) {
+      payout = undefined;
+      return;
+    }
+    hub.readMyPayout().then(
+      (w) => {
+        if (seq === payoutSeq) payout = w;
+      },
+      () => {
+        if (seq === payoutSeq) payout = undefined;
+      },
+    );
+  };
+
+  // «Agregar wallet» desde Premios o desde el fin de partida: Perfil con el foco en el campo.
+  let shell: Shell | null = null;
+  const goToWallet = () => {
+    if (state.phase === 'fin') goToTitle(state);
+    shell?.go('perfil', { push: true, focus: false });
+    perfil.focusWallet();
+  };
+
   const fin = createFinDePartida({
     hub,
     score: () => state.score,
     mine: () => mine,
-    onSaved: () => refreshMine(),
+    onSaved: () => {
+      refreshMine();
+      refreshPayout();
+    },
     openUsername,
     event: () => event,
+    payout: () => payout,
+    onWallet: () => goToWallet(),
   });
 
-  // Panel de admin: solo se abre desde la pantalla de inicio y solo con la cuenta admin.
+  // Paneles de admin: solo desde Perfil y solo con la cuenta admin.
   const admin = createAdmin(root, hub, () => refreshEvent(), layers);
+  const adminPremios = createAdminPremios(root, hub, layers);
+
+  // Salir de una partida con doble confirmación: se pierde el progreso y se vuelve a Jugar.
+  const abandonar = createAbandonar(
+    root,
+    () => {
+      menu.close();
+      abandon(state);
+      shell?.go('jugar');
+    },
+    layers,
+  );
+  const askAbandon = () => {
+    setPaused(state, true);
+    if (state.phase === 'pausa') abandonar.open();
+  };
 
   // Al pasar de sin cuenta a una cuenta, se relee el récord (y el admin, por si cambió en Remix).
   let hadAccount = hub.getState().account !== null;
@@ -177,10 +243,13 @@ export function startApp(root: HTMLElement): void {
     if (has && !hadAccount) {
       refreshMine();
       refreshEvent();
+      refreshPayout();
     }
     if (!has) {
       mineSeq++;
       mine = null;
+      payoutSeq++;
+      payout = undefined;
     }
     hadAccount = has;
   });
@@ -195,6 +264,7 @@ export function startApp(root: HTMLElement): void {
     openUsername,
     trigger: () => menuOpener ?? hud.menuButton,
     onToggle: layers,
+    onSalir: () => askAbandon(),
   });
   const openMenu = (tab?: MenuTab) => {
     menuOpener = document.activeElement instanceof HTMLElement && document.activeElement !== document.body ? document.activeElement : null;
@@ -218,44 +288,135 @@ export function startApp(root: HTMLElement): void {
     fin: [fin.element],
     busy,
     onVerRanking: () => openMenu('ranking'),
-    onInicio: () => goToTitle(state),
+    onInicio: () => {
+      goToTitle(state);
+      shell?.go('jugar');
+    },
+    onSalir: () => askAbandon(),
     onPhase(phase) {
       if (phase === 'fin') {
         fin.enter();
         refreshEvent();
-        if (hub.getState().account !== null) refreshMine();
+        if (hub.getState().account !== null) {
+          refreshMine();
+          refreshPayout();
+        }
       }
     },
   });
 
-  // Pantalla de inicio: opaca, tapa HUD, escenario y controles. El aviso «sin cuenta» va encima.
-  const inicio = createInicio(root, {
+  // Fuera de la partida: pestañas Jugar · Ranking · Premios · Perfil (components/Shell.ts). Opaco: tapa HUD,
+  // escenario y controles. El aviso «sin cuenta» va encima.
+  const jugarPanel = document.createElement('div');
+  jugarPanel.className = 'jugar';
+  const inicio = createInicio(jugarPanel, {
     state,
     hub,
     mine: () => mine,
-    onRanking: () => openMenu('ranking'),
-    onUsername: openUsername,
     onToggle: layers,
-    sonido: createSonidoToggles(prefs, tap, 'iconos').element,
-    billetera: createBilletera(hub).element,
     isAdmin,
-    onAdmin: () => {
+  });
+  const rankingTab = createRanking(hub);
+  // «Binance» y «Nova Wallet» en Premios y Perfil: diálogo iOS / Android con el enlace a cada tienda.
+  const tiendas = createStoreDialog(root, layers);
+  const premios = createPremios(hub, { onWallet: () => goToWallet(), onApp: (app) => tiendas.open(app) });
+  const perfil = createPerfil({
+    hub,
+    mine: () => mine,
+    payout: () => payout,
+    isAdmin,
+    billetera: createBilletera(hub).element,
+    sonido: createSonidoToggles(prefs, tap).element,
+    onUsername: openUsername,
+    onAdminInicio: () => {
       if (isAdmin()) admin.open();
     },
+    onAdminPremios: () => {
+      if (isAdmin()) adminPremios.open();
+    },
+    onWalletSaved: () => refreshPayout(),
+    onApp: (app) => tiendas.open(app),
   });
+  shell = createShell(root, {
+    billetera: createBilletera(hub).element,
+    // En una partida, ir a otra pestaña la pausa (al volver a Jugar se sigue con Seguir).
+    onTab: (tab) => {
+      if (tab !== 'jugar') setPaused(state, true);
+    },
+    panels: {
+      jugar: { element: jugarPanel },
+      ranking: { element: rankingTab.element, onShow: () => rankingTab.load() },
+      premios: { element: premios.element, onShow: () => premios.load() },
+      perfil: {
+        element: perfil.element,
+        onShow: () => {
+          refreshPayout();
+          refreshEvent();
+        },
+      },
+    },
+  });
+  const shellRef: Shell = shell;
+
+  // Botón Atrás (Android) e historial: fuera de la partida cambia de pestaña; en una partida no la cierra,
+  // la pausa y pregunta si quieres salir (doble confirmación).
+  let lastPhase = state.phase;
+  window.addEventListener('popstate', () => {
+    const route = parseRoute(location.hash);
+    if (state.phase === 'titulo') {
+      if (route !== 'partida') shellRef.go(route);
+      else history.replaceState(null, '', routeHash(shellRef.tab));
+      return;
+    }
+    if (state.phase === 'fin') {
+      goToTitle(state);
+      shellRef.go(route === 'partida' ? 'jugar' : route);
+      return;
+    }
+    history.pushState(null, '', routeHash('partida'));
+    // En otra pestaña durante la partida, Atrás vuelve a Jugar (en pausa); en Jugar pregunta si quieres salir.
+    if (shellRef.tab !== 'jugar') {
+      shellRef.go('jugar');
+      return;
+    }
+    if (!abandonar.isOpen) askAbandon();
+  });
+  // En partida solo queda la barra de navegación encima del juego: #app le deja su alto abajo (con-tabbar) y
+  // el reparto de la pantalla vertical se recalcula.
+  let shownInGame: boolean | null = null;
+  const syncMode = () => {
+    const inGame = state.phase !== 'titulo';
+    if (inGame === shownInGame) return;
+    shownInGame = inGame;
+    root.classList.toggle('con-tabbar', inGame);
+    shellRef.setInGame(inGame);
+    syncSplit();
+  };
+  const syncRoute = () => {
+    if (state.phase === lastPhase) return;
+    const was = lastPhase;
+    lastPhase = state.phase;
+    // Empieza una partida: una entrada en el historial para que Atrás no salga de ella.
+    if (was === 'titulo') history.pushState(null, '', routeHash('partida'));
+    // Vuelve al inicio (fin → Inicio o abandonar): la pestaña sin dejar «partida» atrás.
+    if (state.phase === 'titulo') {
+      history.replaceState(null, '', routeHash(shellRef.tab));
+      shellRef.go(shellRef.tab);
+    }
+  };
 
   // Popup de estados: el último en #app, por encima de todo lo demás (salvo «Gira tu teléfono»).
   const tx = createTxEstado(root, hub, layers);
   root.append(rotate);
 
-  const LAYER_ELEMENTS: Record<Exclude<Capa, 'juego'>, HTMLElement> = {
-    inicio: inicio.element,
+  const LAYER_ELEMENTS: Record<Exclude<Capa, 'juego' | 'admin'>, HTMLElement> = {
+    inicio: shellRef.element,
     pausa: overlay.element,
     fin: overlay.element,
     menu: menu.element,
     username: username.element,
-    admin: admin.element,
     aviso: inicio.aviso,
+    confirmar: abandonar.element,
     tx: tx.element,
   };
   let top: Capa = 'juego';
@@ -271,8 +432,10 @@ export function startApp(root: HTMLElement): void {
       phase: state.phase,
       menuOpen: menu.isOpen,
       usernameOpen: username.isOpen,
-      adminOpen: admin.isOpen,
-      avisoOpen: inicio.avisoOpen,
+      adminOpen: admin.isOpen || adminPremios.isOpen,
+      // El diálogo de las tiendas ocupa el mismo lugar en la pila que el aviso «sin cuenta» (nunca van juntos).
+      avisoOpen: inicio.avisoOpen || tiendas.isOpen,
+      confirmOpen: abandonar.isOpen,
       txOpen: tx.isOpen,
     });
     top = c.top;
@@ -283,16 +446,26 @@ export function startApp(root: HTMLElement): void {
     setInert(canvas, top !== 'juego');
     setInert(controles.element, top !== 'juego');
     // HUD: el botón Menú sigue a la mano en pausa, fin y con el menú abierto (lo cierra).
-    setInert(header, top === 'inicio' || top === 'username' || top === 'admin' || top === 'aviso' || top === 'tx');
+    setInert(header, top === 'inicio' || top === 'username' || top === 'admin' || top === 'aviso' || top === 'confirmar' || top === 'tx');
     for (const [capa, el] of Object.entries(LAYER_ELEMENTS) as Array<[Capa, HTMLElement]>) {
-      if (capa === 'pausa' || capa === 'fin') continue;
+      if (capa === 'pausa' || capa === 'fin' || capa === 'inicio') continue;
       setInert(el, c.inert.includes(capa));
     }
+    // El contenedor (y su barra de navegación): en partida se puede tocar sobre el juego, la pausa y el fin,
+    // no con el menú, un modal o el popup de estados encima.
+    setInert(
+      shellRef.element,
+      state.phase === 'titulo' ? c.inert.includes('inicio') : !(top === 'juego' || top === 'pausa' || top === 'fin'),
+    );
+    setInert(tiendas.element, c.inert.includes('aviso'));
+    setInert(admin.element, c.inert.includes('admin'));
+    setInert(adminPremios.element, c.inert.includes('admin'));
     setInert(overlay.element, c.inert.includes('pausa') || c.inert.includes('fin'));
   }
 
   overlay.sync();
   inicio.sync();
+  syncMode();
   applyLayers();
   attachControls(state, stage, busy, () => top !== 'juego');
   attachTeclado(root);
@@ -331,6 +504,10 @@ export function startApp(root: HTMLElement): void {
     step(dt) {
       // Mientras se pide girar el teléfono, la partida no avanza.
       if (landscape.matches) setPaused(state, true);
+      // Con otra pestaña encima, la partida tampoco avanza (ni con la tecla P). Se mira la pestaña y no
+      // `covers`: en el primer cuadro tras tocar Jugar el contenedor todavía no pasó a modo partida (eso pasa en
+      // render), y `covers` seguía en true y pausaba la partida al empezar.
+      if (shellRef.tab !== 'jugar') setPaused(state, true);
       update(state, dt);
     },
     render(timeMs) {
@@ -351,8 +528,11 @@ export function startApp(root: HTMLElement): void {
       scene.frightTimer = state.frightTimer;
       overlay.sync();
       inicio.sync();
-      // La pantalla de inicio tapa el HUD: el popover de Sonido no queda abierto encima.
-      if (state.phase === 'titulo' && sonidoHud.isOpen) sonidoHud.close();
+      syncMode();
+      syncRoute();
+      if (shellRef.tab === 'perfil') perfil.sync();
+      // El contenedor tapa el HUD: el popover de Sonido no queda abierto debajo.
+      if (shellRef.covers && sonidoHud.isOpen) sonidoHud.close();
       if (state.phase === 'fin') fin.sync();
       if (menu.isOpen) menu.sync();
       applyLayers();

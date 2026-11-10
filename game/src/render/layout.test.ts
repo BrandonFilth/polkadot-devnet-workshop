@@ -30,7 +30,7 @@ const layoutFor = (v: Viewport) => {
 describe('layout del laberinto', () => {
   it('360×800 táctil: casilla 20 y el laberinto ocupa todo el ancho', () => {
     const { stage, maze } = layoutFor(phone(360, 800));
-    expect(stage).toEqual({ width: 360, height: 624 });
+    expect(stage).toEqual({ width: 360, height: 584 });
     expect(maze.tile).toBe(20);
     expect([maze.cssWidth, maze.cssHeight]).toEqual([360, 400]);
     expect(maze.offset).toBe(10);
@@ -38,7 +38,7 @@ describe('layout del laberinto', () => {
 
   it('390×844 táctil: casilla 21, 378×420', () => {
     const { stage, maze } = layoutFor(phone(390, 844));
-    expect(stage).toEqual({ width: 390, height: 668 });
+    expect(stage).toEqual({ width: 390, height: 628 });
     expect(maze.tile).toBe(21);
     expect([maze.cssWidth, maze.cssHeight]).toEqual([378, 420]);
   });
@@ -48,21 +48,37 @@ describe('layout del laberinto', () => {
     expect(maze.tile).toBe(21);
   });
 
-  it('1440×900 escritorio: sin controles, casilla 42, 756×840', () => {
+  it('1440×900 escritorio: sin controles, casilla 40, 720×800', () => {
     const { stage, maze } = layoutFor(phone(1440, 900, { touch: false }));
-    expect(stage).toEqual({ width: 1440, height: 856 });
-    expect(maze.tile).toBe(42);
-    expect([maze.cssWidth, maze.cssHeight]).toEqual([756, 840]);
+    expect(stage).toEqual({ width: 1440, height: 816 });
+    expect(maze.tile).toBe(40);
+    expect([maze.cssWidth, maze.cssHeight]).toEqual([720, 800]);
   });
 
-  it('vertical: el laberinto pegado al HUD y lo que sobra para los controles (390×844 y 360×800)', () => {
-    expect(portraitSplit(phone(390, 844))).toEqual({ tile: 21, mazeHeight: 420, controlsHeight: 380 });
-    expect(portraitSplit(phone(360, 800))).toEqual({ tile: 20, mazeHeight: 400, controlsHeight: 356 });
+  it('en partida: barra superior (56) arriba y de navegación (64) abajo; la casilla sigue en 21', () => {
+    const s = portraitSplit(phone(390, 844, { safeTop: 47 + 56, safeBottom: 34 + 64 }));
+    expect(s.tile).toBe(21);
+    expect(s.mazeHeight).toBe(420);
+    // Sobran solo 7 px: todos van a los controles y las flechas se encogen para caber.
+    expect(s.stageHeight).toBe(420);
+    expect(3 * dpadSize(s.controlsHeight) + 2 * DPAD_GAP_PX).toBeLessThanOrEqual(s.controlsHeight);
+  });
+
+  it('vertical: los controles toman lo que necesitan las flechas y el resto se reparte (390×844 y 360×800)', () => {
+    // 390×844: sobran 208; 52 a los controles (132 → 184) y de los 156 restantes, 78 al escenario y 78 a los controles.
+    expect(portraitSplit(phone(390, 844))).toEqual({ tile: 21, mazeHeight: 420, stageHeight: 498, controlsHeight: 262 });
+    expect(portraitSplit(phone(360, 800))).toEqual({ tile: 20, mazeHeight: 400, stageHeight: 466, controlsHeight: 250 });
     // La casilla no cambia respecto al layout de siempre, y todo suma el alto disponible.
     const v = phone(390, 844, { safeTop: 24, safeBottom: 34 });
     const s = portraitSplit(v);
     expect(s.tile).toBe(layoutFor(v).maze.tile);
-    expect(s.mazeHeight + s.controlsHeight + HUD_HEIGHT_PX).toBe(844 - 24 - 34);
+    expect(s.stageHeight + s.controlsHeight + HUD_HEIGHT_PX).toBe(844 - 24 - 34);
+    expect(s.stageHeight).toBeGreaterThanOrEqual(s.mazeHeight);
+  });
+
+  it('sin espacio de sobra el laberinto queda pegado al HUD y los controles se quedan con lo que hay', () => {
+    const s = portraitSplit(phone(360, 600));
+    expect(s.stageHeight).toBe(s.mazeHeight);
   });
 
   it('vertical en pantalla baja: los controles nunca bajan de su alto mínimo', () => {

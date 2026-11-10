@@ -11,7 +11,7 @@ import {
   WAKA_MIN_INTERVAL_SECONDS,
 } from '../engine/rules';
 import { fakeContext } from './fakeContext';
-import { createSfx, POWER_NOTES, SIREN, WAKA } from './sfx';
+import { BLIP, createSfx, POWER_NOTES, SIREN, WAKA } from './sfx';
 import { createSynth } from './synth';
 
 const setup = () => {
@@ -148,5 +148,14 @@ describe('efectos', () => {
     sfx.onGameOver();
     sfx.onTap();
     expect(ctx.oscillators).toHaveLength(2 + 4 + 3 + 1);
+  });
+
+  it('blip de la interfaz: dos notas square cortas que suben, en el bus de efectos', () => {
+    const { ctx, sfx } = setup();
+    sfx.onBlip();
+    expect(ctx.oscillators).toHaveLength(BLIP.length);
+    expect(ctx.oscillators.every((o) => o.type === 'square')).toBe(true);
+    expect(BLIP[1].freq).toBeGreaterThan(BLIP[0].freq);
+    expect(BLIP.reduce((s, n) => s + n.dur, 0)).toBeLessThan(0.1);
   });
 });

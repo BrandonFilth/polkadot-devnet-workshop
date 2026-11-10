@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  abandon,
   createGame,
   drainEvents,
   goToTitle,
@@ -799,6 +800,33 @@ describe('eventos del motor', () => {
     }
     expect(s.events.length).toBe(MAX_EVENTS);
     expect(s.events.every((e) => e.type === 'orbe')).toBe(true);
+  });
+
+  it('abandon desde una partida o la pausa: vuelve a titulo y pierde el puntaje, sin pasar por fin', () => {
+    for (const phase of ['jugando', 'pausa'] as const) {
+      const s = playing();
+      s.score = 1234;
+      s.round = 3;
+      if (phase === 'pausa') setPaused(s, true);
+      expect(s.phase).toBe(phase);
+      abandon(s);
+      expect(s.phase).toBe('titulo');
+      expect(s.score).toBe(0);
+      expect(s.round).toBe(1);
+      expect(s.events).toEqual([]);
+    }
+  });
+
+  it('abandon no hace nada en titulo ni en fin', () => {
+    const s = createGame(7);
+    abandon(s);
+    expect(s.phase).toBe('titulo');
+    const f = playing();
+    f.phase = 'fin';
+    f.score = 50;
+    abandon(f);
+    expect(f.phase).toBe('fin');
+    expect(f.score).toBe(50);
   });
 
   it('goToTitle vacía los eventos', () => {

@@ -3,6 +3,7 @@ import '@fontsource/jetbrains-mono/latin-400.css';
 import '@fontsource/jetbrains-mono/latin-500.css';
 import '@fontsource/space-mono/latin-400.css';
 import '@fontsource/space-mono/latin-700.css';
+import './fonts/pixel.css';
 import './styles.css';
 import { startApp } from './app';
 

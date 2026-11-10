@@ -1,5 +1,5 @@
-// Controles táctiles estilo Atari: flechas en cruz (arriba, abajo, izquierda, derecha) en la zona de abajo y
-// botón rojo de pausa a la derecha. Tocar una flecha pide esa dirección (giro en búfer, como el teclado);
+// Controles táctiles estilo Atari: botón rojo de pausa a la izquierda y flechas en cruz (arriba, abajo,
+// izquierda, derecha) a la derecha, en la zona de abajo. Tocar una flecha pide esa dirección (giro en búfer, como el teclado);
 // mantenerla la conserva y deslizar el dedo a otra flecha cambia la dirección sin soltar.
 import { setDirections, togglePause, type GameState } from '../engine/game';
 import { DPAD_HAPTIC_MS } from '../engine/rules';
@@ -67,7 +67,8 @@ export function createControles(state: GameState): Controles {
   pause.className = 'atari-pause';
   pause.addEventListener('click', () => togglePause(state));
 
-  element.append(pad, pause);
+  // Pausa a la izquierda y flechas a la derecha.
+  element.append(pause, pad);
 
   const dpad = createDpad();
   const point = (e: PointerEvent): Point => ({ x: e.clientX, y: e.clientY });

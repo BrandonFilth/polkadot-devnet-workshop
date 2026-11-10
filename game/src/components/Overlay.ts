@@ -20,6 +20,8 @@ export interface OverlayParts {
   onInicio(): void;
   /** Se llama al cambiar de fase, después de mostrarla. */
   onPhase(phase: Phase): void;
+  /** «Salir al menú» de la pausa: abre la doble confirmación (components/Abandonar.ts). */
+  onSalir?(): void;
 }
 
 export function createOverlay(parent: HTMLElement, state: GameState, parts: OverlayParts): Overlay {
@@ -56,7 +58,15 @@ export function createOverlay(parent: HTMLElement, state: GameState, parts: Over
   });
   finRow.append(verRanking, inicio);
 
-  box.append(heading, text, middle, button, finRow);
+  // Pausa: salir al menú principal (con doble confirmación; se pierde la partida).
+  const salir = document.createElement('button');
+  salir.type = 'button';
+  salir.className = 'overlay-secondary overlay-salir';
+  salir.textContent = 'Salir al menú';
+  salir.hidden = true;
+  salir.addEventListener('click', () => parts.onSalir?.());
+
+  box.append(heading, text, middle, button, finRow, salir);
   element.append(box);
   parent.append(element);
 
@@ -67,6 +77,7 @@ export function createOverlay(parent: HTMLElement, state: GameState, parts: Over
     middle.replaceChildren(...inner);
     middle.hidden = inner.length === 0;
     finRow.hidden = state.phase !== 'fin';
+    salir.hidden = state.phase !== 'pausa' || !parts.onSalir;
     heading.textContent = title;
     text.textContent = message;
     text.hidden = message === '';

@@ -31,6 +31,8 @@ export interface GameAudio {
   sync(s: { phase: Phase; frightened: boolean }): void;
   /** Toque suave de los botones de sonido. */
   tap(): void;
+  /** «Blip» chiptune de los botones y pestañas de la interfaz (respeta el switch de Efectos). */
+  blip(): void;
   debugState(): AudioDebugState;
 }
 
@@ -128,6 +130,14 @@ export function createAudio(opts: { prefs: SoundPrefs; createContext?: () => Aud
       if (!sfx || !prefs.effects) return;
       try {
         sfx.onTap();
+      } catch {
+        // Nada.
+      }
+    },
+    blip() {
+      if (!sfx || !prefs.effects) return;
+      try {
+        sfx.onBlip();
       } catch {
         // Nada.
       }

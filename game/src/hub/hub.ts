@@ -26,6 +26,8 @@ import {
 } from '../contract/config';
 import { revertMessage, INVALID_USERNAME_MESSAGE } from '../contract/errors';
 import { formatStart, type EventInfo } from '../contract/eventStart';
+import { decodePrizes, placeLabel, PRIZE_AMOUNTS, PRIZE_ROUNDS, walletOrNull, ZERO_ADDRESS, type PrizeRecord } from '../contract/prizes';
+import { shortAddress } from '../lib/format';
 import { decodeScores, leaderboardAbi, toScoreArg, type LeaderboardContract, type QueryResult, type TxOptions, type TxResult } from '../contract/leaderboard';
 import { formatPgas, PGAS_LOW, readPgas as readPgasRpc } from '../contract/pgas';
 import { topScores } from '../contract/ranking';
@@ -58,6 +60,8 @@ export interface RankingRow {
   username: string;
   score: bigint;
   mine: boolean;
+  /** Wallet de premios del jugador. null = no tiene; undefined = no se pudo leer. */
+  wallet?: `0x${string}` | null;
 }
 
 export interface Hub {
@@ -82,6 +86,14 @@ export interface Hub {
   setUsername(name: string): Promise<Result>;
   /** Solo el admin: fija o cambia la hora de inicio (segundos Unix) mientras el ranking no abre. */
   setStartTime(start: bigint): Promise<Result>;
+  /** Wallet de premios de la cuenta conectada. null = no tiene; sin cuenta también null. */
+  readMyPayout(): Promise<`0x${string}` | null>;
+  /** Registra, cambia o (con null) borra la wallet de premios de la cuenta conectada. */
+  setPayoutWallet(wallet: `0x${string}` | null): Promise<Result>;
+  /** Premios ya pagados de una ronda (1 a 6). */
+  readPrizes(round: number): Promise<PrizeRecord[]>;
+  /** Solo el admin: registra el pago del premio de `place` en `round` con el hash de la transacción. */
+  recordPrize(round: number, place: number, player: `0x${string}`, txHash: `0x${string}`): Promise<Result>;
 }
 
 /** TrUAPI del Host. hub.ts solo comprueba que exista. */
@@ -373,7 +385,23 @@ export function createHub(deps?: HubDeps): Hub {
         return (await Promise.all(pages)).flatMap((p) => decodeScores(unwrap(p, source.pageLabel)));
       })(), READ_TIMEOUT_MS, 'Ranking');
       const me = state.account?.h160.toLowerCase();
-      return topScores(rows, limit).map((row) => ({ ...row, mine: me !== undefined && row.address.toLowerCase() === me }));
+      const top = topScores(rows, limit);
+      // Wallets de premios de las filas que se muestran, en una sola lectura. Si falla, el ranking igual se ve.
+      let wallets: Array<`0x${string}` | null> | null = null;
+      if (top.length > 0) {
+        try {
+          const r = await withTimeout(d.reader.payoutsOf.query(top.map((row) => row.address)), READ_TIMEOUT_MS, 'payoutsOf');
+          const list = unwrap(r, 'payoutsOf');
+          wallets = Array.isArray(list) ? list.map(walletOrNull) : null;
+        } catch (error) {
+          d.log.warn('wallets del ranking', describeError(error));
+        }
+      }
+      return top.map((row, i) => ({
+        ...row,
+        mine: me !== undefined && row.address.toLowerCase() === me,
+        ...(wallets ? { wallet: wallets[i] ?? null } : {}),
+      }));
     } catch (error) {
       d.log.warn(source.logLabel, describeError(error));
       throw new Error(source.failMessage, { cause: error });
@@ -394,7 +422,7 @@ export function createHub(deps?: HubDeps): Hub {
   };
 
   interface WriteSpec {
-    op: Extract<ProgressOp, 'guardar' | 'username' | 'inicio'>;
+    op: Extract<ProgressOp, 'guardar' | 'username' | 'inicio' | 'wallet' | 'premio'>;
     simulate: (who: SignerAccount) => Promise<QueryResult<unknown>>;
     send: (c: LeaderboardContract, opts: TxOptions) => Promise<TxOutcome>;
     landed: (who: SignerAccount) => Promise<boolean>;
@@ -672,6 +700,69 @@ export function createHub(deps?: HubDeps): Hub {
         saved: `Hora de inicio guardada: ${label}.`,
         sent: 'Hora de inicio enviada. Puede tardar unos segundos en aparecer.',
         savedAfterTimeout: 'La hora de inicio quedó guardada.',
+      });
+    },
+
+    async readMyPayout() {
+      const who = account;
+      if (!who) return null;
+      try {
+        const r = await withTimeout(d.reader.payoutOf.query(who.h160Address, { from: who.h160Address }), READ_TIMEOUT_MS, 'payoutOf');
+        return walletOrNull(unwrap(r, 'payoutOf'));
+      } catch (error) {
+        d.log.warn('mi wallet', describeError(error));
+        throw new Error('No se pudo leer tu wallet de premios', { cause: error });
+      }
+    },
+
+    async setPayoutWallet(wallet) {
+      if (state.busy) return { ok: false, message: BUSY };
+      if (!account || !writer) return { ok: false, message: NO_ACCOUNT };
+      const target = (wallet ?? ZERO_ADDRESS) as `0x${string}`;
+      const readMine = async (who: SignerAccount) =>
+        walletOrNull(unwrap(await withTimeout(d.reader.payoutOf.query(who.h160Address, { from: who.h160Address }), READ_TIMEOUT_MS, 'payoutOf'), 'payoutOf'));
+      return write({
+        op: 'wallet',
+        simulate: (who) => d.reader.setPayoutWallet.query(target, { from: who.h160Address, origin: who.address }),
+        send: (c, opts) => c.setPayoutWallet.tx(target, opts),
+        landed: async (who) => (await readMine(who))?.toLowerCase() === wallet?.toLowerCase() || (wallet === null && (await readMine(who)) === null),
+        rejected: 'El contrato rechazó la wallet.',
+        saved: wallet ? `Wallet de premios guardada: ${shortAddress(wallet)}.` : 'Quitaste tu wallet de premios.',
+        sent: 'Wallet enviada. Puede tardar unos segundos en aparecer.',
+        savedAfterTimeout: 'Tu wallet de premios quedó guardada.',
+      });
+    },
+
+    async readPrizes(round) {
+      if (!Number.isInteger(round) || round < 1 || round > PRIZE_ROUNDS) return [];
+      try {
+        const r = await withTimeout(d.reader.prizesOf.query(BigInt(round)), READ_TIMEOUT_MS, 'prizesOf');
+        return decodePrizes(unwrap(r, 'prizesOf'));
+      } catch (error) {
+        d.log.warn('premios', describeError(error));
+        throw new Error('No se pudieron leer los premios', { cause: error });
+      }
+    },
+
+    async recordPrize(round, place, player, txHash) {
+      if (!Number.isInteger(round) || round < 1 || round > PRIZE_ROUNDS || !Number.isInteger(place) || place < 1 || place > PRIZE_AMOUNTS.length) {
+        return { ok: false, message: 'Esa ronda o ese lugar no tienen premio.' };
+      }
+      if (state.busy) return { ok: false, message: BUSY };
+      if (!account || !writer) return { ok: false, message: NO_ACCOUNT };
+      const args = [BigInt(round), BigInt(place), player, txHash] as const;
+      return write({
+        op: 'premio',
+        simulate: (who) => d.reader.recordPrize.query(...args, { from: who.h160Address, origin: who.address }),
+        send: (c, opts) => c.recordPrize.tx(...args, opts),
+        landed: async () => {
+          const r = await withTimeout(d.reader.prizesOf.query(BigInt(round)), READ_TIMEOUT_MS, 'prizesOf');
+          return decodePrizes(unwrap(r, 'prizesOf')).some((p) => p.place === place && p.txHash === txHash.toLowerCase());
+        },
+        rejected: 'El contrato rechazó el registro del pago.',
+        saved: `Pago registrado: ronda ${round}, ${placeLabel(place)} lugar.`,
+        sent: 'Pago enviado. Puede tardar unos segundos en aparecer.',
+        savedAfterTimeout: 'El pago quedó registrado.',
       });
     },
   };

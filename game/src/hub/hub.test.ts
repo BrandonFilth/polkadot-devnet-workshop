@@ -22,6 +22,8 @@ function recordSteps(hub: Hub) {
 
 const ME: SignerAccount = { address: '5FakeSs58Cuenta', h160Address: `0x${'1'.repeat(40)}` };
 const OTHER = `0x${'2'.repeat(40)}` as const;
+/** Wallet de premios con checksum (EIP-55). */
+const WALLET = '0x52908400098527886E0F7030069857D2E4169EE7' as const;
 
 const ok = <T>(value: T) => ({ success: true as const, value });
 /** startTime del contrato falso: medianoche de Monterrey del 1 nov 2026. */
@@ -29,7 +31,7 @@ const START = BigInt(Date.UTC(2026, 10, 1, 6) / 1000);
 
 /** Contrato en memoria compartido por el lector (RPC) y el escritor (Host). */
 function makeWorld() {
-  const store = { best: 0n, lifetime: 0n, username: '' };
+  const store = { best: 0n, lifetime: 0n, username: '', payout: `0x${'0'.repeat(40)}`, prizes: [] as unknown[] };
   const reader = {
     bestScore: { query: vi.fn(async (..._a: unknown[]) => ok<unknown>(store.best)) },
     lifetimeBest: { query: vi.fn(async (..._a: unknown[]) => ok<unknown>(store.lifetime)) },
@@ -48,7 +50,28 @@ function makeWorld() {
     admin: { query: vi.fn(async (..._a: unknown[]) => ok<unknown>(ME.h160Address)) },
     isStarted: { query: vi.fn(async (..._a: unknown[]) => ok<unknown>(true)) },
     setStartTime: { query: vi.fn(async (..._a: unknown[]): Promise<{ success: boolean; value: unknown }> => ok<unknown>(undefined)) },
+    payoutOf: { query: vi.fn(async (..._a: unknown[]) => ok<unknown>(store.payout)) },
+    payoutsOf: {
+      query: vi.fn(async (addrs: unknown, ..._a: unknown[]): Promise<{ success: boolean; value: unknown }> =>
+        ok<unknown>((addrs as string[]).map((a) => (a === OTHER ? WALLET : `0x${'0'.repeat(40)}`)))),
+    },
+    prizesOf: { query: vi.fn(async (..._a: unknown[]) => ok<unknown>(store.prizes)) },
+    setPayoutWallet: { query: vi.fn(async (..._a: unknown[]): Promise<{ success: boolean; value: unknown }> => ok<unknown>(undefined)) },
+    recordPrize: { query: vi.fn(async (..._a: unknown[]): Promise<{ success: boolean; value: unknown }> => ok<unknown>(undefined)) },
   };
+  const walletTx = vi.fn(async (w: unknown, opts?: TxOptions): Promise<{ ok: true; value: object } | { ok: false; error: unknown }> => {
+    sdkEvents(opts);
+    store.payout = w as string;
+    return { ok: true, value: {} };
+  });
+  const prizeTx = vi.fn(async (round: unknown, place: unknown, player: unknown, hash: unknown, opts?: TxOptions): Promise<{ ok: true; value: object } | { ok: false; error: unknown }> => {
+    sdkEvents(opts);
+    const list = [0, 1, 2].map(() => ({ player: `0x${'0'.repeat(40)}`, wallet: `0x${'0'.repeat(40)}`, txHash: `0x${'0'.repeat(64)}`, paidAt: 0n }));
+    list[Number(place) - 1] = { player: player as string, wallet: WALLET, txHash: hash as string, paidAt: 1n };
+    store.prizes = list;
+    void round;
+    return { ok: true, value: {} };
+  });
   // Como submitAndWatch de product-sdk-tx 0.5.3 con waitFor 'finalized': signing → broadcasting →
   // in-block → finalized y luego resuelve.
   const tx = vi.fn(async (arg: unknown, opts?: TxOptions): Promise<{ ok: true; value: object } | { ok: false; error: unknown }> => {
@@ -73,8 +96,10 @@ function makeWorld() {
     submitScore: { query: reader.submitScore.query, tx },
     setUsername: { query: reader.setUsername.query, tx: usernameTx },
     setStartTime: { query: reader.setStartTime.query, tx: startTx },
+    setPayoutWallet: { query: reader.setPayoutWallet.query, tx: walletTx },
+    recordPrize: { query: reader.recordPrize.query, tx: prizeTx },
   };
-  return { store, reader, tx, usernameTx, startTx, writerContract: writer as unknown as LeaderboardContract };
+  return { store, reader, tx, usernameTx, startTx, walletTx, prizeTx, writerContract: writer as unknown as LeaderboardContract };
 }
 
 type World = ReturnType<typeof makeWorld>;
@@ -202,16 +227,16 @@ describe('hub (sin red, con dobles)', () => {
     expect(deps.writer).toHaveBeenCalledWith(expect.anything(), ME, { productId: 'polka-man.dot', txExtVersion: 0 });
   });
 
-  it('3e. sin PAS para el depósito (StorageDepositNotEnoughFunds) lo dice y no reconecta', async () => {
+  it('3e. sin gas para el depósito (StorageDepositNotEnoughFunds) es no-gas: pide gas y reintenta una vez', async () => {
     const { hub, deps, world } = await connectedHub();
     const error = Object.assign(new Error('Dry-run failed for "setUsername"'), {
       dispatchError: { type: 'Module', value: { type: 'Revive', value: { type: 'StorageDepositNotEnoughFunds' } } },
     });
     world.usernameTx.mockResolvedValueOnce({ ok: false, error });
     const r = await hub.setUsername('ana_92');
-    expect(r.ok === false && r.kind).toBe('no-pas');
-    expect(r.message).toMatch(/PAS/);
-    expect(world.usernameTx).toHaveBeenCalledTimes(1);
+    expect(r.ok).toBe(true);
+    expect(deps.requestAllowance).toHaveBeenCalledTimes(1);
+    expect(world.usernameTx).toHaveBeenCalledTimes(2);
     expect(deps.connectChain).not.toHaveBeenCalled();
   });
 
@@ -277,8 +302,8 @@ describe('hub (sin red, con dobles)', () => {
     expect(deps.getTruApi).not.toHaveBeenCalled();
     const top = await hub.readTop();
     expect(top).toEqual([
-      { address: OTHER, username: 'prueba_ok', score: 1240n, mine: false },
-      { address: ME.h160Address, username: '', score: 300n, mine: false },
+      { address: OTHER, username: 'prueba_ok', score: 1240n, mine: false, wallet: WALLET },
+      { address: ME.h160Address, username: '', score: 300n, mine: false, wallet: null },
     ]);
   });
 
@@ -321,8 +346,8 @@ describe('hub: periodos, historial y récord de por vida', () => {
     expect(world.reader.playerCountIn.query).toHaveBeenCalledWith(1n);
     expect(world.reader.getScoresIn.query).toHaveBeenCalledWith(1n, 0n, 2n);
     expect(top).toEqual([
-      { address: OTHER, username: 'otro_1', score: 400n, mine: false },
-      { address: ME.h160Address, username: '', score: 90n, mine: true },
+      { address: OTHER, username: 'otro_1', score: 400n, mine: false, wallet: WALLET },
+      { address: ME.h160Address, username: '', score: 90n, mine: true, wallet: null },
     ]);
     expect(world.reader.getScores.query).not.toHaveBeenCalled();
   });
@@ -564,5 +589,101 @@ describe('hub: evento y panel de admin', () => {
     release();
     await saving;
     expect(connected.world.reader.setStartTime.query).not.toHaveBeenCalled();
+  });
+});
+
+describe('hub: wallets de premios y pagos', () => {
+  const HASH = `0x${'1f'.repeat(32)}` as `0x${string}`;
+
+  it('readTop trae la wallet de cada fila en una sola lectura (null si no tiene)', async () => {
+    const deps = fakeDeps();
+    const hub = createHub(deps);
+    const rows = await hub.readTop(10);
+    expect(rows.map((r) => [r.address, r.wallet])).toEqual([
+      [OTHER, WALLET],
+      [ME.h160Address, null],
+    ]);
+    expect(deps.world.reader.payoutsOf.query).toHaveBeenCalledTimes(1);
+    expect(deps.world.reader.payoutsOf.query.mock.calls[0]![0]).toEqual([OTHER, ME.h160Address]);
+  });
+
+  it('si payoutsOf falla, el ranking igual se ve (sin wallets)', async () => {
+    const deps = fakeDeps();
+    deps.world.reader.payoutsOf.query.mockRejectedValue(new Error('RPC caído'));
+    const hub = createHub(deps);
+    const rows = await hub.readTop(10);
+    expect(rows).toHaveLength(2);
+    expect(rows[0]!.wallet).toBeUndefined();
+  });
+
+  it('readMyPayout: null sin cuenta o sin wallet; la dirección con checksum si tiene', async () => {
+    const deps = fakeDeps();
+    const loose = createHub(deps);
+    expect(await loose.readMyPayout()).toBeNull();
+    const { hub, world } = await connectedHub();
+    expect(await hub.readMyPayout()).toBeNull();
+    world.store.payout = WALLET.toLowerCase();
+    expect(await hub.readMyPayout()).toBe(WALLET);
+  });
+
+  it('setPayoutWallet: simula como la cuenta, firma una vez, relee y termina en Listo', async () => {
+    const { hub, world } = await connectedHub();
+    const steps = recordSteps(hub);
+    const r = await hub.setPayoutWallet(WALLET);
+    expect(r).toEqual({ ok: true, message: 'Wallet de premios guardada: 0x5290…9EE7.' });
+    expect(world.reader.setPayoutWallet.query).toHaveBeenCalledWith(WALLET, { from: ME.h160Address, origin: ME.address });
+    expect(world.walletTx).toHaveBeenCalledTimes(1);
+    expect(steps).toEqual(['simulando', 'firma', 'enviando', 'confirmando', 'actualizando', 'listo']);
+    expect(hub.getState().progress?.op).toBe('wallet');
+  });
+
+  it('setPayoutWallet(null) quita la wallet (manda 0x000…)', async () => {
+    const { hub, world } = await connectedHub();
+    world.store.payout = WALLET;
+    const r = await hub.setPayoutWallet(null);
+    expect(r).toEqual({ ok: true, message: 'Quitaste tu wallet de premios.' });
+    expect(world.walletTx.mock.calls[0]![0]).toBe(`0x${'0'.repeat(40)}`);
+  });
+
+  it('setPayoutWallet sin cuenta no firma', async () => {
+    const deps = fakeDeps();
+    const hub = createHub(deps);
+    await hub.start();
+    expect(await hub.setPayoutWallet(WALLET)).toEqual({ ok: false, message: 'Conecta tu cuenta primero.' });
+    expect(deps.world.walletTx).not.toHaveBeenCalled();
+  });
+
+  it('readPrizes decodifica la ronda y rechaza rondas sin premio', async () => {
+    const deps = fakeDeps();
+    deps.world.store.prizes = [{ player: OTHER, wallet: WALLET, txHash: HASH, paidAt: 5n }, {}, {}];
+    const hub = createHub(deps);
+    expect(await hub.readPrizes(1)).toEqual([{ place: 1, amount: 8, player: OTHER, wallet: WALLET, txHash: HASH, paidAt: 5 }]);
+    expect(await hub.readPrizes(0)).toEqual([]);
+    expect(await hub.readPrizes(7)).toEqual([]);
+  });
+
+  it('recordPrize: simula, firma, relee que el pago quedó y termina en Listo', async () => {
+    const { hub, world } = await connectedHub();
+    const r = await hub.recordPrize(2, 1, OTHER, HASH);
+    expect(r).toEqual({ ok: true, message: 'Pago registrado: ronda 2, 1.º lugar.' });
+    expect(world.reader.recordPrize.query).toHaveBeenCalledWith(2n, 1n, OTHER, HASH, { from: ME.h160Address, origin: ME.address });
+    expect(world.prizeTx).toHaveBeenCalledTimes(1);
+    expect(hub.getState().progress?.op).toBe('premio');
+  });
+
+  it('recordPrize de quien no es admin o sin wallet del ganador: revierte en la simulación, sin firma', async () => {
+    const { hub, world } = await connectedHub();
+    world.reader.recordPrize.query.mockResolvedValueOnce({ success: false, value: { error: 'NotAdmin', args: [] } });
+    expect(await hub.recordPrize(1, 1, OTHER, HASH)).toEqual({ ok: false, message: 'Solo el admin del ranking puede hacer esto.' });
+    world.reader.recordPrize.query.mockResolvedValueOnce({ success: false, value: { error: 'NoPayoutWallet', args: [] } });
+    expect(await hub.recordPrize(1, 1, OTHER, HASH)).toEqual({ ok: false, message: 'Este jugador todavía no registra su wallet de premios.' });
+    expect(world.prizeTx).not.toHaveBeenCalled();
+  });
+
+  it('recordPrize con ronda o lugar fuera de rango no simula', async () => {
+    const { hub, world } = await connectedHub();
+    expect((await hub.recordPrize(7, 1, OTHER, HASH)).ok).toBe(false);
+    expect((await hub.recordPrize(1, 4, OTHER, HASH)).ok).toBe(false);
+    expect(world.reader.recordPrize.query).not.toHaveBeenCalled();
   });
 });

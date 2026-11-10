@@ -94,7 +94,7 @@ describe('rules: dificultad', () => {
   it('pantalla y controles con los valores pedidos', () => {
     expect(VIEW_CROP_TILES).toBe(0.5);
     expect(MIN_TILE_PX).toBe(8);
-    expect(HUD_HEIGHT_PX).toBe(44);
+    expect(HUD_HEIGHT_PX).toBe(84);
     expect(CONTROLS_HEIGHT_PX).toBe(132);
     expect(PAUSE_BUTTON_PX).toBe(72);
     expect(KEYBOARD_MIN_PX).toBe(120);

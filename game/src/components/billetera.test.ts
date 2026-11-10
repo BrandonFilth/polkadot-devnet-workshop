@@ -4,6 +4,7 @@ import { COPY_FEEDBACK_MS } from '../engine/rules';
 import { copyText } from '../lib/clipboard';
 import billeteraSource from './Billetera.ts?raw';
 import inicioSource from './Inicio.ts?raw';
+import shellSource from './Shell.ts?raw';
 import { billeteraView, COPIED_LABEL, COPY_FAILED_LABEL } from './Billetera';
 
 const H160 = `0x${'ab12'.repeat(10)}`;
@@ -29,10 +30,12 @@ describe('billetera: vista', () => {
     expect(billeteraSource).not.toMatch(/ss58/);
   });
 
-  it('va en la esquina superior derecha de la pantalla de inicio, después de los toggles de sonido', () => {
-    expect(inicioSource).toMatch(/if \(opts\.sonido\) top\.append\(opts\.sonido\);\s*\n\s*if \(opts\.billetera\) top\.append\(opts\.billetera\);/);
-    expect(css).toMatch(/\.inicio-top\s*\{[^}]*justify-content:\s*flex-end/);
+  it('va en la esquina superior derecha: al final de la barra superior de la app', () => {
+    expect(shellSource).toMatch(/bar\.append\(brand\);\s*\n\s*if \(opts\.billetera\) bar\.append\(opts\.billetera\);/);
+    expect(css).toMatch(/\.shell-bar\s*\{[^}]*justify-content:\s*space-between/);
     expect(css).toMatch(/\.billetera\s*\{/);
+    // La pantalla de inicio la sigue aceptando en su esquina, por si se usa sola.
+    expect(inicioSource).toMatch(/if \(opts\.billetera\) top\.append\(opts\.billetera\);/);
   });
 });
 

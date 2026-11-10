@@ -64,6 +64,8 @@ export function createMenu(opts: {
   trigger: () => HTMLElement | null;
   /** Al abrir o cerrar, antes de mover el foco (app.ts reajusta las capas). */
   onToggle?: () => void;
+  /** «Salir al menú principal» durante una partida: abre la doble confirmación. */
+  onSalir?: () => void;
 }): Menu {
   const { hub } = opts;
   const element = document.createElement('div');
@@ -134,7 +136,18 @@ export function createMenu(opts: {
   rankPanel.setAttribute('aria-labelledby', rankTab.id);
   rankPanel.append(ranking.element);
 
-  sheet.append(bar, userPanel, rankPanel);
+  // Solo con una partida en curso (o en pausa): salir al menú principal, con doble confirmación.
+  const salir = document.createElement('button');
+  salir.type = 'button';
+  salir.className = 'overlay-secondary menu-salir';
+  salir.textContent = 'Salir al menú principal';
+  salir.hidden = true;
+  salir.addEventListener('click', () => {
+    close();
+    opts.onSalir?.();
+  });
+
+  sheet.append(bar, userPanel, rankPanel, salir);
   element.append(sheet);
   opts.parent.append(element);
 
@@ -249,6 +262,7 @@ export function createMenu(opts: {
     },
     open(next = tab) {
       pauseForMenu(opts.state);
+      salir.hidden = !opts.onSalir || opts.state.phase !== 'pausa';
       userResult.hidden = true;
       shownKey = '';
       element.hidden = false;

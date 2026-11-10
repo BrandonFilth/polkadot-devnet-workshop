@@ -8,9 +8,11 @@ const names = (type: string) =>
     .sort();
 
 describe('ABI de Leaderboard', () => {
-  it('trae las 19 funciones, 8 errores y 5 eventos del contrato v3 (admin y hora de inicio)', () => {
+  it('trae las 28 funciones, 13 errores y 7 eventos del contrato v4 (admin, hora de inicio y premios)', () => {
     expect(names('function')).toEqual([
       'PERIOD_LENGTH',
+      'PRIZE_PLACES',
+      'PRIZE_ROUNDS',
       'admin',
       'bestScore',
       'currentPeriod',
@@ -18,12 +20,19 @@ describe('ABI de Leaderboard', () => {
       'getScoresIn',
       'isStarted',
       'lifetimeBest',
+      'payoutOf',
+      'payoutsOf',
       'periodBounds',
       'playerCount',
       'playerCountIn',
       'playerOf',
+      'prizeAmount',
+      'prizeOf',
+      'prizesOf',
+      'recordPrize',
       'scoreOf',
       'setAdmin',
+      'setPayoutWallet',
       'setStartTime',
       'setUsername',
       'startTime',
@@ -32,15 +41,28 @@ describe('ABI de Leaderboard', () => {
     ]);
     expect(names('error')).toEqual([
       'InvalidAdmin',
+      'InvalidPlace',
+      'InvalidPlayer',
+      'InvalidRound',
       'InvalidStart',
+      'InvalidTxHash',
       'InvalidUsername',
+      'NoPayoutWallet',
       'NotAdmin',
       'NotStarted',
       'ScoreNotHigher',
       'StartLocked',
       'UsernameTaken',
     ]);
-    expect(names('event')).toEqual(['AdminChanged', 'NewHighScore', 'NewLifetimeBest', 'StartTimeSet', 'UsernameSet']);
+    expect(names('event')).toEqual([
+      'AdminChanged',
+      'NewHighScore',
+      'NewLifetimeBest',
+      'PayoutWalletSet',
+      'PrizeRecorded',
+      'StartTimeSet',
+      'UsernameSet',
+    ]);
   });
 
   it('el constructor no lleva parámetros y setStartTime/setAdmin reciben uint256/address', () => {

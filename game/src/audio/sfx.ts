@@ -20,6 +20,8 @@ export interface Sfx {
   onRoundClear(): void;
   onGameOver(): void;
   onTap(): void;
+  /** Botones y pestañas de la interfaz: «blip» chiptune de dos notas. */
+  onBlip(): void;
   /** Sirena en bucle mientras dura el susto. */
   setFrightened(on: boolean): void;
 }
@@ -53,6 +55,12 @@ const GAME_OVER_NOTE_SECONDS = 0.22;
 
 /** Tap: triangle muy suave. */
 const TAP = { freq: 880, dur: 0.04 };
+
+/** Blip de la interfaz: dos notas square muy cortas que suben (como un menú de consola de 8 bits). */
+export const BLIP = [
+  { freq: 988, dur: 0.03 },
+  { freq: 1319, dur: 0.04 },
+] as const;
 
 /** Sirena del susto: triangle grave con un vaivén lento (volumen y vaivén en rules.ts). */
 export const SIREN = { wave: 'triangle', freq: 220 } as const;
@@ -96,6 +104,13 @@ export function createSfx(synth: Synth, now: () => number): SfxPlayer {
     },
     onGameOver() {
       notes(GAME_OVER, GAME_OVER_NOTE_SECONDS, 'triangle', 0.8);
+    },
+    onBlip() {
+      let at = now();
+      for (const n of BLIP) {
+        synth.tone({ wave: 'square', freq: n.freq, at, dur: n.dur, gain: TAP_VOLUME * 0.6, bus: 'effects' });
+        at += n.dur;
+      }
     },
     onTap() {
       synth.tone({ wave: 'triangle', freq: TAP.freq, at: now(), dur: TAP.dur, gain: TAP_VOLUME, bus: 'effects' });

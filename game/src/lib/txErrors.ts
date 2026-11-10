@@ -10,8 +10,6 @@ export type TxErrorKind =
   | 'no-gas'
   /** Invalid.Payment aunque la cuenta tiene PGAS: la red cobró la comisión en PAS (firma en el pipeline 0). */
   | 'host-payment'
-  /** Revive.StorageDepositNotEnoughFunds: el depósito de almacenamiento se paga en PAS y la cuenta no tiene. */
-  | 'no-pas'
   /** El Host o el SDK no aceptan el pipeline pedido (TX_EXT_VERSION). hub.ts reintenta con el 0. */
   | 'pipeline'
   /** Stale / Future / nonce o vigencia desfasados: la sesión de firma se desfasó. */
@@ -102,9 +100,10 @@ export function classifyTxError(error: unknown, pgas: bigint | null, low: bigint
   }
   if (STORAGE_DEPOSIT.test(full)) {
     return {
-      kind: 'no-pas',
-      message: 'Guardar datos nuevos en el contrato deja un depósito que se paga en PAS, y tu cuenta no tiene. Manda unos 0.05 PAS a tu cuenta y reintenta.',
-      actions: ['retry'],
+      // Con el pipeline 1 el depósito de almacenamiento sale de PGAS: sin PGAS no alcanza.
+      kind: 'no-gas',
+      message: 'Tu cuenta no tiene gas (PGAS) para guardar datos nuevos. Pide gas y reintenta.',
+      actions: ['gas', 'retry'],
       raw,
     };
   }

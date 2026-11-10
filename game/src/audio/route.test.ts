@@ -14,6 +14,7 @@ const spy = () => {
     onRoundClear: rec('onRoundClear'),
     onGameOver: rec('onGameOver'),
     onTap: rec('onTap'),
+    onBlip: rec('onBlip'),
     setFrightened: rec('setFrightened'),
   };
   return { calls, sfx };

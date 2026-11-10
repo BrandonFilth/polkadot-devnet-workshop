@@ -1,7 +1,7 @@
 // Pon aquí la dirección de TU PROPIO contrato Leaderboard (el que tú desplegaste).
 // Este valor es el contrato de Polka-Man, el que usa polka-man.dot.
-// Leaderboard v3: periodos de 3 días, un admin y hora de inicio que fija el admin desde la app.
-export const LEADERBOARD_ADDRESS = '0x079D136B033AF0317fdA178d6C9C323f0996afce' as const;
+// Leaderboard v4: periodos de 3 días, un admin, hora de inicio, wallets de premios y pagos registrados.
+export const LEADERBOARD_ADDRESS = '0xDFd77dEb59eE36444A3403054966AfB3843C93c8' as const;
 export const ETH_RPC_URL = 'https://eth-rpc-testnet.polkadot.io';
 export const CHAIN_ID = 420_420_417;
 /** Tu nombre .dot (capítulo 6). La cuenta de cada app sale de este nombre. */
@@ -23,3 +23,18 @@ export const RPC_TIMEOUT_MS = 8_000;
 export const MAX_PLAYERS_READ = 1_000;
 /** Zona horaria de las fechas del ranking (UTC−6 todo el año). */
 export const RANKING_TIME_ZONE = 'America/Monterrey';
+/**
+ * Explorador de la red por la que el admin envía los premios (BNB Smart Chain, BEP20). Solo se usa para
+ * armar el enlace «Ver pago»: la app no hace peticiones a este dominio.
+ */
+export const PRIZE_TX_URL = 'https://bscscan.com/tx/';
+/** Red por la que se envían los premios, tal como se le muestra al jugador. */
+export const PRIZE_NETWORK = 'BNB Smart Chain (BEP20)';
+/**
+ * Nova Wallet y Binance en las tiendas oficiales (App Store y Google Play). Solo son enlaces que abre el
+ * jugador desde «Nova Wallet» y «Binance» en Premios y Perfil: la app no hace peticiones a estos dominios.
+ */
+export const NOVA_WALLET_IOS_URL = 'https://apps.apple.com/app/nova-polkadot-wallet/id1597119355';
+export const NOVA_WALLET_ANDROID_URL = 'https://play.google.com/store/apps/details?id=io.novafoundation.nova.market';
+export const BINANCE_IOS_URL = 'https://apps.apple.com/app/binance-buy-bitcoin-crypto/id1436799971';
+export const BINANCE_ANDROID_URL = 'https://play.google.com/store/apps/details?id=com.binance.dev';

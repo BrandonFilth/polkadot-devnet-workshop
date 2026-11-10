@@ -1,6 +1,5 @@
-// Pantalla de inicio (fase 'titulo'): Música y Efectos arriba a la derecha; Polka-Man y dos fantasmas, POLKA-MAN,
-// Jugar, Conectar cuenta con su sugerencia, Ranking y Username; los controles en una línea al pie.
-// Opaca y a pantalla completa. Jugar sin cuenta muestra una sola vez el aviso «Sin cuenta no se guardará tu récord».
+// Pantalla de inicio (fase 'titulo', pestaña Jugar): Polka-Man y dos fantasmas, POLKA-MAN, Jugar y Conectar cuenta
+// con su sugerencia, al centro. Jugar sin cuenta muestra una sola vez el aviso «Sin cuenta no se guardará tu récord».
 import { start, type GameState } from '../engine/game';
 import { GHOST_COLORS } from '../engine/ghosts';
 import type { HostPhase, Hub } from '../hub/hub';
@@ -125,8 +124,6 @@ export function createInicio(
     state: GameState;
     hub: Hub;
     mine: () => Mine;
-    onRanking(): void;
-    onUsername(): void;
     /** Al abrir o cerrar el aviso, antes de mover el foco (app.ts reajusta las capas). */
     onToggle?: () => void;
     /** Toggles de Música y Efectos (variante 'iconos'); van arriba a la derecha. */
@@ -135,8 +132,6 @@ export function createInicio(
     billetera?: HTMLElement;
     /** La cuenta conectada es el admin del contrato. */
     isAdmin?: () => boolean;
-    /** Abre el panel de admin. */
-    onAdmin?: () => void;
   },
 ): Inicio {
   const { state, hub } = opts;
@@ -183,28 +178,10 @@ export function createInicio(
   status.className = 'inicio-status';
   status.setAttribute('role', 'status');
 
-  const row = document.createElement('div');
-  row.className = 'overlay-row inicio-fila';
-  const ranking = document.createElement('button');
-  ranking.type = 'button';
-  ranking.className = 'overlay-secondary';
-  ranking.textContent = 'Ranking';
-  ranking.addEventListener('click', () => opts.onRanking());
-  const username = document.createElement('button');
-  username.type = 'button';
-  username.className = 'overlay-secondary';
-  username.addEventListener('click', () => opts.onUsername());
-  const admin = document.createElement('button');
-  admin.type = 'button';
-  admin.className = 'overlay-secondary inicio-admin';
-  admin.textContent = 'Admin';
-  admin.hidden = true;
-  admin.addEventListener('click', () => opts.onAdmin?.());
-  row.append(ranking, username, admin);
-
   // Conectar con la sugerencia debajo; el estado (fuera del Host, sin conexión o conectada) en el mismo bloque.
+  // Ranking, Username y Admin viven en sus pestañas (components/Shell.ts).
   cuenta.append(connect, suggestion, status);
-  acciones.append(jugar, cuenta, row);
+  acciones.append(jugar, cuenta);
   box.append(art, title, acciones);
   element.append(top, box, help);
 
@@ -337,17 +314,6 @@ export function createInicio(
     suggestion.textContent = view.suggestion ?? '';
     status.hidden = view.status === null;
     status.textContent = view.status ?? '';
-    username.hidden = view.username === null;
-    if (view.username) {
-      username.textContent = view.username.label;
-      username.disabled = view.username.disabled;
-      username.setAttribute(
-        'aria-label',
-        view.username.label === 'Elige un username' || view.username.label === 'Leyendo…' ? view.username.label : `Username: ${view.username.label}`,
-      );
-    }
-    admin.hidden = view.admin === null;
-    admin.disabled = view.admin?.disabled ?? true;
     // Si conectó desde el aviso o algo cambió, el aviso sigue a la conexión.
     if (!aviso.hidden) avisoConectar.disabled = s.host !== 'listo' || s.busy || s.account !== null;
   };

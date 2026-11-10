@@ -11,6 +11,11 @@ const SIGNATURES = {
   InvalidAdmin: 'InvalidAdmin()',
   InvalidStart: 'InvalidStart()',
   StartLocked: 'StartLocked()',
+  InvalidRound: 'InvalidRound()',
+  InvalidPlace: 'InvalidPlace()',
+  InvalidPlayer: 'InvalidPlayer()',
+  InvalidTxHash: 'InvalidTxHash()',
+  NoPayoutWallet: 'NoPayoutWallet()',
 } as const;
 
 type ErrorName = keyof typeof SIGNATURES;
@@ -19,6 +24,7 @@ export const INVALID_USERNAME_MESSAGE = 'El username debe tener de 3 a 16 caract
 export const NOT_STARTED_MESSAGE = 'El ranking todavía no abre: tu récord no se guarda hasta que empiece el evento.';
 export const NOT_ADMIN_MESSAGE = 'Solo el admin del ranking puede hacer esto.';
 export const START_LOCKED_MESSAGE = 'El ranking ya empezó: la hora de inicio ya no se puede cambiar.';
+export const NO_PAYOUT_WALLET_MESSAGE = 'Este jugador todavía no registra su wallet de premios.';
 
 const MESSAGES: Record<Exclude<ErrorName, 'ScoreNotHigher'>, string> = {
   InvalidUsername: INVALID_USERNAME_MESSAGE,
@@ -28,6 +34,11 @@ const MESSAGES: Record<Exclude<ErrorName, 'ScoreNotHigher'>, string> = {
   InvalidAdmin: 'Esa dirección no puede ser admin.',
   InvalidStart: 'La hora de inicio no es válida.',
   StartLocked: START_LOCKED_MESSAGE,
+  InvalidRound: 'Esa ronda no tiene premio: son de la 1 a la 6.',
+  InvalidPlace: 'Ese lugar no tiene premio: son del 1.º al 3.º.',
+  InvalidPlayer: 'Falta el jugador del premio.',
+  InvalidTxHash: 'Pega el enlace o el hash de la transacción del pago.',
+  NoPayoutWallet: NO_PAYOUT_WALLET_MESSAGE,
 };
 
 function message(name: ErrorName, args: readonly unknown[] | undefined): string {
