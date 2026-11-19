@@ -1,7 +1,7 @@
 // Estado de la partida: mutable y serializable (solo datos). Avanza con update(state, dt).
 import { createGhosts, frighten, updateGhost, type Ghost } from './ghosts';
 import { MAZE, parseMaze, tileIndex } from './maze';
-import { createPlayer, requestDirections, updatePlayer, type Player } from './player';
+import { createPlayer, releaseDirections as releasePlayerDirections, requestDirections, updatePlayer, type Player } from './player';
 import {
   DEATH_SECONDS,
   frightenedSeconds,
@@ -145,6 +145,11 @@ export function start(state: GameState): void {
 export function setDirections(state: GameState, primary: Dir, secondary: Dir | null): void {
   if (state.phase !== 'listo' && state.phase !== 'jugando') return;
   requestDirections(state.player, primary, secondary);
+}
+
+/** Se soltaron todas las teclas, la flecha o el dedo: el pedido caduca tras REQUEST_TTL_TILES casillas. */
+export function releaseDirections(state: GameState): void {
+  releasePlayerDirections(state.player);
 }
 
 /** Pide una dirección. Solo cuenta en 'listo' y 'jugando'. */

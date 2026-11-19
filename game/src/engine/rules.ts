@@ -16,6 +16,18 @@ export const MAX_FRAME_SECONDS = 0.25;
 /** Velocidad de Polka-Man en casillas por segundo. */
 export const PLAYER_SPEED = 6.0;
 
+/**
+ * Margen para girar tarde, en casillas: si piden un giro poco después de pasar el centro de un cruce donde
+ * se podía, Polka-Man vuelve a ese centro y gira (como el «cornering» del arcade).
+ */
+export const TURN_GRACE_TILES = 0.3;
+
+/**
+ * Cuánto dura un pedido después de soltar la tecla, la flecha o el dedo, en casillas recorridas. Si en ese
+ * tramo no se pudo girar, se olvida (así no gira solo varias casillas después). Mientras se mantiene, no caduca.
+ */
+export const REQUEST_TTL_TILES = 2;
+
 /** Duración de la fase «LISTO», en segundos. */
 export const READY_SECONDS = 1.5;
 

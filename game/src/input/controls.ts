@@ -1,5 +1,5 @@
 // Teclado y swipe sobre el escenario. Las flechas táctiles viven en components/Controles.ts. Solo traduce eventos a llamadas del motor.
-import { setDirections, start, togglePause, type GameState } from '../engine/game';
+import { releaseDirections, setDirections, start, togglePause, type GameState } from '../engine/game';
 import { OPPOSITE } from '../engine/movement';
 import type { Dir } from '../engine/types';
 import type { Wanted } from './directions';
@@ -33,6 +33,11 @@ export function keysToDirections(held: readonly Dir[]): Wanted | null {
     if (d !== primary && d !== OPPOSITE[primary]) return { primary, secondary: d };
   }
   return { primary, secondary: null };
+}
+
+/** Al soltar `released`: true = era la tecla más reciente (la principal) y su pedido se queda tal cual. */
+export function keyUpKeepsRequest(held: readonly Dir[], released: Dir): boolean {
+  return held[held.length - 1] === released;
 }
 
 /**
@@ -70,7 +75,10 @@ export function attachControls(
     if (blocked() && !(pauseKey && state.phase === 'pausa')) return;
     if (dir) {
       e.preventDefault();
-      if (!e.repeat) held = [...held.filter((d) => d !== dir), dir];
+      // La repetición automática de una tecla sostenida no pide nada: borraba la tecla nueva que se acababa
+      // de tocar (sostienes arriba, tocas derecha y la repetición de arriba la pisaba).
+      if (e.repeat) return;
+      held = [...held.filter((d) => d !== dir), dir];
       request();
     } else if (pauseKey) {
       e.preventDefault();
@@ -80,15 +88,19 @@ export function attachControls(
     }
   };
 
-  // Al soltar una de dos teclas queda la otra, recta. Al soltar todas se mantiene el último pedido.
+  // Al soltar la tecla más reciente se queda su pedido (quizá todavía no llega al cruce). Al soltar una más
+  // vieja se pide lo que sigue sostenido. Al soltar todas, el pedido empieza a caducar.
   const onKeyUp = (e: KeyboardEvent) => {
     const dir = KEYS[e.key.toLowerCase()];
     if (!dir || !held.includes(dir)) return;
+    const wasNewest = keyUpKeepsRequest(held, dir);
     held = held.filter((d) => d !== dir);
-    if (held.length > 0) request();
+    if (held.length === 0) releaseDirections(state);
+    else if (!wasNewest) request();
   };
   const onBlur = () => {
     held = [];
+    releaseDirections(state);
   };
 
   // Swipe: dispara en cuanto hay dirección y reinicia el origen para encadenar giros.
@@ -113,6 +125,7 @@ export function attachControls(
     origin = null;
     if (lastSwipe) setDirections(state, lastSwipe, null);
     lastSwipe = null;
+    releaseDirections(state);
   };
 
   window.addEventListener('keydown', onKey);

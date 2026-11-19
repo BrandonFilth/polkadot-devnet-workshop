@@ -1,7 +1,7 @@
 // Controles táctiles estilo Atari: botón rojo de pausa a la izquierda y flechas en cruz (arriba, abajo,
 // izquierda, derecha) a la derecha, en la zona de abajo. Tocar una flecha pide esa dirección (giro en búfer, como el teclado);
 // mantenerla la conserva y deslizar el dedo a otra flecha cambia la dirección sin soltar.
-import { setDirections, togglePause, type GameState } from '../engine/game';
+import { releaseDirections, setDirections, togglePause, type GameState } from '../engine/game';
 import { DPAD_HAPTIC_MS } from '../engine/rules';
 import type { Dir } from '../engine/types';
 import { createDpad, type Point } from '../input/dpad';
@@ -54,7 +54,10 @@ export function createControles(state: GameState): Controles {
     b.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${path}"/></svg>`;
     // Activación sin puntero (teclado o lector de pantalla): detail 0. Con dedo ya la manejan los pointer events.
     const onClick = (e: MouseEvent) => {
-      if (e.detail === 0) setDirections(state, dir, null);
+      if (e.detail !== 0) return;
+      // Un toque sin mantener: el pedido empieza a caducar de inmediato.
+      setDirections(state, dir, null);
+      releaseDirections(state);
     };
     b.addEventListener('click', onClick);
     clicks.push([b, onClick]);
@@ -93,6 +96,8 @@ export function createControles(state: GameState): Controles {
     if (!dpad.end(id)) return; // no era el dedo activo
     if (pad.hasPointerCapture?.(id)) pad.releasePointerCapture(id);
     showActive(null);
+    // Al soltar la flecha el pedido sigue, pero caduca tras REQUEST_TTL_TILES casillas.
+    releaseDirections(state);
   };
 
   const onDown = (e: PointerEvent) => {

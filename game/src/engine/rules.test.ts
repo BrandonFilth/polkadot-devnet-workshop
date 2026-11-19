@@ -30,6 +30,8 @@ import {
   MIN_TILE_PX,
   PAUSE_BUTTON_PX,
   PLAYER_SPEED,
+  REQUEST_TTL_TILES,
+  TURN_GRACE_TILES,
   RANKING_HISTORY_PERIODS,
   RANKING_MAX_HEIGHT_PX,
   SWIPE_DIAGONAL_HALF_DEG,
@@ -92,6 +94,9 @@ describe('rules: dificultad', () => {
   });
 
   it('pantalla y controles con los valores pedidos', () => {
+    // Giro tarde y caducidad del pedido: menos de media casilla de margen y más de una casilla de vida.
+    expect(TURN_GRACE_TILES).toBe(0.3);
+    expect(REQUEST_TTL_TILES).toBe(2);
     expect(VIEW_CROP_TILES).toBe(0.5);
     expect(MIN_TILE_PX).toBe(8);
     expect(HUD_HEIGHT_PX).toBe(84);

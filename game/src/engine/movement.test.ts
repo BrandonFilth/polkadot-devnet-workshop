@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { MAZE, parseMaze, playerCanEnter } from './maze';
 import { advance, type Mover } from './movement';
-import { chooseAtCenter, createPlayer, requestDirection, requestDirections, updatePlayer, type Player } from './player';
+import { chooseAtCenter, createPlayer, releaseDirections, requestDirection, requestDirections, updatePlayer, type Player } from './player';
 import type { Dir } from './types';
 import { DT } from './rules';
 
@@ -85,7 +85,70 @@ describe('Polka-Man', () => {
     expect(p.pos.y).toBeCloseTo(14.9);
   });
 
-  it('el giro pedido no caduca: espera hasta un cruce donde se pueda', () => {
+  it('giro tarde: pedido hasta TURN_GRACE_TILES después del centro, vuelve al cruce y gira', () => {
+    // Hacia la izquierda por la fila 15; en (8, 15) se podía subir y se pide arriba ya pasado ese centro.
+    const p = createPlayer(maze);
+    p.pos = { x: 8.5, y: 15 };
+    updatePlayer(p, maze, 0.1); // cruza (8, 15) sin pedido y queda en 7.9
+    expect(p.pos.x).toBeCloseTo(7.9);
+    requestDirection(p, 'arriba');
+    updatePlayer(p, maze, DT);
+    expect(p.dir).toBe('arriba');
+    expect(p.pos.x).toBe(8);
+    expect(p.pos.y).toBeLessThan(15);
+  });
+
+  it('giro tarde: pasado el margen ya no vuelve; y si en ese cruce no se podía, tampoco', () => {
+    const lejos = createPlayer(maze);
+    lejos.pos = { x: 8.5, y: 15 };
+    updatePlayer(lejos, maze, 0.15); // 0.4 casillas después de (8, 15): fuera del margen de 0.3
+    requestDirection(lejos, 'arriba');
+    updatePlayer(lejos, maze, DT);
+    expect(lejos.dir).toBe('izquierda');
+    expect(lejos.pos.x).toBeLessThan(7.6);
+    // En (7, 15) no se puede subir: pedir arriba en 6.9 no lo regresa.
+    const cerrado = createPlayer(maze);
+    cerrado.pos = { x: 7.5, y: 15 };
+    updatePlayer(cerrado, maze, 0.1);
+    requestDirection(cerrado, 'arriba');
+    updatePlayer(cerrado, maze, DT);
+    expect(cerrado.dir).toBe('izquierda');
+    expect(cerrado.pos.x).toBeLessThan(6.9);
+  });
+
+  it('giro tarde: el mismo pedido de antes del centro no lo regresa (solo cuenta uno nuevo)', () => {
+    const p = createPlayer(maze);
+    p.pos = { x: 8.5, y: 15 };
+    requestDirection(p, 'izquierda');
+    updatePlayer(p, maze, 0.1);
+    requestDirection(p, 'izquierda');
+    updatePlayer(p, maze, DT);
+    expect(p.dir).toBe('izquierda');
+    expect(p.pos.x).toBeLessThan(7.9);
+  });
+
+  it('al soltar, el pedido caduca tras REQUEST_TTL_TILES casillas: no gira solo varias casillas después', () => {
+    // Mismo recorrido que el de abajo, pero soltando: en (4, 15) ya pasó 3 casillas y el pedido se olvidó.
+    const p = createPlayer(maze);
+    p.pos = { x: 7, y: 15 };
+    requestDirection(p, 'arriba');
+    releaseDirections(p);
+    for (let i = 0; i < 24; i++) updatePlayer(p, maze, DT * 4);
+    expect(p.dir).toBe('izquierda');
+    expect(p.pos.y).toBe(15);
+    expect(p.nextDir).toBeNull();
+  });
+
+  it('al soltar justo antes del cruce el giro sí se aplica (dentro de REQUEST_TTL_TILES)', () => {
+    const p = createPlayer(maze);
+    p.pos = { x: 8.5, y: 15 };
+    requestDirection(p, 'arriba');
+    releaseDirections(p);
+    updatePlayer(p, maze, 0.1);
+    expect(p.dir).toBe('arriba');
+  });
+
+  it('mientras se mantiene, el giro pedido no caduca: espera hasta un cruce donde se pueda', () => {
     // Fila 15 hacia la izquierda desde (7, 15): (7, 14) y (6, 14) son pared; (4, 14) es orbe.
     const p = createPlayer(maze);
     p.pos = { x: 7, y: 15 };
