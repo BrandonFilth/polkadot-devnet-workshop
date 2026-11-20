@@ -1,7 +1,7 @@
 import { decodeErrorResult, toFunctionSelector, type Abi, type Hex } from 'viem';
 import { leaderboardAbi } from './leaderboard';
 
-/** Errores de Leaderboard.sol con la firma completa (la que da el selector de 4 bytes). */
+/** Errores de LeaderboardV5.sol con la firma completa (la que da el selector de 4 bytes). */
 const SIGNATURES = {
   ScoreNotHigher: 'ScoreNotHigher(uint256,uint256)',
   InvalidUsername: 'InvalidUsername()',
@@ -16,6 +16,16 @@ const SIGNATURES = {
   InvalidPlayer: 'InvalidPlayer()',
   InvalidTxHash: 'InvalidTxHash()',
   NoPayoutWallet: 'NoPayoutWallet()',
+  InvalidSigner: 'InvalidSigner()',
+  BadSignature: 'BadSignature()',
+  Expired: 'Expired()',
+  GameUsed: 'GameUsed()',
+  InvalidScore: 'InvalidScore()',
+  IsDisqualified: 'IsDisqualified()',
+  MigrationIsClosed: 'MigrationIsClosed()',
+  PeriodNotFinished: 'PeriodNotFinished()',
+  LengthMismatch: 'LengthMismatch()',
+  AlreadyImported: 'AlreadyImported()',
 } as const;
 
 type ErrorName = keyof typeof SIGNATURES;
@@ -25,6 +35,7 @@ export const NOT_STARTED_MESSAGE = 'El ranking todavía no abre: tu récord no s
 export const NOT_ADMIN_MESSAGE = 'Solo el admin del ranking puede hacer esto.';
 export const START_LOCKED_MESSAGE = 'El ranking ya empezó: la hora de inicio ya no se puede cambiar.';
 export const NO_PAYOUT_WALLET_MESSAGE = 'Este jugador todavía no registra su wallet de premios.';
+export const BAD_SIGNATURE_MESSAGE = 'Esta partida no está validada por el anti-trampas: no se puede guardar.';
 
 const MESSAGES: Record<Exclude<ErrorName, 'ScoreNotHigher'>, string> = {
   InvalidUsername: INVALID_USERNAME_MESSAGE,
@@ -39,6 +50,16 @@ const MESSAGES: Record<Exclude<ErrorName, 'ScoreNotHigher'>, string> = {
   InvalidPlayer: 'Falta el jugador del premio.',
   InvalidTxHash: 'Pega el enlace o el hash de la transacción del pago.',
   NoPayoutWallet: NO_PAYOUT_WALLET_MESSAGE,
+  InvalidSigner: 'Esa dirección no puede firmar puntajes.',
+  BadSignature: BAD_SIGNATURE_MESSAGE,
+  Expired: 'La validación de esta partida venció. Juega otra para guardar tu récord.',
+  GameUsed: 'Esta partida ya se guardó.',
+  InvalidScore: 'Ese puntaje no se puede guardar.',
+  IsDisqualified: 'Tu cuenta está descalificada en este periodo.',
+  MigrationIsClosed: 'La migración ya se cerró.',
+  PeriodNotFinished: 'Solo se importan periodos ya terminados.',
+  LengthMismatch: 'Las listas no tienen el mismo largo.',
+  AlreadyImported: 'Ese jugador ya tiene puntaje en ese periodo.',
 };
 
 function message(name: ErrorName, args: readonly unknown[] | undefined): string {

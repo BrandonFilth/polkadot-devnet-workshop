@@ -1,7 +1,7 @@
 import type { AbiEntry } from '@parity/product-sdk/contracts';
 import abiJson from './leaderboard.abi.json';
 
-/** Generada con `pnpm --dir contrato abi` desde contrato/Leaderboard.sol. No se edita a mano. */
+/** Generada con `pnpm --dir contrato abi` desde contrato/LeaderboardV5.sol. No se edita a mano. */
 export const leaderboardAbi = abiJson as AbiEntry[];
 
 type Hex = `0x${string}`;
@@ -28,7 +28,7 @@ type Write<Args extends unknown[]> = Read<Args, unknown> & {
   tx: (...args: [...Args, TxOptions?]) => Promise<{ ok: true; value: TxResult } | { ok: false; error: unknown }>;
 };
 
-/** Las funciones de Leaderboard.sol, tipadas a mano porque la ABI se carga como JSON. */
+/** Las funciones de LeaderboardV5.sol, tipadas a mano porque la ABI se carga como JSON. */
 export interface LeaderboardContract {
   bestScore: Read<[Hex], Num>;
   lifetimeBest: Read<[Hex], Num>;
@@ -51,7 +51,7 @@ export interface LeaderboardContract {
   prizeAmount: Read<[bigint], Num>;
   setPayoutWallet: Write<[Hex]>;
   recordPrize: Write<[bigint, bigint, Hex, Hex]>;
-  submitScore: Write<[bigint]>;
+  submitScore: Write<[bigint, Hex, bigint, Hex]>;
   setUsername: Write<[string]>;
   setStartTime: Write<[bigint]>;
   setAdmin: Write<[Hex]>;
@@ -95,4 +95,32 @@ export function toScoreArg(score: number): bigint {
     throw new RangeError(`Puntaje no válido para el contrato: ${score}`);
   }
   return BigInt(score);
+}
+
+/** Puntaje validado por el Worker anti-trampas: lo que pide submitScore de LeaderboardV5. */
+export interface ScoreProof {
+  score: number;
+  gameId: Hex;
+  /** Segundos Unix: después de esta hora la firma ya no vale. */
+  deadline: number;
+  signature: Hex;
+}
+
+const HEX32 = /^0x[0-9a-f]{64}$/i;
+const SIG = /^0x[0-9a-f]{130}$/i;
+
+/** Valida la respuesta de /finish del Worker. null si falta algo o el puntaje no coincide. */
+export function parseProof(value: unknown, score: number): ScoreProof | null {
+  if (typeof value !== 'object' || value === null) return null;
+  const v = value as Record<string, unknown>;
+  if (v.ok !== true || v.score !== score) return null;
+  if (typeof v.gameId !== 'string' || !HEX32.test(v.gameId)) return null;
+  if (typeof v.signature !== 'string' || !SIG.test(v.signature)) return null;
+  if (!Number.isSafeInteger(v.deadline) || (v.deadline as number) <= 0) return null;
+  return { score, gameId: v.gameId as Hex, deadline: v.deadline as number, signature: v.signature as Hex };
+}
+
+/** Argumentos de submitScore para una prueba. */
+export function proofArgs(p: ScoreProof): [bigint, Hex, bigint, Hex] {
+  return [toScoreArg(p.score), p.gameId, BigInt(p.deadline), p.signature];
 }

@@ -5,7 +5,12 @@
 import { bytesToHex, createPublicClient, http } from 'viem';
 import { describe, expect, it } from 'vitest';
 import { CHAIN_ID, ETH_RPC_URL, LEADERBOARD_ADDRESS } from './config';
-import { NOT_ADMIN_MESSAGE, NOT_STARTED_MESSAGE, revertMessage } from './errors';
+import { BAD_SIGNATURE_MESSAGE, NOT_ADMIN_MESSAGE, NOT_STARTED_MESSAGE, revertMessage } from './errors';
+
+/** Argumentos de submitScore sin firma real (para comprobar que el contrato los rechaza). */
+const GAME = `0x${'ab'.repeat(32)}` as const;
+const FAR = 4_000_000_000n;
+const SIG = `0x${'cd'.repeat(65)}` as const;
 import { decodeScores } from './leaderboard';
 import { readPgas } from './pgas';
 import { createRpcContract } from './rpcReader';
@@ -78,7 +83,7 @@ describe('Leaderboard en Products Devnet', () => {
   });
 
   it.skipIf(started)('antes del evento: submitScore revierte con NotStarted y el ranking está vacío', async () => {
-    const r = await contract.submitScore.query(1n);
+    const r = await contract.submitScore.query(1n, GAME, FAR, SIG);
     expect(r.success).toBe(false);
     expect(revertMessage(r.value)).toBe(NOT_STARTED_MESSAGE);
     expect(players).toBe(0n);
@@ -107,15 +112,16 @@ describe('Leaderboard en Products Devnet', () => {
     }
   });
 
-  it.skipIf(!started)('una cuenta nueva puede simular submitScore(1)', async () => {
-    const r = await contract.submitScore.query(1n);
-    expect(r.success).toBe(true);
+  it.skipIf(!started)('un puntaje sin firma del Worker revierte con BadSignature', async () => {
+    const r = await contract.submitScore.query(1n, GAME, FAR, SIG);
+    expect(r.success).toBe(false);
+    expect(revertMessage(r.value)).toBe(BAD_SIGNATURE_MESSAGE);
   });
 
-  it.skipIf(!started)('submitScore(0) revierte con ScoreNotHigher', async () => {
-    const r = await contract.submitScore.query(0n);
+  it.skipIf(!started)('submitScore(0) revierte con InvalidScore', async () => {
+    const r = await contract.submitScore.query(0n, GAME, FAR, SIG);
     expect(r.success).toBe(false);
-    expect(revertMessage(r.value)).toBe('Ese puntaje no supera tu récord (0).');
+    expect(revertMessage(r.value)).toBe('Ese puntaje no se puede guardar.');
   });
 
   it('setUsername("Ana") revierte con InvalidUsername', async () => {

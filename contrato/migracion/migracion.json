@@ -1,0 +1,141 @@
+{
+  "v4": "0xDFd77dEb59eE36444A3403054966AfB3843C93c8",
+  "startTime": "1794276366",
+  "periodoActualV4": 3,
+  "scores": [
+    {
+      "period": 0,
+      "players": [
+        "0xAf02d5Ef2f370d246672EeA6FA89629528cA7c3d",
+        "0x42bb950bE1bffE9407F12e25c396e775cDbe3EdD",
+        "0xb8C837AaFA4df815A182348Be0f85F9Bf8a581Ba",
+        "0x409266E574F29fa593928B6AC4074e32BB1c60E8",
+        "0xDcE7E480bf0d640790a55F4a636FF1ba69289284",
+        "0x668C63045529F25CFB2C49B179Cc2Bf30235C326",
+        "0x42D1DfBfC5269aA9DE2C324b8DA034Bb21d27A82"
+      ],
+      "scores": [
+        "20550",
+        "32420",
+        "10630",
+        "30640",
+        "28900",
+        "36530",
+        "33580"
+      ]
+    },
+    {
+      "period": 1,
+      "players": [
+        "0x42bb950bE1bffE9407F12e25c396e775cDbe3EdD",
+        "0xb8C837AaFA4df815A182348Be0f85F9Bf8a581Ba",
+        "0xAf02d5Ef2f370d246672EeA6FA89629528cA7c3d",
+        "0x42D1DfBfC5269aA9DE2C324b8DA034Bb21d27A82"
+      ],
+      "scores": [
+        "36470",
+        "2810",
+        "19320",
+        "33370"
+      ]
+    },
+    {
+      "period": 2,
+      "players": [
+        "0x7990Ea1624FF184f9FC9b359559800C7ABE43dd0",
+        "0x42D1DfBfC5269aA9DE2C324b8DA034Bb21d27A82",
+        "0xAf02d5Ef2f370d246672EeA6FA89629528cA7c3d"
+      ],
+      "scores": [
+        "17400",
+        "37660",
+        "7810"
+      ]
+    }
+  ],
+  "skipped": [
+    {
+      "period": 2,
+      "player": "0xEcdDfd68276D10C66CeD031770A8C20fA891208f",
+      "username": "tr3shk",
+      "score": "9007199254000410"
+    },
+    {
+      "period": 2,
+      "player": "0xA43120cACEe2C62B326d647796365283a7a02d07",
+      "username": "coristar",
+      "score": "115792089237316195423570985008687907853269984665640564039457584007913129639935"
+    },
+    {
+      "period": 2,
+      "player": "0x42A536a254dE5d7dd16CadC6Ad77735B762E85AD",
+      "username": "esotilin67",
+      "score": "115792089237316195423570985008687907853269984665640564039457584007913129639935"
+    }
+  ],
+  "profiles": 8,
+  "prizes": [
+    {
+      "round": 1,
+      "place": 3,
+      "player": "0x42bb950bE1bffE9407F12e25c396e775cDbe3EdD",
+      "wallet": "0x95842B756F9537A2D14dEc2cA45Ef9fcE99D424a",
+      "txHash": "0x747bfcabd20ef40f6a650ef60dd32d121e148088d226138546affe352834453c",
+      "paidAt": "1794556488"
+    },
+    {
+      "round": 2,
+      "place": 1,
+      "player": "0x42bb950bE1bffE9407F12e25c396e775cDbe3EdD",
+      "wallet": "0x95842B756F9537A2D14dEc2cA45Ef9fcE99D424a",
+      "txHash": "0xad326002fd0bdc91d80e2852df3afc6d9636b35d093fa01386159c9a2ae91ad3",
+      "paidAt": "1794796464"
+    },
+    {
+      "round": 2,
+      "place": 2,
+      "player": "0x42D1DfBfC5269aA9DE2C324b8DA034Bb21d27A82",
+      "wallet": "0x844Db19f23310aDe18a78266EbF1CA4B007a81B6",
+      "txHash": "0x51484462eceadb863cd34236301a89574c5c9952c053bdab32b3943692843a87",
+      "paidAt": "1794796548"
+    },
+    {
+      "round": 3,
+      "place": 1,
+      "player": "0xA43120cACEe2C62B326d647796365283a7a02d07",
+      "wallet": "0x8f8d48B907Ae82D07FC277BeAA6b021Ba65e618C",
+      "txHash": "0x830b63c8fc73ffe3c0eaa90a10ce1cbc11389aaf2f8975db9611f32b2fd45729",
+      "paidAt": "1795130436"
+    },
+    {
+      "round": 3,
+      "place": 2,
+      "player": "0x42A536a254dE5d7dd16CadC6Ad77735B762E85AD",
+      "wallet": "0x844Db19f23310aDe18a78266EbF1CA4B007a81B6",
+      "txHash": "0xda633b97cb65b2de2db090808091a8920a437af177dd19febd45bdf3c3ebab6e",
+      "paidAt": "1795130520"
+    },
+    {
+      "round": 3,
+      "place": 3,
+      "player": "0xEcdDfd68276D10C66CeD031770A8C20fA891208f",
+      "wallet": "0x85cA566aF03796A6138B95f0aF593FbC19e19d0C",
+      "txHash": "0xd3e5fe97be2aed5648c0b8ea3612a4f1f54c20d4d2864eb2158ac46b205a280f",
+      "paidAt": "1795130628"
+    }
+  ],
+  "steps": [
+    "setStartTime: 1794276366",
+    "importScores: 0, [\"0xAf02d5Ef2f370d246672EeA6FA89629528cA7c3d\",\"0x42bb950bE1bffE9407F12e25c396e775cDbe3EdD\",\"0xb8C837AaFA4df815A182348Be0f85F9Bf8a581Ba\",\"0x409266E574F29fa593928B6AC4074e32BB1c60E8\",\"0xDcE7E480bf0d640790a55F4a636FF1ba69289284\",\"0x668C63045529F25CFB2C49B179Cc2Bf30235C326\",\"0x42D1DfBfC5269aA9DE2C324b8DA034Bb21d27A82\"], [\"20550\",\"32420\",\"10630\",\"30640\",\"28900\",\"36530\",\"33580\"]",
+    "importScores: 1, [\"0x42bb950bE1bffE9407F12e25c396e775cDbe3EdD\",\"0xb8C837AaFA4df815A182348Be0f85F9Bf8a581Ba\",\"0xAf02d5Ef2f370d246672EeA6FA89629528cA7c3d\",\"0x42D1DfBfC5269aA9DE2C324b8DA034Bb21d27A82\"], [\"36470\",\"2810\",\"19320\",\"33370\"]",
+    "importScores: 2, [\"0x7990Ea1624FF184f9FC9b359559800C7ABE43dd0\",\"0x42D1DfBfC5269aA9DE2C324b8DA034Bb21d27A82\",\"0xAf02d5Ef2f370d246672EeA6FA89629528cA7c3d\"], [\"17400\",\"37660\",\"7810\"]",
+    "importProfiles: [\"0xAf02d5Ef2f370d246672EeA6FA89629528cA7c3d\",\"0x42bb950bE1bffE9407F12e25c396e775cDbe3EdD\",\"0xb8C837AaFA4df815A182348Be0f85F9Bf8a581Ba\",\"0x409266E574F29fa593928B6AC4074e32BB1c60E8\",\"0xDcE7E480bf0d640790a55F4a636FF1ba69289284\",\"0x668C63045529F25CFB2C49B179Cc2Bf30235C326\",\"0x42D1DfBfC5269aA9DE2C324b8DA034Bb21d27A82\",\"0x7990Ea1624FF184f9FC9b359559800C7ABE43dd0\"], [\"w3nerick\",\"jaimexct2\",\"0xnigromante\",\"bernardomata\",\"coristarrrr\",\"mauadame\",\"ericklolaso\",\"javiergoat\"], [\"0x0000000000000000000000000000000000000000\",\"0x95842B756F9537A2D14dEc2cA45Ef9fcE99D424a\",\"0x0000000000000000000000000000000000000000\",\"0x61b50c48a89506Fc7Ae3c7b4eA6Dcc9B69C275f5\",\"0x8f8d48B907Ae82D07FC277BeAA6b021Ba65e618C\",\"0x2A70eEfA96651c9af69fa475C3f462B55567Fb92\",\"0x844Db19f23310aDe18a78266EbF1CA4B007a81B6\",\"0x4808B1C0af0BAbB4720e0101609762Dde7268bF4\"]",
+    "importPrize: 1, 3, 0x42bb950bE1bffE9407F12e25c396e775cDbe3EdD, 0x95842B756F9537A2D14dEc2cA45Ef9fcE99D424a, 0x747bfcabd20ef40f6a650ef60dd32d121e148088d226138546affe352834453c, 1794556488",
+    "importPrize: 2, 1, 0x42bb950bE1bffE9407F12e25c396e775cDbe3EdD, 0x95842B756F9537A2D14dEc2cA45Ef9fcE99D424a, 0xad326002fd0bdc91d80e2852df3afc6d9636b35d093fa01386159c9a2ae91ad3, 1794796464",
+    "importPrize: 2, 2, 0x42D1DfBfC5269aA9DE2C324b8DA034Bb21d27A82, 0x844Db19f23310aDe18a78266EbF1CA4B007a81B6, 0x51484462eceadb863cd34236301a89574c5c9952c053bdab32b3943692843a87, 1794796548",
+    "importPrize: 3, 1, 0xA43120cACEe2C62B326d647796365283a7a02d07, 0x8f8d48B907Ae82D07FC277BeAA6b021Ba65e618C, 0x830b63c8fc73ffe3c0eaa90a10ce1cbc11389aaf2f8975db9611f32b2fd45729, 1795130436",
+    "importPrize: 3, 2, 0x42A536a254dE5d7dd16CadC6Ad77735B762E85AD, 0x844Db19f23310aDe18a78266EbF1CA4B007a81B6, 0xda633b97cb65b2de2db090808091a8920a437af177dd19febd45bdf3c3ebab6e, 1795130520",
+    "importPrize: 3, 3, 0xEcdDfd68276D10C66CeD031770A8C20fA891208f, 0x85cA566aF03796A6138B95f0aF593FbC19e19d0C, 0xd3e5fe97be2aed5648c0b8ea3612a4f1f54c20d4d2864eb2158ac46b205a280f, 1795130628",
+    "closeMigration (después de verificar con verificar-v5.mjs)"
+  ]
+}

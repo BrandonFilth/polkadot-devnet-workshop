@@ -68,8 +68,8 @@ export async function deploy({ start = NOW } = {}) {
   return c;
 }
 
-/** Despliega `name` desde ADMIN en una EVM nueva. El reloj empieza en NOW. */
-async function deployContract(name) {
+/** Despliega `name` (con `args` para el constructor) desde ADMIN en una EVM nueva. El reloj empieza en NOW. */
+export async function deployContract(name, args = []) {
   const { abi, bytecode } = compile(name);
   const vm = await createVM();
   let number = 1n;
@@ -99,7 +99,7 @@ async function deployContract(name) {
     }
   };
 
-  const created = await run(ADMIN, encodeDeployData({ abi, bytecode }));
+  const created = await run(ADMIN, encodeDeployData({ abi, bytecode, args }));
   if (created.execResult.exceptionError) throw revert(created.execResult.returnValue);
   const address = created.createdAddress.toString();
 

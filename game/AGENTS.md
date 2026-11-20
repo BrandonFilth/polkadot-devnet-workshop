@@ -3,8 +3,9 @@
 ## Proyecto
 Polka-Man: juego de laberinto (Vite + TypeScript + Canvas 2D, sin framework de UI) que corre en el
 navegador y dentro de Polkadot Desktop o la Polkadot App. Guarda récords en un contrato
-`Leaderboard` propio, desplegado por el mismo proyecto. Ese contrato solo guarda el mejor puntaje y
-el username. Si algo nuevo del juego necesita guardarse en la cadena, dímelo y propón el cambio a la
+propio, `LeaderboardV5` (`contrato/LeaderboardV5.sol`), desplegado por el mismo proyecto: récords por
+periodo, username, wallets y premios. Solo acepta puntajes firmados por el Worker anti-trampas
+(`anticheat/`). Si algo nuevo del juego necesita guardarse en la cadena, dímelo y propón el cambio a la
 spec, al contrato y a sus tests antes de tocar `contrato/`: cada cambio es un despliegue nuevo, con
 otra dirección y otra ABI.
 
@@ -12,8 +13,9 @@ otra dirección y otra ABI.
 - Solo Products Devnet: Asset Hub 1000, chainId 420420417.
 - Descriptor: devnet_asset_hub, desde @parity/product-sdk-descriptors/devnet-asset-hub.
 - Nunca paseo, paseo_asset_hub, Paseo Next v2 ni "Paseo PassetHub (420420422)".
-- El único origen de red de la app es `ETH_RPC_URL` de `src/contract/config.ts`. Nada de CDNs,
-  fuentes, `<link>`, `@import` ni `url()` hacia `http(s)://`.
+- Los únicos orígenes de red de la app son `ETH_RPC_URL` y `ANTICHEAT_URL` (Worker anti-trampas,
+  `../anticheat/`), los dos en `src/contract/config.ts`. Nada de CDNs, fuentes, `<link>`, `@import`
+  ni `url()` hacia `http(s)://`.
 
 ## Versiones
 - Exactas, sin ^ ni ~. No actualizar ninguna sin que yo lo pida.

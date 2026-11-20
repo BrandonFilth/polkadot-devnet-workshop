@@ -8,67 +8,17 @@ const names = (type: string) =>
     .sort();
 
 describe('ABI de Leaderboard', () => {
-  it('trae las 28 funciones, 13 errores y 7 eventos del contrato v4 (admin, hora de inicio y premios)', () => {
-    expect(names('function')).toEqual([
-      'PERIOD_LENGTH',
-      'PRIZE_PLACES',
-      'PRIZE_ROUNDS',
-      'admin',
-      'bestScore',
-      'currentPeriod',
-      'getScores',
-      'getScoresIn',
-      'isStarted',
-      'lifetimeBest',
-      'payoutOf',
-      'payoutsOf',
-      'periodBounds',
-      'playerCount',
-      'playerCountIn',
-      'playerOf',
-      'prizeAmount',
-      'prizeOf',
-      'prizesOf',
-      'recordPrize',
-      'scoreOf',
-      'setAdmin',
-      'setPayoutWallet',
-      'setStartTime',
-      'setUsername',
-      'startTime',
-      'submitScore',
-      'usernameOf',
-    ]);
-    expect(names('error')).toEqual([
-      'InvalidAdmin',
-      'InvalidPlace',
-      'InvalidPlayer',
-      'InvalidRound',
-      'InvalidStart',
-      'InvalidTxHash',
-      'InvalidUsername',
-      'NoPayoutWallet',
-      'NotAdmin',
-      'NotStarted',
-      'ScoreNotHigher',
-      'StartLocked',
-      'UsernameTaken',
-    ]);
-    expect(names('event')).toEqual([
-      'AdminChanged',
-      'NewHighScore',
-      'NewLifetimeBest',
-      'PayoutWalletSet',
-      'PrizeRecorded',
-      'StartTimeSet',
-      'UsernameSet',
-    ]);
+  it('trae las 41 funciones, 23 errores y 11 eventos de LeaderboardV5 (v4 + firma, tope, descalificar y migración)', () => {
+    expect(names('function')).toEqual(["MAX_SCORE","PERIOD_LENGTH","PRIZE_PLACES","PRIZE_ROUNDS","admin","bestScore","closeMigration","currentPeriod","disqualified","disqualify","domainSeparator","getScores","getScoresIn","importPrize","importProfiles","importScores","isStarted","lifetimeBest","migrationOpen","payoutOf","payoutsOf","periodBounds","playerCount","playerCountIn","playerOf","prizeAmount","prizeOf","prizesOf","recordPrize","scoreDigest","scoreOf","setAdmin","setPayoutWallet","setSigner","setStartTime","setUsername","signer","startTime","submitScore","usedGame","usernameOf"]);
+    expect(names('error')).toEqual(["AlreadyImported","BadSignature","Expired","GameUsed","InvalidAdmin","InvalidPlace","InvalidPlayer","InvalidRound","InvalidScore","InvalidSigner","InvalidStart","InvalidTxHash","InvalidUsername","IsDisqualified","LengthMismatch","MigrationIsClosed","NoPayoutWallet","NotAdmin","NotStarted","PeriodNotFinished","ScoreNotHigher","StartLocked","UsernameTaken"]);
+    expect(names('event')).toEqual(["AdminChanged","Disqualified","MigrationClosed","NewHighScore","NewLifetimeBest","PayoutWalletSet","PrizeRecorded","ScoresImported","SignerChanged","StartTimeSet","UsernameSet"]);
   });
 
-  it('el constructor no lleva parámetros y setStartTime/setAdmin reciben uint256/address', () => {
-    const ctor = leaderboardAbi.find((e) => e.type === 'constructor') as { inputs: unknown[] } | undefined;
-    expect(ctor?.inputs).toEqual([]);
+  it('el constructor recibe el firmante; submitScore pide puntaje, partida, vencimiento y firma', () => {
+    const ctor = leaderboardAbi.find((e) => e.type === 'constructor') as { inputs: Array<{ type: string }> } | undefined;
+    expect(ctor?.inputs.map((i) => i.type)).toEqual(['address']);
     const fn = (name: string) => leaderboardAbi.find((e) => (e as { name?: string }).name === name) as { inputs: Array<{ type: string }> };
+    expect(fn('submitScore').inputs.map((i) => i.type)).toEqual(['uint256', 'bytes32', 'uint256', 'bytes']);
     expect(fn('setStartTime').inputs.map((i) => i.type)).toEqual(['uint256']);
     expect(fn('setAdmin').inputs.map((i) => i.type)).toEqual(['address']);
   });

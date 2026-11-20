@@ -1,7 +1,17 @@
 // Pon aquí la dirección de TU PROPIO contrato Leaderboard (el que tú desplegaste).
 // Este valor es el contrato de Polka-Man, el que usa polka-man.dot.
-// Leaderboard v4: periodos de 3 días, un admin, hora de inicio, wallets de premios y pagos registrados.
-export const LEADERBOARD_ADDRESS = '0xDFd77dEb59eE36444A3403054966AfB3843C93c8' as const;
+// LeaderboardV5: lo de v4 (periodos de 3 días, admin, hora de inicio, wallets y premios) más puntajes firmados
+// por el Worker anti-trampas, tope MAX_SCORE, descalificar y migración desde v4.
+export const LEADERBOARD_ADDRESS = '0xEC870A5575359C34eC0481bD2Cea175dbb4197F0' as const;
+/**
+ * Worker anti-trampas (Cloudflare). Recibe el inicio, los avances y el fin de cada partida, revisa que el
+ * puntaje sea posible para el tiempo real que pasó y firma el puntaje final. LeaderboardV5 solo acepta
+ * puntajes con esa firma. Es el segundo y último origen de red de la app.
+ */
+export const ANTICHEAT_URL = 'https://polkaman-anticheat.brandonfilth6.workers.dev';
+/** Cada cuánto se manda un avance de la partida al Worker, en ms. */
+export const ANTICHEAT_BEAT_MS = 20_000;
+export const ANTICHEAT_TIMEOUT_MS = 25_000;
 export const ETH_RPC_URL = 'https://eth-rpc-testnet.polkadot.io';
 export const CHAIN_ID = 420_420_417;
 /** Tu nombre .dot (capítulo 6). La cuenta de cada app sale de este nombre. */

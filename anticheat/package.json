@@ -1,0 +1,13 @@
+{
+  "name": "anticheat",
+  "private": true,
+  "description": "Worker anti-trampas de Polka-Man (Cloudflare): revisa los avances de cada partida y firma el puntaje para LeaderboardV5",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "viem": "2.56.9"
+  }
+}

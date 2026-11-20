@@ -1,7 +1,7 @@
 {
   "name": "contrato",
   "private": true,
-  "description": "Leaderboard.sol: pruebas en una EVM local y medición de tamaño",
+  "description": "LeaderboardV5.sol (en uso) y Leaderboard.sol (v4, historial): pruebas en una EVM local, tamaño, ABI y migración",
   "license": "MIT",
   "type": "module",
   "scripts": {

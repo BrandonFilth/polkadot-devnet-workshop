@@ -13,6 +13,8 @@ import { isAdminAccount, type EventInfo } from './contract/eventStart';
 import { parseRoute, routeHash } from './lib/route';
 import { createSoundPrefs, safeStorage } from './audio/prefs';
 import { createControlPrefs } from './input/controlPrefs';
+import { ANTICHEAT_BEAT_MS, ANTICHEAT_TIMEOUT_MS, ANTICHEAT_URL } from './contract/config';
+import { createAnticheat } from './lib/anticheat';
 import { capas, type Capa } from './components/capas';
 import { createControles } from './components/Controles';
 import { createFinDePartida, type Mine } from './components/FinDePartida';
@@ -206,7 +208,39 @@ export function startApp(root: HTMLElement): void {
     perfil.focusWallet();
   };
 
+  // Anti-trampas: el Worker recibe el inicio, los avances y el fin de cada partida y firma el puntaje final
+  // (LeaderboardV5 solo acepta puntajes firmados). Fuera del Host no se puede guardar, así que no se usa.
+  const anticheat = createAnticheat({ url: ANTICHEAT_URL, beatMs: ANTICHEAT_BEAT_MS, timeoutMs: ANTICHEAT_TIMEOUT_MS });
+  let acPhase = state.phase;
+  let acRound = state.round;
+  let acLives = state.lives;
+  const snapshot = () => ({ score: state.score, round: state.round, lives: state.lives });
+  const syncAnticheat = () => {
+    const was = acPhase;
+    acPhase = state.phase;
+    if (was === 'titulo' && state.phase !== 'titulo' && hub.getState().host !== 'fuera') {
+      anticheat.start();
+      acRound = state.round;
+      acLives = state.lives;
+    }
+    if (state.phase === 'fin') {
+      if (was !== 'fin') anticheat.finish(snapshot(), hub.getState().account?.h160 ?? null);
+      return;
+    }
+    if (state.phase === 'titulo') return;
+    const changed = state.round !== acRound || state.lives !== acLives;
+    acRound = state.round;
+    acLives = state.lives;
+    anticheat.beat(snapshot(), changed);
+  };
+  // Si la cuenta se conecta después de terminar, se vuelve a pedir la firma para esa cuenta.
+  hub.subscribe((s) => {
+    if (s.account) anticheat.retryFinish(s.account.h160);
+  });
+
   const fin = createFinDePartida({
+    proof: () => anticheat.state,
+    onRetryProof: () => anticheat.retryFinish(hub.getState().account?.h160 ?? null),
     hub,
     score: () => state.score,
     mine: () => mine,
@@ -533,6 +567,7 @@ export function startApp(root: HTMLElement): void {
       overlay.sync();
       inicio.sync();
       syncMode();
+      syncAnticheat();
       syncRoute();
       if (shellRef.tab === 'perfil') perfil.sync();
       // El contenedor tapa el HUD: el popover de Sonido no queda abierto debajo.

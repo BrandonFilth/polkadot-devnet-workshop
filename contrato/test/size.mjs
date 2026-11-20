@@ -3,7 +3,8 @@
 import { compile } from './harness.mjs';
 
 const LIMIT = 24_576;
-const { runtimeBytes, warnings } = compile();
-console.log(`Leaderboard: ${runtimeBytes} bytes de ${LIMIT} (${((runtimeBytes / LIMIT) * 100).toFixed(1)} %)`);
+// LeaderboardV5 es el contrato en uso; Leaderboard (v4) queda como historial de lo que se migró.
+const { runtimeBytes, warnings } = compile('LeaderboardV5');
+console.log(`LeaderboardV5: ${runtimeBytes} bytes de ${LIMIT} (${((runtimeBytes / LIMIT) * 100).toFixed(1)} %)`);
 if (warnings.length) console.log(`\nAvisos del compilador:\n${warnings.join('\n')}`);
 process.exit(runtimeBytes <= LIMIT ? 0 : 1);

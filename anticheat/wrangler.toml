@@ -1,0 +1,23 @@
+# Worker anti-trampas de Polka-Man. La llave del firmante va como secreto (nunca aquí):
+#   wrangler secret put SIGNER_KEY
+name = "polkaman-anticheat"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+workers_dev = true
+preview_urls = false
+
+[vars]
+CHAIN_ID = "420420417"
+# LeaderboardV5 en la devnet (el mismo de game/src/contract/config.ts).
+CONTRACT_ADDRESS = "0xEC870A5575359C34eC0481bD2Cea175dbb4197F0"
+
+[[durable_objects.bindings]]
+name = "PARTIDA"
+class_name = "Partida"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Partida"]
+
+[observability]
+enabled = true

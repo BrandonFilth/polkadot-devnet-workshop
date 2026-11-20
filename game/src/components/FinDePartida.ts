@@ -3,9 +3,25 @@ import { eventStarted, notOpenText, type EventInfo } from '../contract/eventStar
 import { shortAddress } from '../lib/format';
 import { typeInto } from '../lib/typewriter';
 import type { HostPhase, Hub, Result } from '../hub/hub';
+import type { ProofState } from '../lib/anticheat';
 
 /** 'cerrado' = el ranking todavía no abre: se juega, pero no se ofrece guardar (no se pide firma). */
-export type SaveOption = 'fuera' | 'conectar' | 'cero' | 'cargando' | 'guardar' | 'no-supera' | 'cerrado';
+export type SaveOption =
+  | 'fuera'
+  | 'conectar'
+  | 'cero'
+  | 'cargando'
+  | 'guardar'
+  | 'no-supera'
+  | 'cerrado'
+  /** El Worker anti-trampas está revisando la partida. */
+  | 'validando'
+  /** No se pudo hablar con el Worker: se puede reintentar. */
+  | 'reintentar'
+  /** El Worker no validó la partida: no se puede guardar. */
+  | 'sin-validar';
+
+export const SIN_VALIDAR_NOTICE = 'El anti-trampas no validó esta partida, así que no se puede guardar. Juega otra.';
 
 export const OUTSIDE_NOTICE =
   'Abre Polka-Man dentro de Polkadot Desktop o de la Polkadot App para guardar tu récord. Aquí puedes jugar y ver el ranking.';
@@ -22,6 +38,8 @@ export function saveOptions(i: {
   busy: boolean;
   /** El ranking ya abrió. undefined = no se sabe (no se pudo leer): se ofrece guardar y el contrato decide. */
   started?: boolean;
+  /** Validación del Worker anti-trampas. undefined = no aplica (se ofrece guardar como siempre). */
+  proof?: ProofState['kind'];
 }): { option: SaveOption; disabled: boolean } {
   if (i.started === false) return { option: 'cerrado', disabled: false };
   if (i.score === 0) return { option: 'cero', disabled: false };
@@ -29,9 +47,13 @@ export function saveOptions(i: {
   if (!i.connected) return { option: 'conectar', disabled: i.busy };
   if (i.best === null) return { option: 'cargando', disabled: true };
   // Con 'error' se ofrece guardar: saveScore simula antes de firmar.
-  if (i.best === 'error') return { option: 'guardar', disabled: i.busy };
-  if (BigInt(i.score) > i.best) return { option: 'guardar', disabled: i.busy };
-  return { option: 'no-supera', disabled: false };
+  const better = i.best === 'error' || BigInt(i.score) > i.best;
+  if (!better) return { option: 'no-supera', disabled: false };
+  // Solo se guarda con la firma del Worker anti-trampas lista.
+  if (i.proof === 'rechazada') return { option: 'sin-validar', disabled: false };
+  if (i.proof === 'sin-conexion') return { option: 'reintentar', disabled: i.busy };
+  if (i.proof === 'validando' || i.proof === 'jugando' || i.proof === 'ninguna') return { option: 'validando', disabled: true };
+  return { option: 'guardar', disabled: i.busy };
 }
 
 /** `best` = récord del periodo actual; `lifetime` = récord de por vida. null = leyendo. */
@@ -51,6 +73,7 @@ export function finSummary(i: { score: number; connected: boolean; mine: Mine })
 export function finNotice(option: SaveOption, event: EventInfo | null): string {
   if (option === 'fuera') return OUTSIDE_NOTICE;
   if (option === 'cero' || option === 'no-supera') return 'No supera tu récord';
+  if (option === 'sin-validar') return SIN_VALIDAR_NOTICE;
   if (option === 'cerrado') return `El evento todavía no empieza: los récords no se guardan hasta que inicie. ${notOpenText(event?.start ?? 0n)}`;
   return '';
 }
@@ -72,7 +95,7 @@ export type FinButton = 'guardar' | 'jugar' | 'ranking' | 'inicio';
  * propia pestaña. 'guardar' es el botón de saveOptions (Guardar récord, Conecta para guardar o Leyendo…).
  */
 export function finButtons(option: SaveOption): FinButton[] {
-  const save = option === 'guardar' || option === 'conectar' || option === 'cargando';
+  const save = option === 'guardar' || option === 'conectar' || option === 'cargando' || option === 'validando' || option === 'reintentar';
   return [...(save ? (['guardar'] as const) : []), 'jugar', 'ranking', 'inicio'];
 }
 
@@ -88,6 +111,8 @@ const LABELS: Partial<Record<SaveOption, string>> = {
   conectar: 'Conecta para guardar',
   cargando: 'Leyendo tu récord…',
   guardar: 'Guardar récord',
+  validando: 'Validando la partida…',
+  reintentar: 'Reintentar validación',
 };
 
 export function createFinDePartida(opts: {
@@ -101,6 +126,10 @@ export function createFinDePartida(opts: {
   event?: () => EventInfo | null;
   /** Wallet de premios de la cuenta (para el recordatorio tras guardar). */
   payout?: () => `0x${string}` | null | undefined;
+  /** Validación del Worker anti-trampas de la última partida. */
+  proof?: () => ProofState;
+  /** «Reintentar validación»: vuelve a pedirle la firma al Worker. */
+  onRetryProof?: () => void;
   /** «Agregar wallet» / «Cambiar wallet» del recordatorio. */
   onWallet?: () => void;
 }): FinDePartida {
@@ -153,8 +182,12 @@ export function createFinDePartida(opts: {
     if (option === 'conectar') {
       const r = await hub.connect();
       lastMessage = shown(r);
+    } else if (option === 'reintentar') {
+      opts.onRetryProof?.();
     } else if (option === 'guardar') {
-      const r = await hub.saveScore(opts.score());
+      const p = opts.proof?.();
+      if (!p || p.kind !== 'lista') return;
+      const r = await hub.saveScore(p.proof);
       lastMessage = shown(r);
       if (r.ok) {
         savedOk = true;
@@ -171,7 +204,16 @@ export function createFinDePartida(opts: {
     const score = opts.score();
     const event = opts.event?.() ?? null;
     const started = event ? eventStarted(event.start, Date.now() / 1000) : undefined;
-    const decided = saveOptions({ host: s.host, connected, score, best, busy: s.busy, ...(started === undefined ? {} : { started }) });
+    const proofKind = opts.proof?.().kind;
+    const decided = saveOptions({
+      host: s.host,
+      connected,
+      score,
+      best,
+      busy: s.busy,
+      ...(started === undefined ? {} : { started }),
+      ...(proofKind === undefined ? {} : { proof: proofKind }),
+    });
     option = decided.option;
     const lines = finSummary({ score, connected, mine });
     const showName = savedOk && mine !== null && mine !== 'error' && mine.username === '';

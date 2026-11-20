@@ -28,7 +28,7 @@ import { revertMessage, INVALID_USERNAME_MESSAGE } from '../contract/errors';
 import { formatStart, type EventInfo } from '../contract/eventStart';
 import { decodePrizes, placeLabel, PRIZE_AMOUNTS, PRIZE_ROUNDS, walletOrNull, ZERO_ADDRESS, type PrizeRecord } from '../contract/prizes';
 import { shortAddress } from '../lib/format';
-import { decodeScores, leaderboardAbi, toScoreArg, type LeaderboardContract, type QueryResult, type TxOptions, type TxResult } from '../contract/leaderboard';
+import { decodeScores, leaderboardAbi, proofArgs, type LeaderboardContract, type ScoreProof, type QueryResult, type TxOptions, type TxResult } from '../contract/leaderboard';
 import { formatPgas, PGAS_LOW, readPgas as readPgasRpc } from '../contract/pgas';
 import { topScores } from '../contract/ranking';
 import { createRpcContract, withHostFallback } from '../contract/rpcReader';
@@ -82,7 +82,8 @@ export interface Hub {
   readEvent(): Promise<EventInfo>;
   /** `best` = récord del periodo actual; `lifetime` = récord de por vida. */
   readMine(): Promise<{ best: bigint; lifetime: bigint; username: string } | null>;
-  saveScore(score: number): Promise<Result>;
+  /** Guarda el puntaje validado por el Worker anti-trampas (LeaderboardV5 exige la firma). */
+  saveScore(proof: ScoreProof): Promise<Result>;
   setUsername(name: string): Promise<Result>;
   /** Solo el admin: fija o cambia la hora de inicio (segundos Unix) mientras el ranking no abre. */
   setStartTime(start: bigint): Promise<Result>;
@@ -648,20 +649,22 @@ export function createHub(deps?: HubDeps): Hub {
       }
     },
 
-    async saveScore(score) {
+    async saveScore(proof) {
       if (state.busy) return { ok: false, message: BUSY };
       if (!account || !writer) return { ok: false, message: NO_ACCOUNT };
-      let arg: bigint;
+      let args: [bigint, `0x${string}`, bigint, `0x${string}`];
       try {
-        arg = toScoreArg(score);
+        args = proofArgs(proof);
       } catch (error) {
         d.log.error('puntaje no válido', describeError(error));
         return { ok: false, message: 'Ese puntaje no se puede guardar.' };
       }
+      const [arg] = args;
+      const score = proof.score;
       return write({
         op: 'guardar',
-        simulate: (who) => d.reader.submitScore.query(arg, { from: who.h160Address, origin: who.address }),
-        send: (c, opts) => c.submitScore.tx(arg, opts),
+        simulate: (who) => d.reader.submitScore.query(...args, { from: who.h160Address, origin: who.address }),
+        send: (c, opts) => c.submitScore.tx(...args, opts),
         landed: async (who) => (await readBest(who.h160Address)) >= arg,
         rejected: 'El contrato rechazó el puntaje.',
         saved: `Récord guardado: ${score}.`,

@@ -4,6 +4,9 @@ import { TX_EXT_VERSION } from '../contract/config';
 import { createHub, productIdFromHost, type Hub, type HubDeps, type SignerAccount } from './hub';
 import type { ProgressStep } from './progress';
 
+/** Puntaje ya firmado por el Worker (LeaderboardV5 lo exige); la firma es de mentira, el lector simulado no la revisa. */
+const proof = (score: number) => ({ score, gameId: `0x${'ab'.repeat(32)}` as `0x${string}`, deadline: 1_900_000_000, signature: `0x${'cd'.repeat(65)}` as `0x${string}` });
+
 const sdkEvents = (opts?: TxOptions) => {
   for (const status of ['signing', 'broadcasting', 'in-block', 'finalized']) opts?.onStatus?.(status);
 };
@@ -74,7 +77,8 @@ function makeWorld() {
   });
   // Como submitAndWatch de product-sdk-tx 0.5.3 con waitFor 'finalized': signing → broadcasting →
   // in-block → finalized y luego resuelve.
-  const tx = vi.fn(async (arg: unknown, opts?: TxOptions): Promise<{ ok: true; value: object } | { ok: false; error: unknown }> => {
+  // submitScore de LeaderboardV5: (puntaje, partida, vencimiento, firma, opciones).
+  const tx = vi.fn(async (arg: unknown, _game?: unknown, _deadline?: unknown, _sig?: unknown, opts?: TxOptions): Promise<{ ok: true; value: object } | { ok: false; error: unknown }> => {
     sdkEvents(opts);
     store.best = arg as bigint;
     if ((arg as bigint) > store.lifetime) store.lifetime = arg as bigint;
@@ -146,7 +150,7 @@ describe('hub (sin red, con dobles)', () => {
   it('1. si la simulación revierte con ScoreNotHigher, no pide firma', async () => {
     const { hub, world } = await connectedHub();
     world.reader.submitScore.query.mockResolvedValue({ success: false, value: { error: 'ScoreNotHigher', args: [300n, 200n] } });
-    const r = await hub.saveScore(200);
+    const r = await hub.saveScore(proof(200));
     expect(r).toEqual({ ok: false, message: 'Ese puntaje no supera tu récord (300).' });
     expect(world.reader.submitScore.query).toHaveBeenCalledTimes(1);
     expect(world.tx).not.toHaveBeenCalled();
@@ -164,9 +168,9 @@ describe('hub (sin red, con dobles)', () => {
           };
         }),
     );
-    const first = hub.saveScore(500);
+    const first = hub.saveScore(proof(500));
     expect(hub.getState().busy).toBe(true);
-    const second = await hub.saveScore(600);
+    const second = await hub.saveScore(proof(600));
     expect(second).toEqual({ ok: false, message: 'Espera a que termine la firma en curso.' });
     await vi.waitFor(() => expect(world.tx).toHaveBeenCalledTimes(1));
     release();
@@ -176,7 +180,7 @@ describe('hub (sin red, con dobles)', () => {
 
     // También vuelve a false si tx() lanza.
     world.tx.mockRejectedValueOnce(new Error('falla inesperada'));
-    const failed = await hub.saveScore(700);
+    const failed = await hub.saveScore(proof(700));
     expect(failed.ok).toBe(false);
     expect(hub.getState().busy).toBe(false);
   });
@@ -243,7 +247,7 @@ describe('hub (sin red, con dobles)', () => {
   it('3. Invalid.Payment con PGAS 0 es no-gas: pide gas una vez y firma dos veces', async () => {
     const { hub, deps, world } = await connectedHub({ readPgas: vi.fn(async () => 0n) });
     world.tx.mockResolvedValue({ ok: false, error: new Error('Transaction failed before inclusion: Invalid.Payment') });
-    const r = await hub.saveScore(500);
+    const r = await hub.saveScore(proof(500));
     expect(r.ok).toBe(false);
     expect(r.message).toBe('Te quedan 0.00 PGAS: no alcanza para la comisión. Pide más gas y reintenta.');
     expect(deps.requestAllowance).toHaveBeenCalledTimes(1);
@@ -256,7 +260,7 @@ describe('hub (sin red, con dobles)', () => {
     const { hub, world } = await connectedHub();
     world.tx.mockResolvedValue({ ok: false, error: new Error('TxTimeout') });
     world.reader.bestScore.query.mockResolvedValue(ok<unknown>(800n));
-    const r = await hub.saveScore(500);
+    const r = await hub.saveScore(proof(500));
     expect(r).toEqual({ ok: true, message: 'Tu récord quedó guardado.' });
     expect(world.tx).toHaveBeenCalledTimes(1);
   });
@@ -265,7 +269,7 @@ describe('hub (sin red, con dobles)', () => {
     const deps = fakeDeps();
     const hub = createHub(deps);
     await hub.start();
-    const r = await hub.saveScore(100);
+    const r = await hub.saveScore(proof(100));
     expect(r).toEqual({ ok: false, message: 'Conecta tu cuenta primero.' });
     expect(deps.world.reader.submitScore.query).not.toHaveBeenCalled();
     expect(deps.world.tx).not.toHaveBeenCalled();
@@ -274,7 +278,7 @@ describe('hub (sin red, con dobles)', () => {
   it('6. éxito sin relectura que alcance: «Récord enviado…» y un warn', async () => {
     const { hub, deps, world } = await connectedHub();
     world.tx.mockResolvedValue({ ok: true, value: {} }); // no cambia el récord en memoria
-    const r = await hub.saveScore(500);
+    const r = await hub.saveScore(proof(500));
     expect(r).toEqual({ ok: true, message: 'Récord enviado. Puede tardar unos segundos en aparecer.' });
     expect(world.reader.bestScore.query).toHaveBeenCalledTimes(3);
     expect(deps.sleep).toHaveBeenCalledTimes(2);
@@ -310,7 +314,7 @@ describe('hub (sin red, con dobles)', () => {
   it('9. Invalid.Payment con 1 PGAS es host-payment: reconecta y reintenta sin pedir gas', async () => {
     const { hub, deps, world } = await connectedHub({ readPgas: vi.fn(async () => 10n ** 10n) });
     world.tx.mockResolvedValueOnce({ ok: false, error: new Error('Transaction failed before inclusion: Invalid.Payment') });
-    const r = await hub.saveScore(500);
+    const r = await hub.saveScore(proof(500));
     expect(r).toEqual({ ok: true, message: 'Récord guardado: 500.' });
     expect(deps.connectChain).toHaveBeenCalledTimes(1);
     expect(deps.createSigner).toHaveBeenCalledTimes(1);
@@ -370,7 +374,7 @@ describe('hub: periodos, historial y récord de por vida', () => {
   it('guardar un récord mayor sube también el de por vida', async () => {
     const { hub, world } = await connectedHub();
     world.store.lifetime = 200n;
-    expect((await hub.saveScore(500)).ok).toBe(true);
+    expect((await hub.saveScore(proof(500))).ok).toBe(true);
     expect(await hub.readMine()).toEqual({ best: 500n, lifetime: 500n, username: '' });
   });
 });
@@ -384,7 +388,7 @@ describe('hub: estados visibles de cada firma', () => {
   it('11. guardar recorre simulando → firma → enviando → confirmando → actualizando → listo', async () => {
     const { hub } = await connectedHub();
     const steps = recordSteps(hub);
-    const r = await hub.saveScore(500);
+    const r = await hub.saveScore(proof(500));
     expect(r.ok).toBe(true);
     expect(steps).toEqual(['simulando', 'firma', 'enviando', 'confirmando', 'actualizando', 'listo']);
     expect(hub.getState().progress).toMatchObject({ op: 'guardar', step: 'listo', message: 'Récord guardado: 500.' });
@@ -394,7 +398,7 @@ describe('hub: estados visibles de cada firma', () => {
     const { hub, world } = await connectedHub();
     world.reader.submitScore.query.mockResolvedValue({ success: false, value: { error: 'ScoreNotHigher', args: [300n, 200n] } });
     const steps = recordSteps(hub);
-    await hub.saveScore(200);
+    await hub.saveScore(proof(200));
     expect(steps).toEqual(['simulando', 'error']);
     expect(world.tx).not.toHaveBeenCalled();
   });
@@ -403,7 +407,7 @@ describe('hub: estados visibles de cada firma', () => {
     const { hub, world } = await connectedHub();
     world.tx.mockResolvedValue({ ok: false, error: REJECTED() });
     const steps = recordSteps(hub);
-    const r = await hub.saveScore(500);
+    const r = await hub.saveScore(proof(500));
     expect(r).toMatchObject({ ok: false, kind: 'rejected' });
     expect(steps).toEqual(['simulando', 'firma', 'error']);
     expect(steps).not.toContain('enviando');
@@ -413,11 +417,11 @@ describe('hub: estados visibles de cada firma', () => {
   it('14. sin respuesta y sin récord en la cadena: error «timeout», distinto de rechazada', async () => {
     const { hub, world } = await connectedHub();
     world.tx.mockResolvedValueOnce({ ok: false, error: TIMEOUT() });
-    const timeout = await hub.saveScore(500);
+    const timeout = await hub.saveScore(proof(500));
     expect(timeout).toMatchObject({ ok: false, kind: 'timeout' });
     expect(timeout.message).toMatch(/no respondió a tiempo/);
     world.tx.mockResolvedValueOnce({ ok: false, error: REJECTED() });
-    const rejected = await hub.saveScore(500);
+    const rejected = await hub.saveScore(proof(500));
     expect(rejected).toMatchObject({ ok: false, kind: 'rejected' });
     expect(rejected.message).not.toBe(timeout.message);
   });
@@ -426,7 +430,7 @@ describe('hub: estados visibles de cada firma', () => {
     const { hub, world } = await connectedHub({ readPgas: vi.fn(async () => 0n) });
     world.tx.mockResolvedValueOnce({ ok: false, error: new Error('Transaction failed before inclusion: Invalid.Payment') });
     const steps = recordSteps(hub);
-    const r = await hub.saveScore(500);
+    const r = await hub.saveScore(proof(500));
     expect(r.ok).toBe(true);
     expect(steps).toEqual(['simulando', 'firma', 'permiso-gas', 'firma', 'enviando', 'confirmando', 'actualizando', 'listo']);
   });
@@ -441,7 +445,7 @@ describe('hub: estados visibles de cada firma', () => {
     expect(hub.getState().busy).toBe(true);
     await vi.waitFor(() => expect(deps.requestAllowance).toHaveBeenCalledTimes(1));
     expect(await hub.connect()).toEqual({ ok: false, message: 'Espera a que termine la firma en curso.' });
-    expect(await hub.saveScore(100)).toEqual({ ok: false, message: 'Espera a que termine la firma en curso.' });
+    expect(await hub.saveScore(proof(100))).toEqual({ ok: false, message: 'Espera a que termine la firma en curso.' });
     allow('Allocated');
     expect(await pending).toEqual({ ok: true, message: 'Cuenta conectada.' });
     expect(hub.getState().busy).toBe(false);
@@ -461,9 +465,9 @@ describe('hub: estados visibles de cada firma', () => {
 
   it('18. saveScore y setUsername piden waitFor «finalized» a .tx()', async () => {
     const { hub, world } = await connectedHub();
-    await hub.saveScore(500);
+    await hub.saveScore(proof(500));
     await hub.setUsername('ana_01');
-    expect(world.tx).toHaveBeenCalledWith(500n, expect.objectContaining({ waitFor: 'finalized' }));
+    expect(world.tx).toHaveBeenCalledWith(500n, proof(500).gameId, BigInt(proof(500).deadline), proof(500).signature, expect.objectContaining({ waitFor: 'finalized' }));
     expect(world.usernameTx).toHaveBeenCalledWith('ana_01', expect.objectContaining({ waitFor: 'finalized' }));
   });
 
@@ -529,7 +533,7 @@ describe('hub: evento y panel de admin', () => {
   it('antes del evento, guardar récord revierte con NotStarted en la simulación y no pide firma', async () => {
     const { hub, world } = await connectedHub();
     world.reader.submitScore.query.mockResolvedValue({ success: false, value: { error: 'NotStarted', args: [] } });
-    const r = await hub.saveScore(500);
+    const r = await hub.saveScore(proof(500));
     expect(r.ok).toBe(false);
     expect(r.message).toBe('El ranking todavía no abre: tu récord no se guarda hasta que empiece el evento.');
     expect(world.tx).not.toHaveBeenCalled();
@@ -583,7 +587,7 @@ describe('hub: evento y panel de admin', () => {
         }),
     );
     connected.world.reader.bestScore.query.mockResolvedValue(ok<unknown>(500n));
-    const saving = connected.hub.saveScore(500);
+    const saving = connected.hub.saveScore(proof(500));
     expect(await connected.hub.setStartTime(FUTURE)).toEqual({ ok: false, message: 'Espera a que termine la firma en curso.' });
     await vi.waitFor(() => expect(connected.world.tx).toHaveBeenCalledTimes(1));
     release();
