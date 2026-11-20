@@ -12,6 +12,7 @@ import { createShell, type Shell } from './components/Shell';
 import { isAdminAccount, type EventInfo } from './contract/eventStart';
 import { parseRoute, routeHash } from './lib/route';
 import { createSoundPrefs, safeStorage } from './audio/prefs';
+import { createControlPrefs } from './input/controlPrefs';
 import { capas, type Capa } from './components/capas';
 import { createControles } from './components/Controles';
 import { createFinDePartida, type Mine } from './components/FinDePartida';
@@ -69,7 +70,9 @@ export function startApp(root: HTMLElement): void {
   stage.append(canvas);
 
   // Flechas y botón de pausa estilo Atari (solo en pantallas táctiles, ver styles.css).
-  const controles = createControles(state);
+  // Cruceta o joystick: lo elige el jugador en Perfil y se guarda en el teléfono.
+  const controlPrefs = createControlPrefs(safeStorage());
+  const controles = createControles(state, controlPrefs);
 
   // Aviso de giro: fuera del escenario, a pantalla completa y por encima de todo.
   const rotate = document.createElement('div');
@@ -328,6 +331,7 @@ export function startApp(root: HTMLElement): void {
     isAdmin,
     billetera: createBilletera(hub).element,
     sonido: createSonidoToggles(prefs, tap).element,
+    controls: controlPrefs,
     onUsername: openUsername,
     onAdminInicio: () => {
       if (isAdmin()) admin.open();

@@ -224,6 +224,9 @@ export const DPAD_BUTTON_PX = 56;
 /** Separación entre las flechas del D-pad, en px CSS. */
 export const DPAD_GAP_PX = 4;
 
+/** Zona muerta al centro del joystick fijo, en px CSS: empujar menos no pide dirección. */
+export const JOY_DEAD_ZONE_PX = 14;
+
 /** Margen vertical, en px CSS, que se reserva en la fila de controles al encoger las flechas. */
 export const DPAD_PAD_PX = 8;
 

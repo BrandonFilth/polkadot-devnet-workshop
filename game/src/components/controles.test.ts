@@ -3,6 +3,9 @@ import { describe, expect, it } from 'vitest';
 import css from '../styles.css?raw';
 import source from './Controles.ts?raw';
 import app from '../app.ts?raw';
+import perfilSource from './Perfil.ts?raw';
+import { CONTROL_PREFS_KEY, createControlPrefs } from '../input/controlPrefs';
+import { joystickDirections, knobOffset, wantedKey } from '../input/joystick';
 
 /** Cuerpos (juntos) de todas las reglas cuyo selector es exactamente `selector`. */
 const rule = (selector: string) => {
@@ -24,14 +27,12 @@ describe('controles: flechas', () => {
     expect(btn).toMatch(/user-select:\s*none/);
   });
 
-  it('no queda nada del joystick', () => {
+  it('no queda nada del joystick flotante viejo (el joystick fijo de Perfil es otro)', () => {
     for (const text of [css, source]) {
-      expect(text).not.toMatch(/\.joystick/);
       expect(text).not.toMatch(/\.stick|stick-zone/);
       expect(text).not.toContain('Toca y arrastra');
       expect(text).not.toContain('createFloatingStick');
     }
-    expect(source).not.toMatch(/'joystick/);
     // Ningún archivo del juego (salvo esta prueba) menciona el joystick viejo.
     const all = import.meta.glob<string>('/src/**/*.{ts,css}', { query: '?raw', import: 'default', eager: true });
     const files = Object.entries(all).filter(([path]) => !path.endsWith('/controles.test.ts'));
@@ -75,5 +76,50 @@ describe('controles: flechas', () => {
   it('textos sin signos de exclamación', () => {
     expect(source).not.toMatch(/[¡!]['"`]/);
     expect(source).not.toMatch(/['"`>][^'"`<]*¡/);
+  });
+});
+
+describe('controles: cruceta o joystick fijo', () => {
+  it('la preferencia se guarda en el teléfono; por defecto cruceta; valores raros se ignoran', () => {
+    const data = new Map<string, string>();
+    const storage = { getItem: (k: string) => data.get(k) ?? null, setItem: (k: string, v: string) => void data.set(k, v) };
+    const p = createControlPrefs(storage);
+    expect(p.mode).toBe('cruceta');
+    const seen: string[] = [];
+    p.subscribe((m) => seen.push(m));
+    p.setMode('joystick');
+    expect(data.get(CONTROL_PREFS_KEY)).toBe('joystick');
+    expect(createControlPrefs(storage).mode).toBe('joystick');
+    p.setMode('joystick');
+    expect(seen).toEqual(['joystick']);
+    data.set(CONTROL_PREFS_KEY, 'volante');
+    expect(createControlPrefs(storage).mode).toBe('cruceta');
+    expect(createControlPrefs(null).mode).toBe('cruceta');
+    const roto = { getItem: () => { throw new Error('bloqueado'); }, setItem: () => { throw new Error('lleno'); } };
+    const q = createControlPrefs(roto);
+    q.setMode('joystick');
+    expect(q.mode).toBe('joystick');
+  });
+
+  it('el joystick: zona muerta al centro, 4 rectas y diagonales como el swipe; la palanca no sale de la base', () => {
+    expect(joystickDirections(5, 5)).toBeNull();
+    expect(joystickDirections(0, -40)).toEqual({ primary: 'arriba', secondary: null });
+    expect(joystickDirections(40, 2)).toEqual({ primary: 'derecha', secondary: null });
+    expect(joystickDirections(30, -30)).toEqual({ primary: 'derecha', secondary: 'arriba' });
+    expect(knobOffset(10, 0, 50)).toEqual({ x: 10, y: 0 });
+    const k = knobOffset(300, 400, 50);
+    expect(Math.hypot(k.x, k.y)).toBeCloseTo(50);
+    expect(wantedKey({ primary: 'arriba', secondary: 'derecha' })).toBe('arriba|derecha');
+  });
+
+  it('Controles muestra uno u otro según Perfil; el joystick bloquea gestos y suelta al pausar', () => {
+    expect(source).toMatch(/pad\.hidden = mode !== 'cruceta';\s*\n\s*joy\.hidden = mode !== 'joystick';/);
+    expect(source).toMatch(/joy\.setPointerCapture/);
+    expect(source).toMatch(/releaseDirections\(state\);/);
+    expect(source).toMatch(/if \(joyId !== null && state\.phase !== 'listo' && state\.phase !== 'jugando'\) releaseJoy\(\);/);
+    expect(rule('.joystick')).toMatch(/touch-action:\s*none/);
+    expect(app).toMatch(/createControles\(state, controlPrefs\)/);
+    expect(perfilSource).toMatch(/setAttribute\('role', 'radiogroup'\)/);
+    expect(perfilSource).toMatch(/opts\.controls\?\.setMode\(mode\)/);
   });
 });

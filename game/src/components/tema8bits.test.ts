@@ -155,8 +155,8 @@ describe('ajustes: sonido, HUD y controles de la partida', () => {
     expect(css).toMatch(/\.hud-fila--botones \{\s*\n\s*height: 48px;/);
   });
 
-  it('pausa a la izquierda y flechas a la derecha', () => {
-    expect(controlesSource).toMatch(/element\.append\(pause, pad\);/);
+  it('pausa a la izquierda y flechas (o joystick) a la derecha', () => {
+    expect(controlesSource).toMatch(/element\.append\(pause, pad, joy\);/);
     expect(css).toMatch(/#app \.controles \{\s*\n\s*padding: 0 8px 0 24px;/);
   });
 });

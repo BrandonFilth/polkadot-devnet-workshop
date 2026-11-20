@@ -3468,3 +3468,85 @@ button:focus-visible {
     calc(-1 * var(--px)) 0 0 0 var(--fc),
     var(--px) 0 0 0 var(--fc);
 }
+
+/* ---------- Joystick fijo (Perfil → Controles): base octagonal del tamaño de la cruceta y palanca rosa. ---------- */
+.controles {
+  /* El mismo lado que ocupan las 3 flechas y sus 2 separaciones, y se encoge igual si la fila no alcanza. */
+  --joy-size: calc(
+    3 * min(var(--dpad-btn), calc((var(--controls-avail, var(--controls-h)) - 2 * var(--dpad-gap) - var(--dpad-pad)) / 3)) +
+      2 * var(--dpad-gap)
+  );
+}
+
+.joystick {
+  position: relative;
+  flex: none;
+  width: var(--joy-size);
+  height: var(--joy-size);
+  margin: auto;
+  display: grid;
+  place-items: center;
+  background: var(--line);
+  clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+}
+
+/* Cara interior de la base (el marco es el fondo de .joystick). */
+.joystick::before {
+  content: '';
+  position: absolute;
+  inset: var(--px, 4px);
+  background: #151515;
+  clip-path: inherit;
+}
+
+/* Cruz guía en la base: arriba, abajo, izquierda y derecha. */
+.joystick::after {
+  content: '';
+  position: absolute;
+  inset: 22%;
+  background:
+    linear-gradient(var(--muted), var(--muted)) center / 4px 100% no-repeat,
+    linear-gradient(var(--muted), var(--muted)) center / 100% 4px no-repeat;
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.joystick-knob {
+  position: relative;
+  z-index: 1;
+  width: 42%;
+  height: 42%;
+  background: var(--accent);
+  box-shadow: inset -4px -4px 0 #b3124a;
+  clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%);
+  pointer-events: none;
+}
+
+.joystick--activo::before {
+  background: #1b1b38;
+}
+
+.controles .joystick[hidden],
+.controles .dpad[hidden] {
+  display: none;
+}
+
+/* Perfil → Controles: dos opciones lado a lado. */
+.control-modo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+#app .control-modo-btn {
+  min-height: 48px;
+  justify-content: center;
+  font-family: var(--display);
+  font-size: 11px;
+}

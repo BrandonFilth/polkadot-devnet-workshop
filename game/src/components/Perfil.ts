@@ -7,6 +7,7 @@ import { shortAddress } from '../lib/format';
 import type { Mine } from './FinDePartida';
 import { ICON } from './icons';
 import { textWithApps, type AppId } from './Tiendas';
+import { CONTROL_LABEL, CONTROL_MODES, type ControlPrefs } from '../input/controlPrefs';
 
 /** Wallet de premios: dirección, null (no tiene), undefined (todavía no se lee o falló). */
 export type Payout = `0x${string}` | null | undefined;
@@ -65,6 +66,8 @@ export function createPerfil(opts: {
   billetera: HTMLElement;
   /** Toggles de Música y Efectos. */
   sonido: HTMLElement;
+  /** Preferencia de controles táctiles (cruceta o joystick). */
+  controls?: ControlPrefs;
   onUsername(): void;
   onAdminInicio(): void;
   onAdminPremios(): void;
@@ -217,6 +220,55 @@ export function createPerfil(opts: {
   sonidoTitle.textContent = 'Sonido';
   sonido.append(sonidoTitle, opts.sonido);
 
+  // Controles táctiles: cruceta o joystick. Se guarda en este teléfono (input/controlPrefs.ts).
+  const controles = document.createElement('section');
+  controles.className = 'card';
+  controles.setAttribute('aria-labelledby', 'perfil-controles');
+  const controlesTitle = document.createElement('h3');
+  controlesTitle.id = 'perfil-controles';
+  controlesTitle.textContent = 'Controles';
+  const controlesNote = document.createElement('p');
+  controlesNote.className = 'card-note';
+  controlesNote.textContent = 'Cómo mueves a Polka-Man en el teléfono. Se guarda en este teléfono.';
+  const modeGroup = document.createElement('div');
+  modeGroup.className = 'control-modo';
+  modeGroup.setAttribute('role', 'radiogroup');
+  modeGroup.setAttribute('aria-labelledby', 'perfil-controles');
+  const modeButtons = CONTROL_MODES.map((mode) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chip-btn control-modo-btn';
+    b.dataset.modo = mode;
+    b.setAttribute('role', 'radio');
+    b.textContent = CONTROL_LABEL[mode];
+    b.addEventListener('click', () => opts.controls?.setMode(mode));
+    modeGroup.append(b);
+    return b;
+  });
+  const paintMode = () => {
+    const current = opts.controls?.mode ?? 'cruceta';
+    for (const b of modeButtons) {
+      const on = b.dataset.modo === current;
+      b.setAttribute('aria-checked', String(on));
+      b.setAttribute('aria-pressed', String(on));
+      b.tabIndex = on ? 0 : -1;
+    }
+  };
+  // Flechas izquierda y derecha cambian de opción (patrón de radiogroup).
+  modeGroup.addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    e.preventDefault();
+    e.stopPropagation();
+    const i = CONTROL_MODES.indexOf(opts.controls?.mode ?? 'cruceta');
+    const next = CONTROL_MODES[(i + (e.key === 'ArrowRight' ? 1 : CONTROL_MODES.length - 1)) % CONTROL_MODES.length]!;
+    opts.controls?.setMode(next);
+    modeButtons[CONTROL_MODES.indexOf(next)]?.focus();
+  });
+  opts.controls?.subscribe(paintMode);
+  paintMode();
+  controles.append(controlesTitle, controlesNote, modeGroup);
+  controles.hidden = !opts.controls;
+
   // Admin
   const admin = document.createElement('section');
   admin.className = 'card card--admin';
@@ -240,7 +292,7 @@ export function createPerfil(opts: {
   adminActions.append(adminPremios, adminInicio);
   admin.append(adminTitle, adminActions);
 
-  element.append(heading, cuenta, user, wallet, sonido, admin);
+  element.append(heading, cuenta, user, wallet, sonido, controles, admin);
 
   let shownKey = '';
   const sync = () => {
