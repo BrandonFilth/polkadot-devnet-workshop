@@ -51,7 +51,18 @@ export interface GameState {
   frightChain: number;
   /** Eventos sin leer, del más viejo al más nuevo (máximo MAX_EVENTS). drainEvents() los vacía. */
   events: GameEvent[];
+  /** Semilla con la que empezó la partida en curso (para volver a jugarla: engine/replay.ts). */
+  startSeed: number;
+  /** Semilla para la próxima partida (la da el Worker anti-trampas); null = seguir con `seed`. */
+  nextSeed: number | null;
+  /** Pasos de simulación activos (fases de ACTIVE) desde que empezó la partida. */
+  tick: number;
+  /** Pedidos de dirección de la partida, con el paso en que llegaron (para volver a jugarla). */
+  inputs: InputEvent[];
 }
+
+/** Un pedido de la partida: [paso, dirección principal o 'soltar', secundaria]. */
+export type InputEvent = [tick: number, primary: Dir | 'soltar', secondary: Dir | null];
 
 /** Anota un evento; si ya hay MAX_EVENTS se descarta el más viejo. */
 function emit(state: GameState, event: GameEvent): void {
@@ -124,12 +135,23 @@ export function createGame(seed: number): GameState {
     frightTimer: 0,
     frightChain: 0,
     events: [],
+    startSeed: seed,
+    nextSeed: null,
+    tick: 0,
+    inputs: [],
   };
 }
 
 /** Empieza una partida. Solo desde 'titulo' o 'fin'. */
 export function start(state: GameState): void {
   if (state.phase !== 'titulo' && state.phase !== 'fin') return;
+  if (state.nextSeed !== null) {
+    state.seed = state.nextSeed;
+    state.nextSeed = null;
+  }
+  state.startSeed = state.seed;
+  state.tick = 0;
+  state.inputs = [];
   state.score = 0;
   state.lives = LIVES;
   state.round = 1;
@@ -144,11 +166,13 @@ export function start(state: GameState): void {
 /** Pide una dirección principal y, en diagonal, una secundaria. Solo cuenta en 'listo' y 'jugando'. */
 export function setDirections(state: GameState, primary: Dir, secondary: Dir | null): void {
   if (state.phase !== 'listo' && state.phase !== 'jugando') return;
+  state.inputs.push([state.tick, primary, secondary]);
   requestDirections(state.player, primary, secondary);
 }
 
 /** Se soltaron todas las teclas, la flecha o el dedo: el pedido caduca tras REQUEST_TTL_TILES casillas. */
 export function releaseDirections(state: GameState): void {
+  if (isActive(state.phase) || state.phase === 'pausa') state.inputs.push([state.tick, 'soltar', null]);
   releasePlayerDirections(state.player);
 }
 
@@ -281,6 +305,8 @@ function tickTimers(state: GameState, dt: number): void {
 }
 
 export function update(state: GameState, dt: number): void {
+  // Solo los pasos que mueven la partida cuentan: así la pausa no cambia nada al volver a jugarla.
+  if (isActive(state.phase)) state.tick += 1;
   switch (state.phase) {
     case 'listo':
       state.phaseTimer = Math.max(0, state.phaseTimer - dt);

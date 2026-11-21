@@ -211,15 +211,30 @@ export function startApp(root: HTMLElement): void {
   // Anti-trampas: el Worker recibe el inicio, los avances y el fin de cada partida y firma el puntaje final
   // (LeaderboardV5 solo acepta puntajes firmados). Fuera del Host no se puede guardar, así que no se usa.
   const anticheat = createAnticheat({ url: ANTICHEAT_URL, beatMs: ANTICHEAT_BEAT_MS, timeoutMs: ANTICHEAT_TIMEOUT_MS });
+  // La semilla de cada partida la da el Worker (partida preparada en el título o el fin) y cada partida se
+  // graba (state.inputs) para volver a jugarla en la auditoría del top 3.
   let acPhase = state.phase;
   let acRound = state.round;
   let acLives = state.lives;
-  const snapshot = () => ({ score: state.score, round: state.round, lives: state.lives });
+  let acInputs = state.inputs;
+  const snapshot = () => ({
+    score: state.score,
+    round: state.round,
+    lives: state.lives,
+    orbsLeft: state.orbs.size,
+    powerLeft: state.power.size,
+    tick: state.tick,
+    inputs: state.inputs,
+  });
   const syncAnticheat = () => {
     const was = acPhase;
     acPhase = state.phase;
-    if (was === 'titulo' && state.phase !== 'titulo' && hub.getState().host !== 'fuera') {
-      anticheat.start();
+    const inHost = hub.getState().host !== 'fuera';
+    if ((state.phase === 'titulo' || state.phase === 'fin') && inHost) state.nextSeed = anticheat.preparedSeed();
+    // start() del motor crea una grabación nueva: así se nota también «Jugar otra vez» desde el fin.
+    if (state.inputs !== acInputs) {
+      acInputs = state.inputs;
+      if (inHost) anticheat.start(state.startSeed, snapshot());
       acRound = state.round;
       acLives = state.lives;
     }

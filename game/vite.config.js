@@ -51,6 +51,15 @@ export default defineConfig({
           testTimeout: 60_000,
         },
       },
+      {
+        // Auditoría del top 3 antes de pagar premios (lee el contrato y el Worker): auditoria/top3.audit.ts.
+        test: {
+          name: 'auditoria',
+          environment: 'node',
+          include: ['auditoria/**/*.audit.ts'],
+          testTimeout: 600_000,
+        },
+      },
     ],
   },
 });

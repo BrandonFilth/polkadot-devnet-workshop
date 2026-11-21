@@ -1,5 +1,6 @@
-# Worker anti-trampas de Polka-Man. La llave del firmante va como secreto (nunca aquí):
+# Worker anti-trampas de Polka-Man. La llave del firmante y el token de auditoría van como secretos (nunca aquí):
 #   wrangler secret put SIGNER_KEY
+#   wrangler secret put AUDIT_TOKEN
 name = "polkaman-anticheat"
 main = "src/index.js"
 compatibility_date = "2026-11-01"
@@ -15,9 +16,17 @@ CONTRACT_ADDRESS = "0xEC870A5575359C34eC0481bD2Cea175dbb4197F0"
 name = "PARTIDA"
 class_name = "Partida"
 
+[[durable_objects.bindings]]
+name = "JUGADOR"
+class_name = "Jugador"
+
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["Partida"]
+
+[[migrations]]
+tag = "v2"
+new_sqlite_classes = ["Jugador"]
 
 [observability]
 enabled = true
